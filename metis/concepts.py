@@ -165,7 +165,7 @@ def consider(pipeline, run, patterns):
                 store.patch("memory", key, status="rediscovery", concept_id=ident)
                 created.append(ident)
                 continue
-            if not complete:
+            if not complete or literature.get("found") is not False:
                 passed = False
         accepted_edges = []
         if passed:
@@ -201,7 +201,7 @@ def consider(pipeline, run, patterns):
                 checks.append(
                     {"stage": "blind testing", "crew": crew, "result": result}
                 )
-                if result.get("counterexample_found") is True:
+                if result.get("counterexample_found") is not False:
                     passed = False
                     break
                 for j, raw in enumerate(
@@ -237,6 +237,14 @@ def consider(pipeline, run, patterns):
                         support.add(crew)
                         accepted_edges.append(e["id"])
             passed = passed and len(support) >= journey["settings"]["blind_support"]
+        if (
+            passed
+            and node["kind"] == "definition"
+            and journey["settings"].get("formalize_definitions")
+        ):
+            formalization = formalize_definition(pipeline, run, journey, node, key)
+            checks.append({"stage": "definition type-check", "result": formalization})
+            passed = formalization.get("type_checked") is True
         store.patch(
             "concepts",
             ident,
@@ -263,3 +271,58 @@ def consider(pipeline, run, patterns):
         )
         created.append(ident)
     return created
+
+
+def formalize_definition(pipeline, run, journey, node, key):
+    from metis import formal
+
+    versions = {
+        pipeline.store.get("modules", m).get("mathlib_version")
+        for m in journey["modules"]
+    }
+    version = next(iter(versions)) if len(versions) == 1 else None
+    if (
+        run["fixture"]
+        or not pipeline.config.lean_image
+        or not pipeline.config.lean_project
+    ):
+        return {
+            "status": "unavailable",
+            "type_checked": False,
+            "machine_verified": False,
+            "reason": "Controlled Lean sandbox required; no formalization call made",
+        }
+    candidate = pipeline.call(
+        "hephaestus",
+        {
+            "task": "Formalize this definition as Lean type_expression and value expressions. Preserve all parameters and conditions. No imports, commands, placeholders or extra axioms.",
+            "definition": {k: node[k] for k in ("statement", "description")},
+            "mathlib_version": version,
+        },
+        run,
+        "definition-formal:" + key,
+    )
+    alignment = pipeline.call(
+        "alignment",
+        {
+            "task": "Does this Lean definition preserve exactly the supplied definition, all parameters and conditions? Return matches:boolean,reason. Type checking alone does not imply alignment.",
+            "definition": {k: node[k] for k in ("statement", "description")},
+            "type_expression": candidate["type_expression"],
+            "value": candidate["value"],
+        },
+        run,
+        "definition-alignment:" + key,
+    )
+    result = formal.verify_definition(
+        pipeline.config,
+        candidate["type_expression"],
+        candidate["value"],
+        version,
+        alignment.get("matches") is True,
+    )
+    return dict(
+        result,
+        alignment_review=alignment,
+        type_expression=candidate["type_expression"],
+        value=candidate["value"],
+    )

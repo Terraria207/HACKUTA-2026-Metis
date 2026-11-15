@@ -111,15 +111,17 @@
               <button class="primary" type="submit">Add to journey</button>
             </form>
             <details>
-              <summary>Bulk arXiv import</summary>
+              <summary>Bulk paper import</summary>
               <form id="bulkForm">
+                <label>Import source<select name="mode"><option value="arxiv">arXiv IDs (up to 20)</option><option value="msc">Stored corpus by MSC category (up to 20)</option></select></label>
                 <textarea
                   name="ids"
                   rows="3"
-                  placeholder="One arXiv ID per line, up to 20"
+                  placeholder="arXiv IDs, or one MSC code such as 15A03"
                 ></textarea
                 ><button type="submit">Import papers only</button>
               </form>
+              <p id="bulkResult" role="status"></p>
             </details>
           </aside>
           <div>
@@ -128,7 +130,7 @@
                 <h2>Run an exploration</h2>
                 <span id="runStatus" class="pill">Ready</span>
               </div>
-              <label>Input paper<select id="paperSelect"></select></label
+              <label>Input paper<select id="paperSelect"></select></label><button id="correctPlacement">Apply selected MSC group to input paper</button
               ><label
                 >Maximum run cost (USD)<input
                   id="runBudget"

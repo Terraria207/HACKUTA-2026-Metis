@@ -20,10 +20,20 @@ ALLOWED_AXIOMS = {"propext", "Classical.choice", "Quot.sound"}
 
 
 def verify(config, statement, proof, mathlib_version, alignment=False):
+    return _verify(config, statement, proof, mathlib_version, alignment, False)
+
+
+def verify_definition(config, type_expression, value, mathlib_version, alignment=False):
+    """Type-check a definition; this does not establish a theorem or novelty."""
+    return _verify(config, type_expression, value, mathlib_version, alignment, True)
+
+
+def _verify(config, statement, proof, mathlib_version, alignment, definition):
     base = {
         "status": "unavailable",
         "machine_verified": False,
         "statement_alignment": bool(alignment),
+        "type_checked": False,
     }
     if not alignment:
         return dict(
@@ -77,7 +87,9 @@ def verify(config, statement, proof, mathlib_version, alignment=False):
     ):
         return dict(base, status="rejected", reason="Command injection rejected")
     source = (
-        "import Mathlib\n theorem metis_result : ("
+        "import Mathlib\n "
+        + ("def" if definition else "theorem")
+        + " metis_result : ("
         + statement
         + ") := "
         + proof
@@ -166,8 +178,9 @@ def verify(config, statement, proof, mathlib_version, alignment=False):
         )
     return dict(
         base,
-        status="verified",
-        machine_verified=True,
+        status="typechecked" if definition else "verified",
+        machine_verified=not definition,
+        type_checked=definition,
         output=output,
         axioms=sorted(axioms),
         source_sha256=hashlib.sha256(source.encode()).hexdigest(),

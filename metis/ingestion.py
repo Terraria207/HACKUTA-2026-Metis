@@ -12,6 +12,7 @@ import ipaddress
 import re
 import socket
 import ssl
+import time
 import urllib.parse
 from pypdf import PdfReader
 
@@ -63,6 +64,7 @@ class PinnedHTTPS(http.client.HTTPSConnection):
 
 
 def fetch(url, redirects=4):
+    deadline = time.monotonic() + 40
     for _ in range(redirects + 1):
         u, ip = resolve_public(url)
         port = u.port or (443 if u.scheme == "https" else 80)
@@ -94,9 +96,18 @@ def fetch(url, redirects=4):
                 raise ValueError("Paper server returned HTTP " + str(r.status))
             if int(r.getheader("Content-Length", "0")) > MAX_BYTES:
                 raise ValueError("Paper exceeds 12 MiB")
-            raw = r.read(MAX_BYTES + 1)
-            if len(raw) > MAX_BYTES:
-                raise ValueError("Paper exceeds 12 MiB")
+            chunks, size = [], 0
+            while True:
+                if time.monotonic() >= deadline:
+                    raise ValueError("Paper download exceeded 40-second deadline")
+                chunk = r.read1(min(65536, MAX_BYTES + 1 - size))
+                if not chunk:
+                    break
+                chunks.append(chunk)
+                size += len(chunk)
+                if size > MAX_BYTES:
+                    raise ValueError("Paper exceeds 12 MiB")
+            raw = b"".join(chunks)
             return raw, r.getheader("Content-Type", ""), url
         finally:
             conn.close()

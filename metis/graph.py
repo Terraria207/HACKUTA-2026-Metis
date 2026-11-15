@@ -28,6 +28,7 @@ class Settings(BaseModel):
     new_node_threshold: int = Field(3, ge=3, le=20)
     blind_support: int = Field(2, ge=2, le=4)
     proof_attempts: int = Field(3, ge=0, le=20)
+    formalize_definitions: bool = False
     budget_usd: float = Field(0, ge=0, allow_inf_nan=False)
 
 
@@ -88,6 +89,19 @@ def graph(store, journey):
         for m in store.all("memory", journey_id=journey["id"])
         if m.get("kind") == "invalidation"
     }
+    overrides = {
+        m["target_id"]: m
+        for m in store.all("memory", journey_id=journey["id"])
+        if m.get("kind") == "edge_review_override"
+    }
+    result["edges"] = [
+        dict(
+            e, tier=overrides[e["id"]]["tier"], existing=overrides[e["id"]]["existing"]
+        )
+        if e["id"] in overrides
+        else e
+        for e in result["edges"]
+    ]
     overlays = {e["base_edge_id"]: e for e in result["edges"] if e.get("base_edge_id")}
     result["edges"] = [e for e in result["edges"] if not e.get("base_edge_id")]
     for i, e in enumerate(result["edges"]):
@@ -170,7 +184,7 @@ def distance(adj, start, end, cap):
     return cap
 
 
-def score(edge, nodes, edges, settings):
+def score(edge, nodes, edges, settings, anchors=None):
     if any(
         nodes[n]["status"] == "Proposed" or nodes[n].get("invalidated")
         for n in edge["premises"] + [edge["conclusion"]]
@@ -183,6 +197,14 @@ def score(edge, nodes, edges, settings):
         }
     adj = adjacency(nodes, edges, edge["id"])
     cap = settings["d_max"]
+    connected = set(anchors or ()) & nodes.keys()
+    if anchors is not None:
+        todo = list(connected)
+        while todo:
+            for neighbor in adj.get(todo.pop(), ()):
+                if neighbor not in connected:
+                    connected.add(neighbor)
+                    todo.append(neighbor)
     pairs = []
     for p in edge["premises"]:
         a, b = nodes[p], nodes[edge["conclusion"]]
@@ -194,9 +216,19 @@ def score(edge, nodes, edges, settings):
             continue
         td = tree_distance(a, b)
         gd = distance(adj, p, b["id"], cap)
-        integrated = a.get("integrated", bool(adj.get(p))) and b.get(
-            "integrated", bool(adj.get(b["id"]))
+        integrated = (
+            bool(adj.get(p))
+            and bool(adj.get(b["id"]))
+            and a.get("integrated", True)
+            and b.get("integrated", True)
         )
+        if anchors is not None:
+            integrated = (
+                bool(adj.get(p))
+                and bool(adj.get(b["id"]))
+                and p in connected
+                and b["id"] in connected
+            )
         wt = settings["tree_weight"] if integrated else 1
         pairs.append(
             {
@@ -299,6 +331,17 @@ def invalidate_dependents(store, journey, edge_id, reason):
             ):
                 bad.add(e["id"])
                 changed = True
+    for ident in bad:
+        store.put(
+            "memory",
+            {
+                "id": journey["id"] + ":invalid:" + ident,
+                "journey_id": journey["id"],
+                "kind": "invalidation",
+                "target_id": ident,
+                "reason": reason,
+            },
+        )
     for e in g["edges"]:
         if e["id"] in bad and e["layer"] == "journey:" + journey["id"]:
             history = e.get("tier_history", []) + [

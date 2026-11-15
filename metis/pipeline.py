@@ -59,7 +59,7 @@ class Pipeline:
             self.enqueue_recheck(item)
         for run in self.store.all("runs"):
             if run["status"] in ("complete", "cancelled") or run["checkpoint"] >= 7:
-                self.store.delete("locks", "active:" + run["journey_id"])
+                self.store.release_run_lock(run["journey_id"], run["id"])
                 if run["checkpoint"] >= 7 and run["status"] != "cancelled":
                     self.store.patch("runs", run["id"], status="complete")
             elif run["status"] in ("queued", "running"):
@@ -137,7 +137,7 @@ class Pipeline:
         self.store.insert(
             "jobs",
             {
-                "id": "recheck:" + item["id"],
+                "id": "recheck:" + item["id"] + ":" + str(item.get("attempt", 0)),
                 "kind": "recheck",
                 "recheck_id": item["id"],
                 "status": "queued",
@@ -152,13 +152,15 @@ class Pipeline:
             return
         journey = self.store.get("journeys", item["journey_id"])
         e = self.store.get("edges", item["edge_id"])
-        run = self.store.get("runs", e.get("run_id")) if e.get("run_id") else None
-        run = run or {
+        original = self.store.get("runs", e.get("run_id")) if e.get("run_id") else None
+        # Feedback is a separate budgeted operation, including for terminal runs.
+        run = {
             "id": "feedback:" + item["id"],
+            "paper_id": (original or {}).get("paper_id"),
             "journey_id": journey["id"],
             "fixture": journey["fixture"],
-            "budget_usd": 0,
-            "attempt": 0,
+            "budget_usd": item.get("budget_usd", 0),
+            "attempt": item.get("attempt", 0),
         }
         nodes = {n["id"]: n for n in graph(self.store, journey)["concepts"]}
         passed, tier, result, independent = self.review(
@@ -190,6 +192,19 @@ class Pipeline:
             independent=independent,
         )
         if passed:
+            if e["layer"].startswith("module:"):
+                self.store.put(
+                    "memory",
+                    {
+                        "id": journey["id"] + ":review-override:" + e["id"],
+                        "journey_id": journey["id"],
+                        "kind": "edge_review_override",
+                        "target_id": e["id"],
+                        "tier": tier,
+                        "existing": "Existing" if tier == "cited" else "Unchecked",
+                        "review_id": item["id"],
+                    },
+                )
             self.store.delete("memory", journey["id"] + ":invalid:" + e["id"])
         self.store.event(
             journey["id"], "recheck", {"feedback_id": item["id"], "passed": passed}
@@ -219,6 +234,7 @@ class Pipeline:
             self.store.owned_patch(job, status="done")
             return
         run["_job_attempt"] = job.get("attempt", 0)
+        run["_job"] = job
         # Renew lease while network/Lean calls run. Worker ownership fences completion.
         done = threading.Event()
 
@@ -255,7 +271,7 @@ class Pipeline:
             self.store.owned_patch(job, status="done")
             self.trace(run, run["checkpoint"], "system", "Stage checkpoint saved")
             if checkpoint == 7 and status == "complete":
-                self.store.delete("locks", "active:" + run["journey_id"])
+                self.store.release_run_lock(run["journey_id"], run["id"])
                 self.store.patch(
                     "journeys", run["journey_id"], status="ready", last_activity=now()
                 )
@@ -312,25 +328,52 @@ class Pipeline:
             done.set()
             hb.join(timeout=1)
 
+    def ensure_active(self, run):
+        current = self.store.get("runs", run["id"])
+        if current and current["status"] in ("paused", "cancelled"):
+            raise Interrupted("Run stopped")
+        job = run.get("_job")
+        if job:
+            owned = self.store.get("jobs", job["id"])
+            if (
+                not owned
+                or owned.get("owner") != job["owner"]
+                or owned.get("status") != "working"
+                or owned.get("lease_until", 0) < now()
+            ):
+                raise Interrupted("Worker lease lost")
+
     def context(self, run):
+        self.ensure_active(run)
         j = self.store.get("journeys", run["journey_id"])
         g = graph(self.store, j)
         return j, g, {n["id"]: n for n in g["concepts"]}
 
     def call(self, role, payload, run, key, grounded=False):
-        current = self.store.get("runs", run["id"])
-        if current and current["status"] in ("paused", "cancelled"):
-            raise Interrupted("Run stopped")
-        call_key = key + ":attempt" + str(run.get("attempt", 0))
+        self.ensure_active(run)
+        # Completed work survives manual retries without another paid request.
+        call_key = key + ":attempt0"
+        retry = str(run.get("attempt", 0)) + ":" + str(run.get("_job_attempt", 0))
         old = self.store.get(
             "calls", hashlib.sha256((run["id"] + ":" + call_key).encode()).hexdigest()
         )
-        if old and old["status"] == "failed" and run.get("_job_attempt", 0):
-            call_key += ":retry" + str(run["_job_attempt"])
+        if old and old["status"] != "complete" and retry != "0:0":
+            call_key += ":retry" + retry
+        # A previous retry may itself have completed before a later crash.
+        for attempt in range(run.get("attempt", 0) + 1):
+            for job_attempt in range(4):
+                candidate = (
+                    key + ":attempt0:retry" + str(attempt) + ":" + str(job_attempt)
+                )
+                record = self.store.get(
+                    "calls",
+                    hashlib.sha256((run["id"] + ":" + candidate).encode()).hexdigest(),
+                )
+                if record and record["status"] == "complete":
+                    call_key = candidate
+                    break
         result = self.providers.call(role, payload, run, call_key, grounded)
-        current = self.store.get("runs", run["id"])
-        if current and current["status"] in ("paused", "cancelled"):
-            raise Interrupted("Run stopped after in-flight call")
+        self.ensure_active(run)
         return result
 
     def stage0(self, run):
@@ -636,6 +679,7 @@ class Pipeline:
         )
 
     def save_edge(self, run, e, agent, provenance, key):
+        self.ensure_active(run)
         layer = "journey:" + run["journey_id"]
         duplicate = duplicate_key(e)
         # Stable layer/type/endpoints identity makes retries and support overlays idempotent.
@@ -734,6 +778,7 @@ class Pipeline:
                         )
                         if target["kind"] == "paper"
                         else None,
+                        "input_paper_text": paper["text"],
                         "input_concepts": [nodes[n] for n in paper["concept_ids"]],
                         "target_concepts": [nodes[n] for n in target["concept_ids"]],
                         "groups": [
@@ -971,11 +1016,21 @@ class Pipeline:
             if e["id"] not in edge_ids:
                 continue
             # Review in each journey/run context, including duplicate support; never import cached review.
-            if self.store.get("reviews", run["id"] + ":review:" + e["id"]):
-                continue
-            passed, tier, result, independent = self.review(
-                run, e, nodes, "review:" + e["id"]
-            )
+            saved = self.store.get("reviews", run["id"] + ":review:" + e["id"])
+            if saved:
+                # Replay graph writes if the worker died after saving the review.
+                passed, tier = saved["verdict"] == "pass", saved["final_tier"]
+                result, independent = saved, saved["independent"]
+            else:
+                passed, tier, result, independent = self.review(
+                    run, e, nodes, "review:" + e["id"]
+                )
+            if (
+                passed
+                and e["tier"] == "verified"
+                and e.get("formal_attempt", {}).get("machine_verified")
+            ):
+                tier = "verified"
             review_id = run["id"] + ":review:" + e["id"]
             history = [
                 h for h in e.get("tier_history", []) if h.get("review_id") != review_id
@@ -1031,7 +1086,14 @@ class Pipeline:
                 )
         journey, g, nodes = self.context(run)
         adj = adjacency(nodes, g["edges"])
-        anchors = set(run["before"]["nodes"])
+        anchors = {
+            n["id"]
+            for n in g["concepts"]
+            if n["id"] in run["before"]["nodes"]
+            and n.get("integrated")
+            and n["status"] != "Proposed"
+            and not n.get("invalidated")
+        }
         for n in g["concepts"]:
             if n["layer"] != "journey:" + journey["id"]:
                 continue
@@ -1051,7 +1113,9 @@ class Pipeline:
                 self.store.patch(
                     "edges",
                     e["id"],
-                    bridge_score=score(e, nodes, g["edges"], journey["settings"]),
+                    bridge_score=score(
+                        e, nodes, g["edges"], journey["settings"], anchors
+                    ),
                 )
 
     def run_edges(self, run):
@@ -1123,6 +1187,7 @@ class Pipeline:
                 )
                 attempt["alignment_review"] = aligned
                 attempt["statement"] = candidate["statement"]
+            self.ensure_active(run)
             self.store.patch("edges", e["id"], formal_attempt=attempt)
             if attempt["machine_verified"] and not run["fixture"]:
                 self.store.patch(
@@ -1235,18 +1300,22 @@ class Pipeline:
                         self.store.patch(
                             "edges",
                             e["id"],
-                            tier="cited",
+                            tier="verified" if e["tier"] == "verified" else "cited",
                             evidence=reviewed["evidence"],
                             tier_history=e["tier_history"]
                             + [
                                 {
-                                    "tier": "cited",
+                                    "tier": "verified"
+                                    if e["tier"] == "verified"
+                                    else "cited",
                                     "time": now(),
                                     "reason": "Grounded source independently reviewed",
                                 }
                             ],
                         )
-                    elif not passed:
+                    else:
+                        existing = "Unchecked"
+                    if not passed:
                         invalidate_dependents(
                             self.store,
                             journey,
@@ -1379,7 +1448,15 @@ class Pipeline:
         # Record recurring cross-paper bridges, without inventing an unreviewed concept.
         patterns = {}
         for e in g["edges"]:
-            if e.get("review_status") != "passed" or e["tier"] != "intuitive":
+            if (
+                e.get("review_status") != "passed"
+                or e["tier"] != "intuitive"
+                or e.get("invalidated")
+                or any(
+                    nodes[n]["status"] == "Proposed" or nodes[n].get("invalidated")
+                    for n in e["premises"] + [e["conclusion"]]
+                )
+            ):
                 continue
             for p in e["premises"]:
                 pair = tuple(

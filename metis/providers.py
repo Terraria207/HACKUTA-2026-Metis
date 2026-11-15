@@ -45,7 +45,21 @@ class Providers:
 
     def public(self):
         return {
-            r: {k: v for k, v in self.roles.get(r, {}).items() if k not in ("api_key",)}
+            r: {
+                k: v
+                for k, v in self.roles.get(r, {}).items()
+                if k
+                in {
+                    "provider",
+                    "model",
+                    "key_env",
+                    "max_cost_usd",
+                    "max_output_tokens",
+                    "input_usd_per_million",
+                    "output_usd_per_million",
+                    "request_overhead_usd",
+                }
+            }
             for r in ROLES
         }
 

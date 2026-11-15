@@ -34,12 +34,9 @@ async function api(path, options = {}) {
   };
   const res = await fetch("/api" + path, { ...options, headers });
   if (!res.ok) {
-    let msg;
-    try {
-      msg = (await res.json()).detail;
-    } catch {
-      msg = await res.text();
-    }
+    const body = await res.text();
+    let msg = body;
+    try { msg = JSON.parse(body).detail || body; } catch { /* plain HTTP error */ }
     throw Error(typeof msg === "string" ? msg : JSON.stringify(msg));
   }
   return res.status === 204 ? null : res.json();
@@ -103,6 +100,7 @@ async function home() {
 async function openJourney(id) {
   if (state.stream) state.stream.abort();
   clearInterval(state.poll);
+  state.run = null;
   state.journey = await api("/journeys/" + id);
   $("home").hidden = true;
   $("workspace").hidden = false;
@@ -288,7 +286,7 @@ async function loadHistory() {
     ? queue
         .map(
           (q) =>
-            `<p>${esc(q.edge_id.slice(0, 14))} · ${esc(q.status)} ${q.status === "queued" ? `<button data-recheck="${esc(q.id)}">Run independent re-review</button>` : esc(q.result?.reason)}</p>`,
+            `<p>${esc(q.edge_id.slice(0, 14))} · ${esc(q.status)} ${["queued", "failed"].includes(q.status) ? `<button data-recheck="${esc(q.id)}">Retry re-review with run budget cap</button>` : esc(q.result?.reason)} ${esc(q.error || "")}</p>`,
         )
         .join("")
     : '<p class="muted">No pending feedback.</p>';
@@ -401,12 +399,14 @@ async function openSettings(journeySettings = false) {
     ? "Journey settings"
     : "Settings & costs";
   if (journeySettings) {
-    const s = state.journey.settings;
+    const s = { formalize_definitions: false, ...state.journey.settings };
     $("settingsContent").innerHTML =
       `<form id="editSettings"><div class="settingsGrid">${Object.entries(s)
         .map(
           ([k, v]) =>
-            `<label>${esc(k.replaceAll("_", " "))}<input type="number" name="${esc(k)}" value="${v}" min="0" step="${["tree_weight", "group_ratio", "budget_usd"].includes(k) ? "0.01" : "1"}" required></label>`,
+            `<label>${esc(k.replaceAll("_", " "))}${typeof v === "boolean"
+              ? `<input type="checkbox" name="${esc(k)}" ${v ? "checked" : ""}>`
+              : `<input type="number" name="${esc(k)}" value="${v}" min="0" step="${["tree_weight", "group_ratio", "budget_usd"].includes(k) ? "0.01" : "1"}" required>`}</label>`,
         )
         .join(
           "",
@@ -416,6 +416,7 @@ async function openSettings(journeySettings = false) {
       const values = Object.fromEntries(
         [...new FormData(e.target)].map(([k, v]) => [k, Number(v)]),
       );
+      values.formalize_definitions = e.target.elements.formalize_definitions.checked;
       state.journey = await api(`/journeys/${state.journey.id}/settings`, {
         method: "PUT",
         body: JSON.stringify(values),
@@ -433,7 +434,9 @@ async function openSettings(journeySettings = false) {
       e.preventDefault();
       await api("/settings/providers", {
         method: "PUT",
-        body: new FormData(e.target).get("roles"),
+        body: JSON.stringify(Object.fromEntries(Object.entries(
+          JSON.parse(new FormData(e.target).get("roles"))
+        ).filter(([, spec]) => Object.keys(spec).length))),
       });
       $("settingsDialog").close();
     });
@@ -502,7 +505,7 @@ document.addEventListener("click", (e) => {
       if (el.dataset.recheck) {
         await api(
           `/journeys/${state.journey.id}/rechecks/${el.dataset.recheck}`,
-          { method: "POST" },
+          { method: "POST", body: JSON.stringify({ budget_usd: Number($("runBudget").value) }) },
         );
         await loadHistory();
       }
@@ -566,16 +569,26 @@ on("paperForm", "submit", async (e) => {
 });
 on("bulkForm", "submit", async (e) => {
   e.preventDefault();
-  const ids = new FormData(e.target)
-    .get("ids")
+  const form = new FormData(e.target);
+  const ids = form.get("ids")
     .split(/[\s,]+/)
     .filter(Boolean);
   const results = await api(`/journeys/${state.journey.id}/papers/bulk`, {
     method: "POST",
-    body: JSON.stringify({ arxiv_ids: ids, home_group: $("paperGroup").value }),
+    body: JSON.stringify(form.get("mode") === "msc"
+      ? { msc_category: form.get("ids").trim(), limit: 20 }
+      : { arxiv_ids: ids, home_group: $("paperGroup").value }),
   });
   await refresh();
+  $("bulkResult").textContent = `${results.filter(r => r.paper).length} imported. ${results.filter(r => r.error).length} failed. MSC mode searches stored corpus only.`;
   if (results.some((r) => r.error)) throw Error(JSON.stringify(results));
+});
+on("correctPlacement", "click", async () => {
+  if (!$("paperSelect").value) throw Error("Select a paper first");
+  await api(`/journeys/${state.journey.id}/papers/${$("paperSelect").value}/placement`, {
+    method: "PUT", body: JSON.stringify({ home_group: $("paperGroup").value })
+  });
+  await refresh();
 });
 on("startRun", "click", async () => {
   if ("Notification" in window && Notification.permission === "default")

@@ -2,6 +2,7 @@
 Worker leases and budget reservations are atomic. No change stream is used as a queue.
 """
 
+from contextlib import contextmanager
 import copy
 import math
 import json
@@ -153,6 +154,16 @@ class Store:
                 return None
             return self.patch("runs", ident, **updates)
 
+    def release_run_lock(self, journey_id, run_id):
+        ident = "active:" + journey_id
+        if self.mongo is not None:
+            self.mongo.locks.delete_one({"id": ident, "run_id": run_id})
+        else:
+            with self.lock:
+                current = self.get("locks", ident)
+                if current and current.get("run_id") == run_id:
+                    self.delete("locks", ident)
+
     def advance_run(self, ident, checkpoint):
         next_step = checkpoint + 1
         if self.mongo is not None:
@@ -262,6 +273,23 @@ class Store:
                 return None
             return self.patch("jobs", job["id"], **updates)
 
+    @contextmanager
+    def transaction(self):
+        # Separate Store connections have separate Python locks. SQLite's write
+        # transaction supplies the cross-connection reservation boundary.
+        with self.lock:
+            nested = self.sql.in_transaction
+            if not nested:
+                self.sql.execute("BEGIN IMMEDIATE")
+            try:
+                yield
+                if not nested:
+                    self.sql.execute("COMMIT")
+            except BaseException:
+                if not nested:
+                    self.sql.execute("ROLLBACK")
+                raise
+
     def reserve(self, account, cap, amount):
         if not all(math.isfinite(v) for v in (cap, amount)) or amount <= 0:
             raise ValueError("A positive maximum call cost is required")
@@ -276,7 +304,7 @@ class Store:
                 return_document=ReturnDocument.AFTER,
             )
             return result is not None
-        with self.lock:
+        with self.transaction():
             d = self.get("budgets", account)
             if d["spent"] + d["reserved"] + amount > cap + 1e-9:
                 return False
@@ -289,7 +317,7 @@ class Store:
                 {"id": account}, {"$inc": {"reserved": -reserved, "spent": charged}}
             )
         else:
-            with self.lock:
+            with self.transaction():
                 d = self.get("budgets", account)
                 self.patch(
                     "budgets",

@@ -172,8 +172,21 @@ def import_module(store, bundle):
             or g["ancestors"][-1] != g["id"]
         ):
             raise ValueError("Invalid group ancestry")
-        if g["depth"] > 1 and g.get("parent") not in {**external_groups, **groups}:
-            raise ValueError("Missing group parent")
+        if g.get("island") not in m["islands"]:
+            raise ValueError("Group island must belong to its module")
+        if g["depth"] == 1:
+            if g.get("parent") is not None or g["ancestors"] != [g["id"]]:
+                raise ValueError("Invalid island root")
+        else:
+            parent = {**external_groups, **groups}.get(g.get("parent"))
+            if not parent:
+                raise ValueError("Missing group parent")
+            if (
+                parent["depth"] != g["depth"] - 1
+                or parent["island"] != g["island"]
+                or g["ancestors"] != parent["ancestors"] + [g["id"]]
+            ):
+                raise ValueError("Group ancestry must match its parent")
     for n in nodes.values():
         if n["home_group"] not in {**external_groups, **groups} or not n.get("source"):
             raise ValueError("Concept requires home group and source")

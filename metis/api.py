@@ -99,8 +99,31 @@ def create_app(config=None, start_worker=True):
             origin = request.headers.get("origin")
             if origin and origin != str(request.base_url).rstrip("/"):
                 return Response("Cross-origin mutation forbidden", 403)
-            if int(request.headers.get("content-length", "0")) > MAX_BYTES + 1000000:
+            limit = MAX_BYTES + 1000000
+            try:
+                length = int(request.headers.get("content-length", "0"))
+            except ValueError:
+                return Response("Invalid Content-Length", 400)
+            if length < 0 or length > limit:
                 return Response("Request too large", 413)
+
+            # Bound chunked bodies before multipart parsing can spool an unlimited
+            # upload to disk. CachedRequest replays this bounded body downstream.
+            async def bounded_body():
+                body = bytearray()
+                async for chunk in request.stream():
+                    if len(body) + len(chunk) > limit:
+                        return None
+                    body.extend(chunk)
+                return bytes(body)
+
+            try:
+                body = await asyncio.wait_for(bounded_body(), timeout=30)
+            except TimeoutError:
+                return Response("Upload exceeded 30-second deadline", 408)
+            if body is None:
+                return Response("Request too large", 413)
+            request._body = body
         response = await call_next(request)
         response.headers.update(
             {
@@ -149,14 +172,41 @@ def create_app(config=None, start_worker=True):
         require("runs", rid, jid)
         r = require("reports", rid, jid)
         r = dict(r)
-        for key in ("ranked", "potentially_new", "rediscoveries", "unchecked"):
-            r[key] = [
-                e
-                for ident in r[key]
-                if (e := store.get("edges", ident))
-                and not e.get("invalidated")
-                and e.get("review_status") == "passed"
-            ]
+        g = graph(store, journey(jid))
+        nodes = {n["id"]: n for n in g["concepts"]}
+        # Historical report IDs do not override current graph validity.
+        edges = {e["id"]: e for e in g["edges"]}
+        invalid = {
+            m["target_id"]
+            for m in store.all("memory", journey_id=jid)
+            if m.get("kind") == "invalidation"
+        }
+        edges.update(
+            {
+                e["id"]: dict(e, invalidated=e.get("invalidated") or e["id"] in invalid)
+                for e in store.all("edges", layer="journey:" + jid)
+            }
+        )
+        ranked = [
+            edges[ident]
+            for ident in r["ranked"]
+            if ident in edges
+            and not edges[ident].get("invalidated")
+            and edges[ident].get("review_status") == "passed"
+            and all(
+                n in nodes
+                and nodes[n]["status"] != "Proposed"
+                and not nodes[n].get("invalidated")
+                for n in edges[ident]["premises"] + [edges[ident]["conclusion"]]
+            )
+        ]
+        r["ranked"] = ranked
+        for key, tag in (
+            ("potentially_new", "Not found"),
+            ("rediscoveries", "Existing"),
+            ("unchecked", "Unchecked"),
+        ):
+            r[key] = [e for e in ranked if e.get("existing") == tag]
         return r
 
     @app.get("/api/status")
@@ -374,6 +424,50 @@ def create_app(config=None, start_worker=True):
 
     @app.post("/api/journeys/{jid}/papers/bulk", status_code=201)
     def bulk(jid: str, data: dict):
+        j = journey(jid)
+        if data.get("msc_category"):
+            import re
+
+            category = str(data["msc_category"]).strip().upper()
+            if not re.fullmatch(r"[0-9]{2}(?:[A-Z](?:[0-9]{2})?)?", category):
+                raise ValueError(
+                    "MSC category must be a field, subfield or subtopic code"
+                )
+            limit = data.get("limit", 20)
+            if not isinstance(limit, int) or not 1 <= limit <= 20:
+                raise ValueError("MSC import limit must be 1 to 20")
+            groups = {g["msc"]: g for g in graph(store, j)["groups"] if g["depth"] == 3}
+            known = {p["content_hash"] for p in store.all("papers", journey_id=jid)}
+            results = []
+            for p in sorted(store.all("papers"), key=lambda p: p["id"]):
+                if not p["msc"].startswith(category) or p["content_hash"] in known:
+                    continue
+                known.add(p["content_hash"])
+                if p["msc"] not in groups:
+                    results.append(
+                        {
+                            "paper_id": p["id"],
+                            "error": "No matching MSC subtopic in selected modules; import individually and confirm placement",
+                        }
+                    )
+                else:
+                    results.append(
+                        {
+                            "paper": add_paper(
+                                jid,
+                                PaperInput(
+                                    title=p["title"],
+                                    kind="corpus",
+                                    value=p["id"],
+                                    home_group=groups[p["msc"]]["id"],
+                                    year=p.get("year"),
+                                ),
+                            )
+                        }
+                    )
+                if len(results) == limit:
+                    break
+            return results
         ids = data.get("arxiv_ids", [])
         if len(ids) > 20:
             raise ValueError("Bulk import limited to 20 arXiv IDs")
@@ -516,7 +610,7 @@ def create_app(config=None, start_worker=True):
             if not r:
                 raise HTTPException(409, "Run changed state")
             store.patch("journeys", jid, status="ready")
-            store.delete("locks", "active:" + jid)
+            store.release_run_lock(jid, rid)
         else:
             if r["status"] not in ("paused", "failed"):
                 raise HTTPException(409, "Only paused or failed runs can resume/retry")
@@ -526,7 +620,7 @@ def create_app(config=None, start_worker=True):
                 )
                 if not r:
                     raise HTTPException(409, "Run changed state")
-                store.delete("locks", "active:" + jid)
+                store.release_run_lock(jid, rid)
                 store.patch("journeys", jid, status="ready")
                 return r
             updates = {
@@ -855,10 +949,30 @@ def create_app(config=None, start_worker=True):
         return f
 
     @app.post("/api/journeys/{jid}/rechecks/{fid}")
-    def recheck(jid: str, fid: str):
+    def recheck(jid: str, fid: str, data: dict | None = None):
         item = require("rechecks", fid, jid)
-        worker.perform_recheck(item)
-        return store.get("rechecks", fid)
+        if item["status"] == "complete":
+            return item
+        if any(
+            job.get("recheck_id") == fid
+            and job["status"] == "working"
+            and job.get("lease_until", 0) >= now()
+            for job in store.all("jobs")
+        ):
+            raise HTTPException(409, "Re-review already in progress")
+        cap = float((data or {}).get("budget_usd", item.get("budget_usd", 0)))
+        if not math.isfinite(cap) or cap < 0:
+            raise ValueError("Invalid re-review budget")
+        item = store.patch(
+            "rechecks",
+            fid,
+            status="queued",
+            budget_usd=cap,
+            attempt=item.get("attempt", 0) + (item["status"] == "failed"),
+            error=None,
+        )
+        worker.enqueue_recheck(item)
+        return item
 
     @app.get("/api/journeys/{jid}/rechecks")
     def rechecks(jid: str):
@@ -870,18 +984,16 @@ def create_app(config=None, start_worker=True):
         results = []
         for r in store.all("reports"):
             j = journey(r["journey_id"])
-            for ident in r.get("potentially_new", []):
-                e = store.get("edges", ident)
-                if e and not e.get("invalidated"):
-                    results.append(
-                        {
-                            "journey_id": j["id"],
-                            "journey_name": j["name"],
-                            "run_id": r["id"],
-                            "edge": e,
-                            "fixture": r["fixture"],
-                        }
-                    )
+            for e in report_data(j["id"], r["id"])["potentially_new"]:
+                results.append(
+                    {
+                        "journey_id": j["id"],
+                        "journey_name": j["name"],
+                        "run_id": r["id"],
+                        "edge": e,
+                        "fixture": r["fixture"],
+                    }
+                )
         return results
 
     @app.get("/api/settings")

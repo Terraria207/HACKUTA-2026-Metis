@@ -128,7 +128,9 @@ def test_feedback_invalidates_and_independent_rereview(client, app, journey):
     assert q[0]["status"] == "queued"
     res = client.post(f"/api/journeys/{j}/rechecks/{f['id']}")
     assert res.status_code == 200, res.text
-    assert res.json()["status"] == "complete"
+    assert res.json()["status"] == "queued"
+    complete(app)
+    assert app.state.store.get("rechecks", f["id"])["status"] == "complete"
     assert not app.state.store.get("edges", e["id"])["invalidated"]
 
 
