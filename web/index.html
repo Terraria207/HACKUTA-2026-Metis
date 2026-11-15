@@ -76,6 +76,8 @@
             <fieldset>
               <legend>Basis groups (islands)</legend>
               <p class="hint">Each basis group is built once by the gods and saved; a saved group is linked at once, read-only. Bridge modules between the islands you pick are included automatically.</p>
+              <p class="hint" id="catalogNote"></p>
+              <div class="actions"><input id="fieldFilter" type="search" placeholder="Filter basis groups by name or MSC code" aria-label="Filter basis groups" /><span id="chosenCount" class="pill" role="status"></span></div>
               <div id="fieldCatalog"></div>
             </fieldset>
             <fieldset>
@@ -179,6 +181,7 @@
           <label id="paperValueLabel">arXiv ID, URL, corpus paper or text<textarea name="value" rows="2"></textarea></label>
           <label id="pdfLabel" hidden>PDF file<input type="file" name="file" accept="application/pdf" /></label>
           <label>Place in the tree (MSC group)
+            <input id="groupFilter" type="search" placeholder="Filter by MSC code or name" aria-label="Filter MSC groups" />
             <select name="home_group" id="paperGroup"></select>
           </label>
           <p class="hint">The paper's MSC placement is shown here before the run and can be corrected.</p>

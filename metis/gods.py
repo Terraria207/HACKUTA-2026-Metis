@@ -129,16 +129,18 @@ def select_foundational(declarations, limit, min_dependents=1):
 
 def script_mapping(declarations, spec, module_id):
     groups = groups_for(spec, module_id)
-    by_msc = {g["msc"]: g for g in groups}
+    by_msc = {g["msc"]: g for g in groups if g["depth"] == 3}
     mapping = {
         "groups": groups,
         "declarations": {},
         "method": "script: path-prefix placement with mathlib docstrings; not gods-curated",
     }
     for d in declarations:
-        group = by_msc.get(place(spec, d["module"]))
-        if not group or group["depth"] != 3:
-            group = by_msc[spec["default"]]
+        # An indexed export carries the script's MSC placement; a single-file export is placed
+        # here from the basis group's own path table.
+        group = by_msc.get(d.get("msc") or place(spec, d["module"])) or by_msc.get(spec.get("default"))
+        if not group:
+            raise ValueError("No MSC subtopic in this basis group for " + d["name"])
         mapping["declarations"][d["name"]] = {
             "home_group": group["id"],
             "description": short_description(d),
@@ -429,6 +431,90 @@ BUILD_STAGES = [
 ]
 
 
+def module_id_for(island, mathlib, curated=False):
+    return "%s-mathlib@%s-%s" % (island, mathlib[:8], "gods" if curated else "script")
+
+
+def build_source(config, island, spec_dir):
+    """Declarations and MSC tree for one basis group: from the export index (any group the data
+    holds) or, for a single-file export, from that island's hand-written spec."""
+    from pathlib import Path
+    from metis.exportindex import load_index, load_island
+
+    if load_index(config.mathlib_export):
+        return load_island(config.mathlib_export, island)
+    spec = json.loads((Path(spec_dir) / (island + ".json")).read_text())
+    export = json.loads(Path(config.mathlib_export).read_text())
+    prefixes = tuple(spec["module_prefixes"])
+    declarations = [
+        d for d in export["declarations"]
+        if any(d["module"] == p or d["module"].startswith(p + ".") for p in prefixes)
+    ]
+    return spec, declarations, export["mathlib"], export.get("lean")
+
+
+def ensure_bridges(store, config, module_ids):
+    """Bridge modules between every two selected basis groups built from this export: the
+    cross-island dependency links in the same data (overview, Base graph). Each pair is worked
+    out once, by script, and saved; a pair with no link gets no bridge. Returns
+    (ids of ready bridges for these modules, ids built now)."""
+    from itertools import combinations
+    from metis.base import import_module
+    from metis.exportindex import load_index, load_island
+
+    chosen = set(module_ids)
+    ready, built = [], []
+    for m in store.all("modules"):
+        if m.get("status") == "ready" and len(m.get("requires", [])) >= 2 and set(m["requires"]) <= chosen:
+            ready.append(m["id"])
+    index = load_index(config.mathlib_export)
+    if not index:
+        return ready, built
+    roots = []
+    for ident in module_ids:
+        m = store.get("modules", ident)
+        if (m and m.get("status") == "ready" and len(m["islands"]) == 1 and not m.get("fixture")
+                and m.get("mathlib_version") == index["mathlib"]
+                and any(e["id"] == m["islands"][0] for e in index["islands"])):
+            roots.append(m)
+    declarations, concepts = {}, {}
+    for a, b in combinations(roots, 2):
+        if a["islands"] == b["islands"]:
+            continue
+        pair = sorted([a["id"], b["id"]])
+        ident = "bridge-%s@%s" % (hashlib.sha256("+".join(pair).encode()).hexdigest()[:12], index["mathlib"][:8])
+        existing = store.get("modules", ident)
+        if existing and existing.get("status") == "ready":
+            continue  # already listed in `ready`
+        if store.get("builds", "nolink:" + ident):
+            continue
+        bundles = []
+        for m in (a, b):
+            island = m["islands"][0]
+            if island not in declarations:
+                declarations[island] = load_island(config.mathlib_export, island)[1]
+            if m["id"] not in concepts:
+                concepts[m["id"]] = [c for c in store.layered("concepts", ["module:" + m["id"]])
+                                     if isinstance(c.get("source"), dict) and c["source"].get("declaration")]
+            bundles.append({"module": m, "concepts": concepts[m["id"]]})
+        source = {"url": "https://github.com/leanprover-community/mathlib4/tree/" + index["mathlib"],
+                  "mathlib": index["mathlib"], "requires": [a["id"], b["id"]], "built_in_app": True}
+        bundle = bridge_bundle(bundles, [{"declarations": declarations[m["islands"][0]]} for m in (a, b)],
+                               ident, index["mathlib"][:8], index["mathlib"], source)
+        if not bundle["edges"]:
+            store.put("builds", {"id": "nolink:" + ident, "status": "empty", "modules": pair})
+            continue
+        bundle["module"]["name"] = "%s ↔ %s" % (a.get("name", a["id"]), b.get("name", b["id"]))
+        if store.mongo is None:
+            with store.transaction():
+                import_module(store, bundle)
+        else:
+            import_module(store, bundle)
+        ready.append(ident)
+        built.append(ident)
+    return ready, built
+
+
 def vectorize(bundle, providers, operation, batch=96, dimensions=1024):
     """Live builds embed concept and group descriptions once, when the module is built."""
     items = bundle["concepts"] + bundle["groups"]
@@ -459,13 +545,8 @@ def run_build(store, config, providers, job, spec_dir, limit=800):
     try:
         island = job["island"]
         progress(0, status="building")
-        spec = json.loads((Path(spec_dir) / (island + ".json")).read_text())
-        export = json.loads(Path(config.mathlib_export).read_text())
-        prefixes = tuple(spec["module_prefixes"])
-        declarations = [
-            d for d in export["declarations"]
-            if any(d["module"] == p or d["module"].startswith(p + ".") for p in prefixes)
-        ]
+        spec, declarations, mathlib, lean = build_source(config, island, spec_dir)
+        export = {"mathlib": mathlib, "lean": lean}
         if not declarations:
             raise ValueError("The export holds no declarations for " + island)
         progress(1)
@@ -473,7 +554,7 @@ def run_build(store, config, providers, job, spec_dir, limit=800):
         live = config.mode == "live" and config.allow_live
         curated = live and "gods" in providers.roles and job.get("budget_usd", 0) > 0
         digest = hashlib.sha256(json.dumps([export["mathlib"], island, limit, curated], sort_keys=True).encode()).hexdigest()
-        module_id = "%s-mathlib@%s-%s" % (island, export["mathlib"][:8], "gods" if curated else "script")
+        module_id = module_id_for(island, mathlib, curated)
         existing = store.get("modules", module_id)
         if existing and existing.get("status") == "ready":
             store.patch("builds", job["id"], status="ready", percent=100, module_id=module_id, stage="Already built")
@@ -496,6 +577,7 @@ def run_build(store, config, providers, job, spec_dir, limit=800):
         }
         bundle = build_bundle(selected, mapping, module_id, export["mathlib"][:8] + ("-gods" if curated else "-script"),
                               export["mathlib"], [island], source, pending)
+        bundle["module"]["name"] = spec.get("name", island)
         progress(4)
         if live:
             if not operation:

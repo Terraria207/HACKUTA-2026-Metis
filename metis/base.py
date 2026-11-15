@@ -2,12 +2,33 @@
 
 from metis.graph import EdgeInput, duplicate_key
 
+# The design doc's demo islands. They are always known, and three of them carry a tiny fixture
+# module. They are NOT the list of basis groups: that comes from the data (see `registry`).
 ISLANDS = {
     "number-theory": ("Number theory", "11", "11B", "11B83"),
     "linear-algebra": ("Linear algebra", "15", "15A", "15A03"),
     "graph-theory": ("Graph theory", "05", "05C", "05C50"),
     "probability": ("Probability", "60", "60B", "60B20"),
 }
+MSC_ROOT = {"number-theory": "11", "linear-algebra": "15", "graph-theory": "05C", "probability": "60"}
+
+
+def registry(store, config=None):
+    """Every basis group this deployment can use, keyed by id: each one the export index holds
+    (any MSC field that received mathlib declarations), each one a stored module covers, and
+    the demo islands. Nothing here limits a journey to a fixed list."""
+    from metis.exportindex import load_index
+
+    known = {i: {"id": i, "name": meta[0], "msc": MSC_ROOT[i], "declarations": 0} for i, meta in ISLANDS.items()}
+    index = load_index(getattr(config, "mathlib_export", "")) if config is not None else None
+    for entry in (index or {}).get("islands", []):
+        known[entry["id"]] = {"id": entry["id"], "name": entry["name"], "msc": entry["msc"],
+                              "field": entry.get("field"), "declarations": entry["declarations"],
+                              "populated_subtopics": entry.get("populated_subtopics")}
+    for module in store.all("modules"):
+        for island in module.get("islands", []):
+            known.setdefault(island, {"id": island, "name": island.replace("-", " ").capitalize(), "msc": None, "declarations": 0})
+    return known
 
 
 def seed(store):
@@ -159,16 +180,8 @@ def import_module(store, bundle):
         for r in required
     ):
         raise ValueError("Required module versions must be ready")
-    external_groups = {
-        g["id"]: g
-        for g in store.all("groups")
-        if g.get("layer") in {"module:" + r for r in required}
-    }
-    external_nodes = {
-        n["id"]: n
-        for n in store.all("concepts")
-        if n.get("layer") in {"module:" + r for r in required}
-    }
+    external_groups = {g["id"]: g for g in store.layered("groups", ["module:" + r for r in required])}
+    external_nodes = {n["id"]: n for n in store.layered("concepts", ["module:" + r for r in required])}
     for name in ("groups", "concepts", "edges"):
         if any(store.get(name, d["id"]) and not (
             old and store.get(name, d["id"]).get("layer") == layer
@@ -249,23 +262,27 @@ def import_module(store, bundle):
     ]:
         for d in docs:
             store.put(collection, dict(d, layer=layer))
-    return store.put("modules", dict(m, status="ready", bundle_sha256=fingerprint))
+    counts = {"concepts": len(nodes), "edges": len(edges), "groups": len(groups)}
+    return store.put("modules", dict(m, status="ready", bundle_sha256=fingerprint, counts=counts))
 
 
-def catalog(store, live=False):
+def catalog(store, live=False, known=None):
     """Deployment inventory, never a claim of exhaustive mathematical coverage."""
+    known = known if known is not None else registry(store)
     modules = []
     for m in store.all("modules"):
         layer = "module:" + m["id"]
-        counts = {key: len(store.all(key, layer=layer)) for key in ("concepts", "edges", "groups")}
+        # Counts are recorded at import; older stored modules are counted once, by index.
+        counts = m.get("counts") or {key: store.count_layer(key, layer) for key in ("concepts", "edges", "groups")}
         modules.append(dict(m, counts=counts, available=m.get("status") == "ready" and not (live and m.get("fixture")),
                             coverage=m.get("coverage", "Illustrative fixture" if m.get("fixture") else "Curated scope; incomplete")))
-    return {"fields": [{"id": i, "name": meta[0], "ready": any(m["available"] and i in m["islands"] for m in modules),
-                        "modules": [m for m in modules if i in m["islands"]]} for i, meta in ISLANDS.items()]}
+    return {"fields": [dict(meta, ready=any(m["available"] and i in m["islands"] for m in modules),
+                            modules=[m for m in modules if i in m["islands"]]) for i, meta in known.items()]}
 
 
-def validate_selection(store, chosen, islands, live=False):
-    if len(set(chosen)) != len(chosen) or any(i not in ISLANDS for i in islands):
+def validate_selection(store, chosen, islands, live=False, known=None):
+    known = known if known is not None else registry(store)
+    if len(set(chosen)) != len(chosen) or any(i not in known for i in islands):
         raise ValueError("Duplicate module or unknown field")
     modules = [store.get("modules", mid) for mid in chosen]
     if any(not m or m.get("status") != "ready" or (live and m.get("fixture")) for m in modules):

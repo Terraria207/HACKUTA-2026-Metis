@@ -162,34 +162,49 @@ function rolesSummary(s) {
     `<div class="roleRow"><span class="mark ${r.ready ? "ok" : "warn"}">${r.ready ? "✓" : "⚠"}</span><span>${esc(r.label)}</span><span>${esc(r.model || "no model chosen — default " + r.default_model_name)}</span>` +
     `<span class="hint">${r.ready ? esc(r.key_label) + " key" : !r.configured ? "choose a model" : !r.key.set ? "missing " + esc(r.key_label) + " key" : "key test failed"}</span></div>`).join("");
 }
+const BUILD_NEW = "__build__";
 async function openSetup() {
   [state.catalog, state.settings] = await Promise.all([api("/catalog"), api("/settings")]);
   const short = (v) => (v ? "mathlib " + String(v).slice(0, 8) : "no mathlib tag");
+  const ex = state.catalog.export;
+  $("catalogNote").textContent = ex
+    ? `${state.catalog.fields.length} basis groups: every MSC 2020 field that holds declarations in the mathlib export (${ex.declarations.toLocaleString()} declarations at ${ex.mathlib.slice(0, 8)}). Placement is by script, not gods-curated.`
+    : `${state.catalog.fields.length} saved basis groups. No mathlib export is configured, so no further group can be built here.`;
   $("fieldCatalog").innerHTML = state.catalog.fields.map((f) => {
     const roots = f.modules.filter((m) => m.available && m.islands.length === 1 && !m.additive);
     const usable = f.state === "ready" || f.buildable;
-    return `<div class="fieldRow"><input type="checkbox" name="island" value="${esc(f.id)}" id="isl-${esc(f.id)}" ${usable ? "" : "disabled"} aria-label="${esc(f.name)}">` +
-      `<label class="name inline" for="isl-${esc(f.id)}">${esc(f.name)}</label>${f.state === "ready" ? pill("Ready", "good") : pill("Needs building", "gold")}` +
+    const size = f.declarations ? ` · ${f.declarations.toLocaleString()} declarations in the export` : "";
+    return `<div class="fieldRow" data-field="${esc((f.name + " " + f.id + " " + (f.msc || "")).toLowerCase())}"><input type="checkbox" name="island" value="${esc(f.id)}" id="isl-${esc(f.id)}" ${usable ? "" : "disabled"} aria-label="${esc(f.name)}">` +
+      `<label class="name inline" for="isl-${esc(f.id)}">${esc(f.name)}${f.msc ? ` <span class="hint">MSC ${esc(f.msc)}</span>` : ""}</label>${f.state === "ready" ? pill("Ready", "good") : f.buildable ? pill("Needs building", "gold") : pill("No data", "bad")}` +
       `<span class="sub">${f.state === "ready"
-        ? `<select name="module-${esc(f.id)}" aria-label="Saved version of ${esc(f.name)}">${roots.map((m) => `<option value="${esc(m.id)}" ${m.id === f.recommended ? "selected" : ""}>${esc(m.id)} · ${m.counts.concepts} nodes · ${esc(short(m.mathlib_version))}${m.fixture ? " · fixture" : ""}</option>`).join("")}</select>`
-        : esc(f.build_note)}</span></div>`;
+        ? `<select name="module-${esc(f.id)}" aria-label="Saved version of ${esc(f.name)}">${roots.map((m) => `<option value="${esc(m.id)}" ${m.id === f.recommended ? "selected" : ""}>${esc(m.id)} · ${m.counts.concepts} nodes · ${esc(short(m.mathlib_version))}${m.fixture ? " · fixture" : ""}</option>`).join("")}` +
+          `${f.can_build_new ? `<option value="${BUILD_NEW}">Build a new version from the full export${esc(size)}</option>` : ""}</select>`
+        : esc(f.build_note) + esc(size)}</span></div>`;
   }).join("");
+  $("fieldFilter").value = "";
   $("setupRoles").innerHTML = rolesSummary(state.settings);
   $("setupSettingsGrid").innerHTML = settingsGrid(DEFAULTS) +
-    (state.catalog.fields.some((f) => f.state !== "ready" && f.buildable) && state.settings.keys_required
+    (state.catalog.fields.some((f) => f.buildable) && state.settings.keys_required
       ? '<label>Budget for building missing groups (USD)<input name="build_budget" type="number" min="0" step="0.01" value="0"></label>' : "");
   $("journeyForm").elements.name.value = "";
   validateSetup();
   $("setup").hidden = false;
   $("journeyForm").elements.name.focus();
 }
+function filterFields() {
+  const q = $("fieldFilter").value.trim().toLowerCase();
+  document.querySelectorAll("#fieldCatalog .fieldRow").forEach((row) => {
+    row.hidden = !!q && !row.dataset.field.includes(q) && !row.querySelector('input[name="island"]').checked;
+  });
+}
 function validateSetup() {
   const chosen = [...$("journeyForm").querySelectorAll('input[name="island"]:checked')];
   const problem = !chosen.length ? "Pick at least one basis group."
-    : chosen.length > 4 ? "Pick at most four basis groups."
+    : chosen.length > 12 ? "Pick at most twelve basis groups for one journey."
     : !state.settings.ready ? "Every role needs a working key before sailing: open Settings."
     : "";
   $("setupProblem").textContent = problem;
+  $("chosenCount").textContent = chosen.length ? `${chosen.length} chosen` : "";
   $("setSail").disabled = !!problem; // Start is disabled until every role the journey uses has a working key.
 }
 async function setSail(e) {
@@ -198,17 +213,18 @@ async function setSail(e) {
   const islands = f.getAll("island");
   const fields = Object.fromEntries(state.catalog.fields.map((x) => [x.id, x]));
   const settings = readSettings(form);
-  const building = islands.filter((i) => fields[i].state !== "ready");
-  const modules = islands.filter((i) => fields[i].state === "ready").map((i) => f.get("module-" + i));
+  const mustBuild = (i) => fields[i].state !== "ready" || f.get("module-" + i) === BUILD_NEW;
+  const building = islands.filter(mustBuild);
+  const modules = islands.filter((i) => !mustBuild(i)).map((i) => f.get("module-" + i));
   $("setup").hidden = true;
   let created = null;
   await transition({
     from: $("scrollNew"),
     hold: building.length ? async (el) => { modules.push(...(await buildHold(el, building.map((i) => fields[i]), Number(f.get("build_budget") || 0)))); } : null,
     load: async () => {
-      // Bridge modules between any two selected islands are included automatically.
-      const all = (await api("/catalog")).fields.flatMap((x) => x.modules);
-      const bridges = [...new Map(all.filter((m) => m.available && m.islands.length > 1 && m.islands.every((i) => islands.includes(i)) && (m.requires || []).every((r) => modules.includes(r))).map((m) => [m.id, m.id])).values()];
+      // Bridge modules between any two selected islands are included automatically; a pair that
+      // has none yet gets one from the same export.
+      const { bridges } = await api("/modules/bridges", { method: "POST", body: JSON.stringify({ modules }) });
       created = await api("/journeys", { method: "POST", body: JSON.stringify({ name: f.get("name").trim(), islands, modules: modules.concat(bridges), settings }) });
       await openJourney(created.id);
     },
@@ -337,9 +353,11 @@ async function openJourney(id, focus) {
   await loadMap(false);
   if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
   $("journeyTitle").textContent = journeyName(state.journey);
-  $("journeyMeta").textContent = state.journey.islands.join(" · ") + " · " + state.journey.modules.length + " module(s)";
-  $("graphIsland").innerHTML = '<option value="">All islands</option>' + state.journey.islands.map((i) => `<option>${esc(i)}</option>`).join("");
-  $("paperGroup").innerHTML = state.data.groups.filter((g) => g.depth === 3).map((g) => `<option value="${esc(g.id)}">${esc(g.msc)} — ${esc(g.name)} (${esc(g.island)})</option>`).join("");
+  const names = state.journey.island_names || {};
+  $("journeyMeta").textContent = state.journey.islands.map((i) => names[i] || i).join(" · ") + " · " + state.journey.modules.length + " module(s)";
+  $("graphIsland").innerHTML = '<option value="">All islands</option>' + state.journey.islands.map((i) => `<option value="${esc(i)}">${esc(names[i] || i)}</option>`).join("");
+  $("groupFilter").value = "";
+  fillPaperGroups();
   renderRouteEnds();
   await refresh();
   connectEvents(id);
@@ -353,6 +371,20 @@ async function openJourney(id, focus) {
     $("resumeBanner").hidden = false;
   }
   if (focus) select(focus, true);
+}
+function fillPaperGroups() {
+  // Every MSC subtopic of the journey's basis groups, grouped by island and subfield.
+  const q = $("groupFilter").value.trim().toLowerCase(), names = state.journey.island_names || {};
+  const byId = Object.fromEntries(state.data.groups.map((g) => [g.id, g]));
+  const keep = $("paperGroup").value, sections = new Map();
+  state.data.groups.filter((g) => g.depth === 3 && (!q || (g.msc + " " + g.name).toLowerCase().includes(q))).forEach((g) => {
+    const parent = byId[g.parent] || {};
+    const label = `${names[g.island] || g.island} — ${parent.msc || ""} ${parent.name || ""}`.trim();
+    if (!sections.has(label)) sections.set(label, []);
+    sections.get(label).push(g);
+  });
+  $("paperGroup").innerHTML = [...sections].map(([label, groups]) => `<optgroup label="${esc(label)}">${groups.map((g) => `<option value="${esc(g.id)}">${esc(g.msc)} — ${esc(g.name)}</option>`).join("")}</optgroup>`).join("");
+  if ([...$("paperGroup").options].some((o) => o.value === keep)) $("paperGroup").value = keep;
 }
 async function loadMap(keepCamera) {
   const b = state.before;
@@ -514,7 +546,7 @@ function setView(view) {
 }
 function updateZoomLabel() {
   const z = state.view === "sea" ? seaMap.camera().zoom : cy ? cy.zoom() : 1;
-  $("zoomLabel").textContent = (z === 0.5 ? "½" : Number.isInteger(z) ? z : z.toFixed(1)) + "×";
+  $("zoomLabel").textContent = (z === 0.5 ? "½" : z === 0.25 ? "¼" : Number.isInteger(z) ? z : z.toFixed(1)) + "×";
 }
 function markSelection() {
   if (state.view === "sea") { seaMap.setSelection(state.selection); return; }
@@ -596,6 +628,12 @@ async function showDetail(info) {
     const p = state.data.papers.find((x) => x.id === info.id);
     const g = state.data.groups.find((x) => x.id === p.home_group) || {};
     html = `<h2>${esc(p.title)}</h2><div>${pill("paper")} ${pill("MSC " + (p.msc || "?"))}</div><p class="hint">Placed in ${esc(g.name || p.home_group)}. Added ${esc(date(p.created))}.</p><h3>${(p.concept_ids || []).length} concept(s)</h3>${conceptButtons(p.concept_ids || [])}`;
+  } else if (info.kind === "fleet") {
+    const names = state.journey.island_names || {}, byId = Object.fromEntries(state.data.edges.map((e) => [e.id, e]));
+    const edges = info.edges.map((id) => byId[id]).filter(Boolean);
+    html = `<h2>${esc(names[info.from] || info.from)} → ${esc(names[info.to] || info.to)}</h2><div>${pill("fleet")} ${pill(edges.length + " base links")}</div>` +
+      `<p class="hint">Links between two basis groups in the base graph are drawn as one small fleet, not one boat each. They are mathlib dependency metadata or cited base links; each link a paper or the crew adds gets a boat of its own. The simplified view (G) draws every one.</p>` +
+      `<ul class="conceptList">${edges.slice(0, 200).map(edgeLine).join("")}</ul>${edges.length > 200 ? `<p class="hint">${edges.length - 200} more not listed.</p>` : ""}`;
   } else if (info.kind === "island") {
     const isl = seaMap.world().islands.find((i) => i.id === info.id);
     html = `<h2>${esc(isl.name)}</h2><div>${pill("basis group")} ${pill(isl.count + " concepts")}</div><p>${esc(isl.field)}</p><p class="hint">An island's area scales with its node count. Its basis nodes are laid out slightly apart but not drawn.</p><h3>Subgroups</h3><ul class="conceptList">${isl.leafRects.map((l) => `<li><button data-show="${esc(l.group.id)}" data-kind="group">${esc((l.group.msc ? l.group.msc + " " : "") + l.group.name)} <span class="hint">(${l.count})</span></button></li>`).join("")}</ul>`;
@@ -954,6 +992,7 @@ function buildLegend() {
     row(scaled(Pixel.boats.cited.fresh.right), "Merchant ship = cited link"),
     row(scaled(Pixel.boats.intuitive.fresh.right), "Raft = intuitive link"),
     row(scaled(Pixel.boats.cited.old.right), "Bright sail = added in the latest run; weathered, patched sail = earlier run or base graph"),
+    row(scaled(Pixel.boats.intuitive.old.right), "A small fleet on one lane = all the base-graph links between two islands (hover for the count, click to list them); each paper or crew link has its own boat"),
     row(swatch("#ffe27a"), "Gold sparkles and gold paths = new in the latest run"),
   );
   body.insertAdjacentHTML("beforeend", "<h3>Simplified view (G)</h3>");
@@ -1047,6 +1086,8 @@ function wire() {
   wireScrolls();
   on("journeyForm", "submit", setSail);
   $("journeyForm").addEventListener("change", validateSetup);
+  $("fieldFilter").addEventListener("input", filterFields);
+  $("groupFilter").addEventListener("input", fillPaperGroups);
   on("setupBack", "click", () => { $("setup").hidden = true; });
   on("setupSettings", "click", () => openSettings(false));
   on("titleSettings", "click", () => openSettings(false));

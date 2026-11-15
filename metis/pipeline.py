@@ -1402,7 +1402,7 @@ class Pipeline:
         ids = {s["edge_id"] for s in self.store.all("support", run_id=run["id"])}
         return [
             e
-            for e in self.store.all("edges")
+            for e in self.store.all("edges", layer="journey:" + run["journey_id"])
             if e["id"] in ids
             and e.get("review_status") == "passed"
             and not e.get("invalidated")

@@ -322,7 +322,7 @@ def test_interface_structure_follows_the_ui_spec_and_keeps_the_csp(client):
     png = (ROOT / "web/art/metis-logo.png").read_bytes()
     assert png[:8] == b"\x89PNG\r\n\x1a\n" and struct.unpack(">II", png[16:24]) == (170, 70), "the wordmark at its true pixel grid"
     # Spec behaviours that live in the scripts.
-    assert "const ZOOMS = [0.5, 1, 2, 3, 4, 6, 8]" in scripts["seamap.js"], "zoom in whole steps"
+    assert "const ZOOMS = [0.25, 0.5, 1, 2, 3, 4, 6, 8]" in scripts["seamap.js"], "zoom in whole steps"
     for hull in ("Trireme", "Merchant ship", "Raft"):
         assert hull in scripts["pixel.js"]
     assert "fresh" in scripts["pixel.js"] and "old" in scripts["pixel.js"], "sail shows new or old"

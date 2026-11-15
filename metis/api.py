@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ConfigDict
 from metis.config import Config
 from metis.store import Store, uid, now
-from metis.base import seed, import_module, import_corpus, ISLANDS, catalog, validate_selection
+from metis.base import seed, import_module, import_corpus, registry, catalog, validate_selection
 from metis.graph import (
     route as find_route,
     Settings,
@@ -32,7 +32,7 @@ from metis.providers import AtlasVectors, ProviderUnavailable, BudgetExceeded, R
 class JourneyInput(BaseModel):
     # Blank is allowed: an unnamed journey is listed by its creation date (UI spec).
     name: str = Field(default="", max_length=100)
-    islands: list[str] = Field(min_length=1, max_length=4)
+    islands: list[str] = Field(min_length=1, max_length=12)
     modules: list[str] = Field(default_factory=list)
     settings: Settings = Field(default_factory=Settings)
 
@@ -237,23 +237,63 @@ def create_app(config=None, start_worker=True):
 
     spec_dir = Path(__file__).resolve().parent.parent / "deploy" / "msc"
 
+    def islands_known():
+        return registry(store, config)
+
+    def export_index():
+        from metis.exportindex import load_index
+
+        return load_index(config.mathlib_export)
+
+    def fresh_ids(island):
+        from metis.gods import module_id_for
+
+        index = export_index()
+        return ({module_id_for(island, index["mathlib"], True): 2, module_id_for(island, index["mathlib"], False): 1}
+                if index else {})
+
+    def root_rank(module, fresh):
+        # Prefer a group built from the current export (gods-curated before script-mapped),
+        # then any mathlib-built group, then a sourced one over a fixture, then the largest.
+        return (fresh.get(module["id"], 0), bool(module.get("mathlib_version")), not module.get("fixture"),
+                (module.get("counts") or {}).get("concepts", 0))
+
+    def can_build(island):
+        index = export_index()
+        if index:
+            return any(e["id"] == island for e in index["islands"])
+        return (bool(config.mathlib_export) and os.path.isfile(config.mathlib_export)
+                and (spec_dir / (str(island) + ".json")).is_file())
+
     @app.get("/api/catalog")
     def field_catalog():
-        """Basis groups for the New Journey picker: Ready (saved) or Needs building."""
-        c = catalog(store, config.mode == "live")
-        export_ready = bool(config.mathlib_export) and os.path.isfile(config.mathlib_export)
+        """Basis groups for the New Journey picker: every group the data holds, each marked
+        Ready (saved) or Needs building. The list comes from the export index and the stored
+        modules; it is not a fixed set."""
+        from metis.gods import module_id_for
+
+        known = islands_known()
+        c = catalog(store, config.mode == "live", known)
+        index = export_index()
+        current = index["mathlib"] if index else None
         for field in c["fields"]:
+            fresh = fresh_ids(field["id"])
             roots = [m for m in field["modules"] if m["available"] and m["islands"] == [field["id"]] and not m.get("additive")]
-            # Prefer the mathlib-built group, then the largest sourced one, then fixtures.
-            roots.sort(key=lambda m: (bool(m.get("mathlib_version")), not m.get("fixture"), m["counts"]["concepts"]), reverse=True)
+            roots.sort(key=lambda m: root_rank(m, fresh), reverse=True)
+            buildable = can_build(field["id"])
             field["recommended"] = roots[0]["id"] if roots else None
             field["state"] = "ready" if roots else "needs_building"
-            field["buildable"] = export_ready and (spec_dir / (field["id"] + ".json")).is_file()
+            field["buildable"] = buildable
+            # A saved group can still be rebuilt from the current export when none was built from it.
+            field["can_build_new"] = bool(buildable and index and not any(m["id"] in fresh for m in roots))
             field["build_note"] = None if roots else (
                 "The gods will build this group from the pinned mathlib export before the journey starts."
-                if field["buildable"] else
-                "Cannot be built here: set METIS_MATHLIB_EXPORT to a declaration export (scripts/extract_mathlib.py)."
+                if buildable else
+                "Cannot be built here: set METIS_MATHLIB_EXPORT to an export index (scripts/index_export.py)."
             )
+        c["fields"].sort(key=lambda f: (f["state"] != "ready", f.get("msc") or "zz", f["name"]))
+        c["export"] = ({"mathlib": index["mathlib"], "basis_groups": len(index["islands"]), "declarations": index["totals"]["placed"],
+                        "placement": index["placement"]["method"]} if index else None)
         return c
 
     @app.post("/api/modules/build", status_code=202)
@@ -261,10 +301,8 @@ def create_app(config=None, start_worker=True):
         from metis.gods import run_build
 
         island = data.get("island")
-        if island not in ISLANDS or not (spec_dir / (str(island) + ".json")).is_file():
-            raise ValueError("Unknown basis group")
-        if not config.mathlib_export or not os.path.isfile(config.mathlib_export):
-            raise ValueError("No mathlib export configured (METIS_MATHLIB_EXPORT)")
+        if island not in islands_known() or not can_build(island):
+            raise ValueError("Unknown basis group, or no export data to build it from (METIS_MATHLIB_EXPORT)")
         budget = float(data.get("budget_usd", 0) or 0)
         if not math.isfinite(budget) or budget < 0:
             raise ValueError("Invalid build budget")
@@ -278,6 +316,20 @@ def create_app(config=None, start_worker=True):
         thread.start()
         app.state.build_threads.append(thread)
         return job
+
+    @app.post("/api/modules/bridges")
+    def bridges(data: dict):
+        """Bridge modules between every two of the given basis-group modules, building by script
+        the ones this export can supply and that do not exist yet."""
+        from metis.gods import ensure_bridges
+
+        modules = data.get("modules")
+        if not isinstance(modules, list) or not modules or len(modules) > 12 or any(not isinstance(m, str) for m in modules):
+            raise ValueError("Give the module ids of the chosen basis groups")
+        for m in modules:
+            require("modules", m)
+        ready, built = ensure_bridges(store, config, modules)
+        return {"bridges": ready, "built": built}
 
     @app.get("/api/modules/builds/{bid}")
     def build_status(bid: str):
@@ -315,7 +367,8 @@ def create_app(config=None, start_worker=True):
 
     @app.post("/api/journeys", status_code=201)
     def new_journey(data: JourneyInput):
-        if any(i not in ISLANDS for i in data.islands):
+        known = islands_known()
+        if any(i not in known for i in data.islands):
             raise ValueError("Unknown island")
         chosen = []
         if data.modules:
@@ -344,7 +397,7 @@ def create_app(config=None, start_worker=True):
                         + island
                         + "; import a reviewed version first"
                     )
-                chosen.append(sorted(ready, key=lambda m: m["version"])[-1]["id"])
+                chosen.append(max(ready, key=lambda m: root_rank(m, fresh_ids(island)))["id"])
             chosen += [
                 m["id"]
                 for m in store.all("modules", status="ready")
@@ -353,7 +406,7 @@ def create_app(config=None, start_worker=True):
                 and set(m.get("requires", [])).issubset(chosen)
                 and (config.mode == "fixture" or not m.get("fixture"))
             ]
-        validate_selection(store, chosen, data.islands, config.mode == "live")
+        validate_selection(store, chosen, data.islands, config.mode == "live", known)
         j = {
             "id": uid("j_"),
             "name": data.name,
@@ -382,7 +435,7 @@ def create_app(config=None, start_worker=True):
                 raise ValueError("Explicit module IDs are required")
             chosen = j["modules"] + additions
             islands = list(dict.fromkeys(j["islands"] + [i for mid in additions for i in require("modules", mid)["islands"]]))
-            validate_selection(store, chosen, islands, config.mode == "live")
+            validate_selection(store, chosen, islands, config.mode == "live", islands_known())
             history = j.get("module_history", []) + [{"time": now(), "before": j["modules"], "added": additions, "after": chosen}]
             return store.patch("journeys", jid, modules=chosen, islands=islands, module_history=history, last_activity=now())
         finally:
@@ -774,7 +827,8 @@ def create_app(config=None, start_worker=True):
         source = lambda d, key: (d.get(key) or {}) if isinstance(d.get(key), dict) else {}
         return {
             "journey": {"id": j["id"], "name": j["name"], "islands": j["islands"], "modules": j["modules"],
-                        "status": j["status"], "created": j["created"], "fixture": j["fixture"]},
+                        "status": j["status"], "created": j["created"], "fixture": j["fixture"],
+                        "island_names": {i: (islands_known().get(i) or {}).get("name", i) for i in j["islands"]}},
             "before": bool(before and run_id),
             "latest_run": runs_[-1]["id"] if runs_ else None,
             "runs": [{k: r.get(k) for k in ("id", "created", "status", "paper_id", "checkpoint", "error", "ingest_only")} for r in runs_],

@@ -81,10 +81,7 @@ def visible_layers(journey):
 
 def graph(store, journey):
     layers = visible_layers(journey)
-    result = {
-        name: [d for d in store.all(name) if d.get("layer") in layers]
-        for name in ("groups", "concepts", "edges")
-    }
+    result = {name: store.layered(name, layers) for name in ("groups", "concepts", "edges")}
     invalid = {
         m["target_id"]
         for m in store.all("memory", journey_id=journey["id"])

@@ -5,8 +5,11 @@ Run only inside the pinned mathlib project prepared by scripts/setup_lean.py:
   lake env lean --run /workspace/deploy/lean/Extract.lean OUT.jsonl Mathlib.LinearAlgebra [PREFIX ...]
 
 One JSON object per line: name, kind, module, line, type (pretty printed, every hypothesis kept),
-docstring, dependencies (constants used by the type and the proof/value, restricted to the
-exported prefixes). No model is involved. Nothing here is a proof audit of anything.
+docstring, fields (for structures), dependencies (exported constants used by the type and the
+proof/value). No model is involved. Nothing here is a proof audit of anything.
+
+Not exported, because they are plumbing rather than mathematics: instances, structure projection
+functions, deprecated aliases, recursors and other compiler-generated declarations.
 -/
 import Mathlib
 open Lean Meta
@@ -25,21 +28,25 @@ def kindOf (env : Environment) (n : Name) (ci : ConstantInfo) : Option String :=
       else some "inductive"
   | _ => none
 
+/-- Names Lean generates mechanically. `eq_1`, `eq_def` are equation lemmas; a lemma that is
+merely *named* `eq_zero_of_…` is mathematics and is kept. -/
+def generatedName (env : Environment) (n : Name) : Bool :=
+  match n with
+  | .str p s =>
+      s.startsWith "proof_" || s.startsWith "match_" || s == "eq_def" || s == "eq_unfold"
+      || (s.startsWith "eq_" && s.length > 3 && (s.drop 3).all Char.isDigit)
+      || s == "injEq" || s == "sizeOf_spec" || s.endsWith "_sunfold" || s == "below" || s == "ibelow"
+      || (s.startsWith "inst" && s.length > 4 && (s.get ⟨4⟩).isUpper)
+      || (s == "inj" && (match env.find? p with | some (.ctorInfo _) => true | _ => false))
+  | _ => true
+
 def wanted (env : Environment) (n : Name) : Bool :=
   !n.isInternal && !n.isInternalDetail && !(isAuxRecursor env n) && !(isNoConfusion env n)
     && !((instanceExtension.getState env).instanceNames.contains n)
-    && !(n.getString!.startsWith "inst")
-    && !(n.getString!.startsWith "proof_") && !(n.getString!.startsWith "match_")
-    && !(n.getString!.startsWith "eq_") && !(n.getString!.startsWith "injEq")
-    && !(n.getString!.startsWith "sizeOf_spec") && !(n.getString!.endsWith "_sunfold")
+    && !(env.isProjectionFn n) && !(Linter.isDeprecated env n) && !(generatedName env n)
 
-def escapeOpt (s : Option String) : Json :=
-  match s with | some t => Json.str t | none => Json.null
-
-def emit (h : IO.FS.Handle) (env : Environment)
-    (n : Name) (ci : ConstantInfo) (moduleOf : Name → Option String) : MetaM Unit := do
-  let some module := moduleOf n | return
-  let some kind := kindOf env n ci | return
+def emit (h : IO.FS.Handle) (env : Environment) (exported : NameSet)
+    (n : Name) (ci : ConstantInfo) (module kind : String) : MetaM Unit := do
   let fmt ← withOptions (fun o => (o.setBool `pp.proofs false).setNat `pp.maxSteps 5000) do
     ppExpr ci.type
   let doc ← findDocString? env n
@@ -48,11 +55,13 @@ def emit (h : IO.FS.Handle) (env : Environment)
     | some r => Json.num r.range.pos.line
     | none => Json.null
   let used := ci.type.getUsedConstants ++ (ci.value?.map Expr.getUsedConstants |>.getD #[])
-  let deps := (used.foldl (fun (acc : NameSet) c => acc.insert c) {}).toList.filter fun c =>
-    c != n && wanted env c && (moduleOf c).isSome
+  let deps := (used.foldl (fun (acc : NameSet) c => if c != n && exported.contains c then acc.insert c else acc) {}).toList
+  let fields : Array Name := if isStructure env n then getStructureFields env n else #[]
   let obj := Json.mkObj [
     ("name", Json.str n.toString), ("kind", Json.str kind), ("module", Json.str module),
-    ("line", line), ("type", Json.str (fmt.pretty 100)), ("docstring", escapeOpt doc),
+    ("line", line), ("type", Json.str (fmt.pretty 100)),
+    ("docstring", match doc with | some t => Json.str t | none => Json.null),
+    ("fields", Json.arr (fields.map fun f => Json.str f.toString)),
     ("dependencies", Json.arr (deps.toArray.map fun c => Json.str c.toString)) ]
   h.putStrLn obj.compress
 
@@ -67,17 +76,23 @@ def main (args : List String) : IO Unit := do
         let m := names[idx.toNat]!.toString
         if underPrefix prefixes m then some m else none
     | none => none
-  let candidates := env.constants.fold (init := ([] : List (Name × ConstantInfo))) fun acc n ci =>
-    if wanted env n && (moduleOf n).isSome then (n, ci) :: acc else acc
-  IO.eprintln s!"[extract] candidates: {candidates.length}"
+  let (candidates, exported) := env.constants.fold
+    (init := ((#[] : Array (Name × ConstantInfo × String × String)), ({} : NameSet)))
+    fun (acc, set) n ci =>
+      match moduleOf n, kindOf env n ci with
+      | some module, some kind =>
+          if wanted env n then (acc.push (n, ci, module, kind), set.insert n) else (acc, set)
+      | _, _ => (acc, set)
+  IO.eprintln s!"[extract] candidates: {candidates.size}"
   let h ← IO.FS.Handle.mk out IO.FS.Mode.write
   let ctx : Core.Context := { fileName := "<metis-extract>", fileMap := default, maxHeartbeats := 0 }
   let act : MetaM Unit := do
     let mut count := 0
-    for (n, ci) in candidates do
+    for (n, ci, module, kind) in candidates do
       try
-        emit h env n ci moduleOf
+        emit h env exported n ci module kind
         count := count + 1
+        if count % 20000 == 0 then IO.eprintln s!"[extract] {count} of {candidates.size}"
       catch e =>
         IO.eprintln s!"[extract] skipped {n}: {← e.toMessageData.toString}"
     IO.eprintln s!"[extract] written: {count}"

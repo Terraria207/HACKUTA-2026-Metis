@@ -9,7 +9,7 @@ const SeaMap = (() => {
   const T = 8; // one tile, in world pixels
   const PAD = 4; // beach ring, in tiles
   const GAP = 11; // water between islands, in tiles
-  const ZOOMS = [0.5, 1, 2, 3, 4, 6, 8];
+  const ZOOMS = [0.25, 0.5, 1, 2, 3, 4, 6, 8];
   const GRASS = ["#6fae4a", "#4f9d57", "#8bb84a", "#3f9470", "#a3b64a", "#5c9f3c", "#79a85e", "#4c8f4c", "#93ad52", "#58a06a"];
   const MEADOW = ["#c6dc7a", "#d9d27c", "#bfe0a0", "#dccf90", "#cfe38c"];
   const FLOWERS = ["#e88bb0", "#fdfdf5", "#ffe27a", "#b08ad6"];
@@ -81,6 +81,10 @@ const SeaMap = (() => {
         (patches[key] ||= { key, paper: paper || null, group, nodes: [] }).nodes.push(n);
       });
       if (base[misc.id] || Object.values(patches).some((p) => p.group === misc.id)) leaves.push(misc);
+      // A basis group carries its whole MSC subtree; only subgroups that hold concepts or papers
+      // become grass, so the island's area keeps reflecting its node count.
+      const populated = leaves.filter((g) => (base[g.id] || []).length || Object.values(patches).some((p) => p.group === g.id));
+      leaves.splice(0, leaves.length, ...(populated.length ? populated : leaves.slice(0, 1)));
       const patchArea = (p) => Math.max(12, p.nodes.length * 6);
       const area = {};
       leaves.forEach((g) => {
@@ -104,10 +108,10 @@ const SeaMap = (() => {
             color: Pixel.shade(hue, ((j % 5) - 2) * 0.03), count: (base[g.id] || []).length });
         });
       });
-      return { id, name: id.replace(/-/g, " "), field: (data.groups.find((g) => g.island === id && g.depth === 1) || {}).name || "", W, H, leafRects, base, patches: Object.values(patches), count: nodes.length };
+      return { id, name: (data.journey.island_names || {})[id] || id.replace(/-/g, " "), field: (data.groups.find((g) => g.island === id && g.depth === 1) || {}).name || "", W, H, leafRects, base, patches: Object.values(patches), count: nodes.length };
     });
     // Place the islands on the sea: one row for one or two, otherwise two per row.
-    const perRow = islands.length <= 2 ? Math.max(1, islands.length) : 2;
+    const perRow = islands.length <= 2 ? Math.max(1, islands.length) : Math.ceil(Math.sqrt(islands.length));
     let x = GAP, y = GAP, rowH = 0;
     islands.forEach((isl, i) => {
       if (i && i % perRow === 0) { x = GAP; y += rowH + GAP; rowH = 0; }
@@ -245,6 +249,7 @@ const SeaMap = (() => {
       movers = []; fires = []; trails = []; lanes = []; chars = [];
       if (!data) return;
       const isJourney = Object.fromEntries(data.concepts.map((n) => [n.id, n.layer.startsWith("journey:")]));
+      const fleets = {};
       const islandRect = Object.fromEntries(world.islands.map((i) => [i.id, i.rect]));
       data.concepts.forEach((n) => {
         if (!isJourney[n.id] || !world.pos[n.id]) return;
@@ -294,9 +299,10 @@ const SeaMap = (() => {
           }
           return;
         }
+        // Base links between islands are far too many to draw one by one (hundreds per pair), so
+        // they are gathered into a small fleet per pair of islands, below. Nothing on land.
+        if (!paperish) { awayKeys.forEach((k) => (fleets[k + ">" + c.island] ||= { from: k, to: c.island, edges: [] }).edges.push(e)); return; }
         if (e.premises.length === 1) { sail(world.pos[e.premises[0]], c, awayKeys[0], 0, !e.directed); return; }
-        // A base link between islands is one boat per island it comes from, and nothing on land.
-        if (!paperish) { awayKeys.forEach((k, i) => sail(centre(away[k]), c, k, i, false)); return; }
         // A hyperedge across islands: boats land by a campfire near the conclusion, local premises
         // walk to it, and one walker carries on to the conclusion.
         const toward = centre(awayKeys.map((k) => centre(away[k])));
@@ -308,6 +314,28 @@ const SeaMap = (() => {
         awayKeys.forEach((k, i) => sail(centre(away[k]), fire, k, i, false));
         local.forEach((p, k) => walk(world.pos[p], fire, k));
         walk(fire, c, 9);
+      });
+      // One fleet per ordered pair of islands: a few boats (more for more links) on parallel lanes.
+      const names = Object.fromEntries(world.islands.map((i) => [i.id, i.name]));
+      Object.values(fleets).forEach((fleet) => {
+        const ra = islandRect[fleet.from], rb = islandRect[fleet.to];
+        const a = { x: ra.x + ra.w / 2, y: ra.y + ra.h / 2 }, b = { x: rb.x + rb.w / 2, y: rb.y + rb.h / 2 };
+        const start = clip(a, b, ra, false), end = clip(a, b, rb, true);
+        const len = Math.hypot(end.x - start.x, end.y - start.y) || 1;
+        const nx = -(end.y - start.y) / len, ny = (end.x - start.x) / len;
+        const boatsInFleet = Math.min(7, Math.ceil(Math.log2(fleet.edges.length + 1)));
+        const tiers = { verified: 0, cited: 0, intuitive: 0 };
+        fleet.edges.forEach((e) => (tiers[e.tier] = (tiers[e.tier] || 0) + 1));
+        const tier = Object.keys(tiers).sort((x, y) => tiers[y] - tiers[x])[0];
+        const info = { kind: "fleet", id: fleet.from + ">" + fleet.to, from: fleet.from, to: fleet.to, edges: fleet.edges.map((e) => e.id),
+          name: `Fleet: ${fleet.edges.length} base link(s) from ${names[fleet.from]} to ${names[fleet.to]} — click to list them` };
+        for (let k = 0; k < boatsInFleet; k++) {
+          // Lanes sit to one side of the line between the islands, so the return fleet has its own side.
+          const off = 6 + k * 9;
+          const s0 = { x: start.x + nx * off, y: start.y + ny * off }, s1 = { x: end.x + nx * off, y: end.y + ny * off };
+          if (k === 0) lanes.push({ a: s0, b: s1, fresh: false, none: false });
+          movers.push({ type: "boat", info, a: s0, b: s1, len, period: Math.max(8, len / 6), phase: (Pixel.hash(info.id) / 4294967296 + k / boatsInFleet) % 1, tier, fresh: false, twoWay: false, none: false });
+        }
       });
     }
 
@@ -457,7 +485,7 @@ const SeaMap = (() => {
         ctx.drawImage(img, p.x, p.y, img.width * z, img.height * z);
         ctx.globalAlpha = 1;
         if (m.fresh) sparkle(p.x, p.y, img.width * z, img.height * z, t, m.phase);
-        hits.push({ x: p.x, y: p.y, w: img.width * z, h: img.height * z, info: { kind: "edge", id: m.edge.id, name: set.name + ": " + m.edge.type + ", " + m.edge.tier + (m.fresh ? ", new in the latest run" : ", from an earlier run or the base graph") } });
+        hits.push({ x: p.x, y: p.y, w: img.width * z, h: img.height * z, info: m.info || { kind: "edge", id: m.edge.id, name: set.name + ": " + m.edge.type + ", " + m.edge.tier + (m.fresh ? ", new in the latest run" : ", from an earlier run or the base graph") } });
       });
       // Labels: islands always; paper patches and subtopic codes once there is room.
       world.islands.forEach((isl) => {
@@ -589,7 +617,7 @@ const SeaMap = (() => {
       camera: () => ({ ...cam }),
       setCamera(c) { cam = { x: c.x, y: c.y, zoom: ZOOMS.reduce((best, v) => (Math.abs(v - c.zoom) < Math.abs(best - c.zoom) ? v : best), ZOOMS[0]) }; changed(); },
       world: () => world,
-      counts: () => ({ walkers: movers.filter((m) => m.type === "walker").length, boats: movers.filter((m) => m.type === "boat").length, fires: fires.length, characters: chars.length }),
+      counts: () => ({ walkers: movers.filter((m) => m.type === "walker").length, boats: movers.filter((m) => m.type === "boat").length, fleets: new Set(movers.filter((m) => m.info).map((m) => m.info.id)).size, fires: fires.length, characters: chars.length }),
     };
   }
   return { create, layout, ZOOMS, T };

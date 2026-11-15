@@ -89,6 +89,11 @@ button.pill { cursor: pointer; }
 @keyframes unfurl { from { transform: scale(0.35); } to { transform: scale(1); } }
 .fieldRow { display: grid; grid-template-columns: auto 1fr auto; gap: 4px 10px; align-items: center; padding: 6px 0; border-bottom: 2px dashed var(--parch-dark); }
 .fieldRow .name { font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+.fieldRow .name .hint { font-weight: normal; text-transform: none; letter-spacing: 0; }
+#fieldCatalog { max-height: 46vh; overflow-y: auto; padding-right: 6px; }
+#fieldFilter { flex: 1; min-width: 200px; }
+#chosenCount:empty { display: none; }
+#groupFilter { margin-bottom: 4px; }
 .fieldRow .sub { grid-column: 2 / 4; font-size: 12px; color: #6e5b3a; }
 .fieldRow select { font-size: 12px; }
 .roleRow { display: grid; grid-template-columns: 22px minmax(120px, 280px) minmax(120px, 1fr) minmax(120px, 300px); gap: 2px 8px; align-items: center; padding: 3px 0; font-size: 12px; border-bottom: 1px dotted var(--parch-dark); }

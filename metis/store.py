@@ -68,6 +68,8 @@ class Store:
             self.mongo.calls.create_index("call_key", unique=True)
             self.mongo.trace.create_index([("run_id", 1), ("time", 1)])
             self.mongo.discussion.create_index([("journey_id", 1), ("time", 1)])
+            for name in ("groups", "concepts"):
+                self.mongo[name].create_index("layer")
             self.mongo.extractions.create_index("cache_key", unique=True)
             # Live view polls only events newer than the client's cursor.
             self.mongo.events.create_index([("journey_id", 1), ("time", 1)])
@@ -83,6 +85,11 @@ class Store:
             self.sql.execute(
                 "CREATE INDEX IF NOT EXISTS docs_events_cursor ON docs(collection, json_extract(body,'$.journey_id'), json_extract(body,'$.time'))"
             )
+            # A deployment can hold dozens of basis groups; reads must not scan all of them.
+            for key in ("layer", "journey_id", "run_id", "edge_id"):
+                self.sql.execute(
+                    "CREATE INDEX IF NOT EXISTS docs_%s ON docs(collection, json_extract(body,'$.%s'))" % (key, key)
+                )
 
     def get(self, collection, ident):
         if self.mongo is not None:
@@ -97,14 +104,38 @@ class Store:
     def all(self, collection, **where):
         if self.mongo is not None:
             return list(self.mongo[collection].find(where, {"_id": 0}))
+        # Plain string and integer filters go to SQLite (indexed for the common keys); anything
+        # else is compared in Python. The Python check below keeps the semantics identical.
+        sql, params = "SELECT body FROM docs WHERE collection=?", [collection]
+        for key, value in where.items():
+            if key.isidentifier() and type(value) in (str, int):
+                sql += " AND json_extract(body,'$.%s')=?" % key
+                params.append(value)
         with self.lock:
-            docs = [
-                json.loads(r[0])
-                for r in self.sql.execute(
-                    "SELECT body FROM docs WHERE collection=?", (collection,)
-                )
-            ]
+            docs = [json.loads(r[0]) for r in self.sql.execute(sql, params)]
         return [d for d in docs if all(d.get(k) == v for k, v in where.items())]
+
+    def layered(self, collection, layers):
+        """Documents of the given layers only (a journey's modules plus its own layer)."""
+        layers = list(layers)
+        if not layers:
+            return []
+        if self.mongo is not None:
+            return list(self.mongo[collection].find({"layer": {"$in": layers}}, {"_id": 0}))
+        with self.lock:
+            rows = self.sql.execute(
+                "SELECT body FROM docs WHERE collection=? AND json_extract(body,'$.layer') IN (%s)" % ",".join("?" * len(layers)),
+                [collection] + layers,
+            ).fetchall()
+        return [json.loads(r[0]) for r in rows]
+
+    def count_layer(self, collection, layer):
+        if self.mongo is not None:
+            return self.mongo[collection].count_documents({"layer": layer})
+        with self.lock:
+            return self.sql.execute(
+                "SELECT COUNT(*) FROM docs WHERE collection=? AND json_extract(body,'$.layer')=?", (collection, layer)
+            ).fetchone()[0]
 
     def events_since(self, journey_id, since):
         """Events at or after a time cursor, in cursor order; never a full-collection scan."""
