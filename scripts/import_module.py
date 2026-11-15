@@ -12,6 +12,6 @@ app = create_app(start_worker=False)
 
 print(
     json.dumps(
-        import_module(app.state.store, json.loads(Path(a.bundle).read_text())), indent=2
+        import_module(app.state.store, json.loads(Path(a.bundle).read_text(encoding="utf-8"))), indent=2
     )
 )

@@ -443,8 +443,8 @@ def build_source(config, island, spec_dir):
 
     if load_index(config.mathlib_export):
         return load_island(config.mathlib_export, island)
-    spec = json.loads((Path(spec_dir) / (island + ".json")).read_text())
-    export = json.loads(Path(config.mathlib_export).read_text())
+    spec = json.loads((Path(spec_dir) / (island + ".json")).read_text(encoding="utf-8"))
+    export = json.loads(Path(config.mathlib_export).read_text(encoding="utf-8"))
     prefixes = tuple(spec["module_prefixes"])
     declarations = [
         d for d in export["declarations"]

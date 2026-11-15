@@ -68,7 +68,7 @@ DECLS = [
 @pytest.fixture
 def index_dir(tmp_path):
     rules_file = tmp_path / "paths.txt"
-    rules_file.write_text(RULES)
+    rules_file.write_text(RULES, encoding="utf-8")
     out = tmp_path / "index"
     build_index([json.dumps(d) for d in DECLS], MSC, load_rules(rules_file), str(out), COMMIT, "leanprover/lean4:v4.19.0", "abc")
     return out
@@ -92,7 +92,7 @@ def build(client, app, island):
 
 def test_placement_rules_longest_prefix_tooling_and_unplaced(tmp_path):
     rules_file = tmp_path / "paths.txt"
-    rules_file.write_text(RULES)
+    rules_file.write_text(RULES, encoding="utf-8")
     rules = load_rules(rules_file)
     assert place("Mathlib.Topology.Compactness.Compact", rules) == "54D30", "the longest prefix wins"
     assert place("Mathlib.Topology.Separation.Hausdorff", rules) == "54D10"
@@ -102,7 +102,7 @@ def test_placement_rules_longest_prefix_tooling_and_unplaced(tmp_path):
     with pytest.raises(ValueError, match="99Z99"):
         check_rules(dict(rules, **{"Mathlib.Foo": "99Z99"}), MSC)
     for bad in ("Mathlib.A 54D30\n", "NotMathlib.A\t54D30\n", "Mathlib.A\t54D30\nMathlib.A\t54D10\n"):
-        rules_file.write_text(bad)
+        rules_file.write_text(bad, encoding="utf-8")
         with pytest.raises(ValueError):
             load_rules(rules_file)
 
@@ -265,11 +265,32 @@ def test_shipped_placement_table_is_well_formed_and_covers_every_mathematical_ar
     assert place("Mathlib.Tactic.Ring", rules) is None, "tooling areas have no rule and are never extracted"
     local = ROOT / ".lean/msc/msc2020.json"
     if local.is_file():  # the official table is fetched, not committed (CC BY-NC-SA)
-        check_rules(rules, json.loads(local.read_text()))
+        check_rules(rules, json.loads(local.read_text(encoding="utf-8")))
 
 
 def test_extractor_leaves_out_plumbing_but_keeps_lemmas_named_eq():
-    lean = (ROOT / "deploy/lean/Extract.lean").read_text()
+    lean = (ROOT / "deploy/lean/Extract.lean").read_text(encoding="utf-8")
     assert "env.isProjectionFn n" in lean and "Linter.isDeprecated env n" in lean and "instanceNames.contains n" in lean
     assert '(s.startsWith "eq_" && s.length > 3 && (s.drop 3).all Char.isDigit)' in lean, "only equation lemmas eq_1, eq_2, …"
     assert 's.startsWith "eq_")' not in lean and '("fields", Json.arr' in lean
+
+
+def test_app_imports_and_parses_pdfs_without_posix_resource_module():
+    """Windows has no `resource` module: the app must still start and parse papers. Checked in a
+    separate interpreter where importing `resource` fails, so this process is untouched."""
+    import subprocess
+    import sys
+
+    script = """
+import sys, io
+sys.modules["resource"] = None  # any `import resource` now raises ImportError, as on Windows
+from metis.api import create_app
+import metis.ingestion as ingestion, metis.limited
+assert ingestion.resource is None
+from pypdf import PdfWriter
+buf = io.BytesIO(); w = PdfWriter(); w.add_blank_page(width=200, height=200); w.write(buf)
+assert ingestion.pdf_text(buf.getvalue()).strip() == ""
+print("ok")
+"""
+    result = subprocess.run([sys.executable, "-c", script], cwd=ROOT, capture_output=True, text=True, encoding="utf-8", timeout=120)
+    assert result.returncode == 0 and result.stdout.strip().endswith("ok"), result.stderr[-2000:]

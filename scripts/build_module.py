@@ -29,7 +29,7 @@ from scripts.prepare_module import validate
 
 
 def load(path):
-    return json.loads(Path(path).read_text())
+    return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 def island(args):
@@ -73,7 +73,7 @@ def island(args):
         mapping = script_mapping(selected, spec, args.id)
     bundle = build_bundle(selected, mapping, args.id, args.version, export["mathlib"], [spec["island"]], source, pending)
     validate(bundle)
-    Path(args.output).write_text(json.dumps(bundle, indent=1, ensure_ascii=False) + "\n")
+    Path(args.output).write_text(json.dumps(bundle, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({
         "module": args.id, "method": mapping["method"], "concepts": len(bundle["concepts"]),
         "edges": len(bundle["edges"]), "pending_review": len(pending), "output": args.output,
@@ -93,7 +93,7 @@ def bridge(args):
     }
     bundle = bridge_bundle(bundles, exports, args.id, args.version, next(iter(versions)), source)
     validate(bundle, bundles)
-    Path(args.output).write_text(json.dumps(bundle, indent=1, ensure_ascii=False) + "\n")
+    Path(args.output).write_text(json.dumps(bundle, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({"module": args.id, "edges": len(bundle["edges"]), "output": args.output}))
 
 

@@ -8,7 +8,7 @@ from scripts.prepare_module import validate
 
 
 def bundle(name):
-    return json.loads(Path('corpus/' + name + '.json').read_text())
+    return json.loads(Path('corpus/' + name + '.json').read_text(encoding="utf-8"))
 
 
 def test_all_starters_validate_offline_and_have_real_relations(app):

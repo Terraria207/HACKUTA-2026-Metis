@@ -99,8 +99,8 @@ def main():
     parser.add_argument('--setup-budget', type=float, default=1)
     parser.add_argument('--setup-attempt', type=int, default=0, help='Explicit new billed attempt after an ambiguous failure')
     args = parser.parse_args()
-    bundle = json.loads(Path(args.bundle).read_text())
-    validate(bundle, [json.loads(Path(p).read_text()) for p in args.prerequisite])
+    bundle = json.loads(Path(args.bundle).read_text(encoding="utf-8"))
+    validate(bundle, [json.loads(Path(p).read_text(encoding="utf-8")) for p in args.prerequisite])
     if not args.execute:
         print(json.dumps({'module': bundle['module']['id'], 'paid_calls': 0, 'action': 'validated only'}))
         return

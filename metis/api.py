@@ -1316,7 +1316,7 @@ def create_app(config=None, start_worker=True):
             raise ValueError("Unknown role")
         roles = {r: s.model_dump() for r, s in data.items()}
         temp = config.provider_file + ".tmp"
-        Path(temp).write_text(json.dumps(roles, indent=2))
+        Path(temp).write_text(json.dumps(roles, indent=2), encoding="utf-8")
         os.chmod(temp, 0o600)
         os.replace(temp, config.provider_file)
         worker.providers.roles = roles

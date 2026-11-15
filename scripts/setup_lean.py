@@ -9,7 +9,7 @@ from pathlib import Path
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
-PINS = json.loads((ROOT / 'deploy/lean/pins.json').read_text())
+PINS = json.loads((ROOT / 'deploy/lean/pins.json').read_text(encoding="utf-8"))
 
 
 def run(*args, cwd=None):
@@ -27,14 +27,14 @@ def main():
     actual = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=project, text=True).strip()
     if actual != PINS['mathlib']:
         raise SystemExit('Refusing a different existing mathlib checkout')
-    if (project / 'lean-toolchain').read_text().strip() != PINS['lean']:
+    if (project / 'lean-toolchain').read_text(encoding="utf-8").strip() != PINS['lean']:
         raise SystemExit('Lean toolchain mismatch')
     manifest = project / 'lake-manifest.json'
     if hashlib.sha256(manifest.read_bytes()).hexdigest() != PINS['manifest_sha256']:
         raise SystemExit('Mathlib dependency manifest mismatch')
     run('lake', 'exe', 'cache', 'get', cwd=project)
     run('lake', 'env', 'lean', str(ROOT / 'deploy/lean/Acceptance.lean'), cwd=project)
-    (project / 'METIS_MATHLIB_VERSION').write_text(PINS['mathlib'] + '\n')
+    (project / 'METIS_MATHLIB_VERSION').write_text(PINS['mathlib'] + '\n', encoding="utf-8")
     print('Prepared and compiler-checked:', project)
 
 

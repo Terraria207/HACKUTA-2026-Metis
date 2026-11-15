@@ -13,7 +13,7 @@ from scripts.live_acceptance import validate_plan, verify_indexes
 
 
 def bundle():
-    return json.loads(Path('corpus/number-theory.json').read_text())
+    return json.loads(Path('corpus/number-theory.json').read_text(encoding="utf-8"))
 
 
 def setup_provider(app, monkeypatch):
@@ -105,12 +105,12 @@ def test_interrupted_publication_resumes_identical_bundle(app, monkeypatch):
 def test_env_is_literal_atomic_and_never_executes(tmp_path):
     marker = tmp_path / 'executed'
     env = tmp_path / 'private.env'
-    env.write_text(f"export TOKEN='$(touch {marker})'\nURI=mongodb://example/a#fragment\n")
+    env.write_text(f"export TOKEN='$(touch {marker})'\nURI=mongodb://example/a#fragment\n", encoding="utf-8")
     target = {}
     assert load_private_env(env, target) == 2
     assert target['TOKEN'] == f'$(touch {marker})'
     assert target['URI'].endswith('#fragment') and not marker.exists()
-    env.write_text('TOKEN=ok\nsource malicious\n')
+    env.write_text('TOKEN=ok\nsource malicious\n', encoding="utf-8")
     target = {}
     with pytest.raises(ValueError):
         load_private_env(env, target)
@@ -119,7 +119,7 @@ def test_env_is_literal_atomic_and_never_executes(tmp_path):
 
 def test_index_preflight_checks_both_dimensions_and_filter():
     from types import SimpleNamespace
-    definition = json.loads(Path('deploy/atlas-vector-index.json').read_text())
+    definition = json.loads(Path('deploy/atlas-vector-index.json').read_text(encoding="utf-8"))
     collection = Mock()
     collection.list_search_indexes.return_value = [{'queryable': True, 'latestDefinition': definition}]
     store = SimpleNamespace(mongo={'concepts': collection, 'groups': collection})
@@ -138,7 +138,7 @@ def test_plan_rejects_overspend_and_missing_explicit_prices(tmp_path):
     plan['global_budget_usd'] = 100
     path = tmp_path / 'providers.json'
     plan['providers_file'] = str(path)
-    path.write_text('{}')
+    path.write_text('{}', encoding="utf-8")
     with pytest.raises(ValueError, match='every pipeline role'):
         validate_plan(plan)
 
@@ -183,11 +183,11 @@ def test_offline_cli_never_loads_private_env_or_executes(tmp_path, monkeypatch, 
                  for role in ROLES}
     providers['tiresias'].update(provider='gemini', request_overhead_usd=0)
     specs = tmp_path / 'providers.json'
-    specs.write_text(json.dumps(providers))
+    specs.write_text(json.dumps(providers), encoding="utf-8")
     plan = tmp_path / 'plan.json'
     plan.write_text(json.dumps({'global_budget_usd': 100, 'setup_budget_usd': 1,
         'run_budget_usd': 5, 'timeout_seconds': 300, 'providers_file': str(specs),
-        'bundle': 'corpus/number-theory.json'}))
+        'bundle': 'corpus/number-theory.json'}), encoding="utf-8")
     monkeypatch.setattr('sys.argv', ['live_acceptance', 'acceptance', '--config', str(plan),
                                   '--env-file', '/must/not/read'])
     monkeypatch.setattr(live_acceptance, 'execute', Mock(side_effect=AssertionError('live execution forbidden')))
@@ -241,7 +241,7 @@ def test_acceptance_cli_drives_actual_seven_stages_with_mocked_network(tmp_path,
             for role in ROLES}
     specs['tiresias'].update(provider='gemini', request_overhead_usd=0)
     provider_path = tmp_path / 'providers.json'
-    provider_path.write_text(json.dumps(specs))
+    provider_path.write_text(json.dumps(specs), encoding="utf-8")
     def request(self, spec, secret, payload, grounded):
         if spec['model'] == 'embeddings':
             return {'embeddings': [[1.] + [0.] * 1023 for _ in payload['texts']]}

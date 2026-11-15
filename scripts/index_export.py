@@ -24,12 +24,12 @@ def main():
     parser.add_argument("--msc", type=Path, required=True, help="JSON from scripts/fetch_msc.py")
     parser.add_argument("--paths", type=Path, default=ROOT / "deploy/msc/mathlib-paths.txt")
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--mathlib", default=json.loads((ROOT / "deploy/lean/pins.json").read_text())["mathlib"])
-    parser.add_argument("--lean", default=json.loads((ROOT / "deploy/lean/pins.json").read_text())["lean"])
+    parser.add_argument("--mathlib", default=json.loads((ROOT / "deploy/lean/pins.json").read_text(encoding="utf-8"))["mathlib"])
+    parser.add_argument("--lean", default=json.loads((ROOT / "deploy/lean/pins.json").read_text(encoding="utf-8"))["lean"])
     args = parser.parse_args()
-    msc = json.loads(args.msc.read_text())
+    msc = json.loads(args.msc.read_text(encoding="utf-8"))
     rules = load_rules(args.paths)
-    with open(args.export) as lines:
+    with open(args.export, encoding="utf-8") as lines:
         index = build_index(lines, msc, rules, str(args.output), args.mathlib, args.lean,
                             hashlib.sha256(args.paths.read_bytes()).hexdigest())
     print(json.dumps({"basis_groups": len(index["islands"]), **index["totals"], "output": str(args.output)}, indent=1))

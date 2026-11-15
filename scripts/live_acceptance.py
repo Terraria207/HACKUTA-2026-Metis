@@ -22,7 +22,7 @@ def validate_plan(plan):
         raise ValueError('Acceptance deadline exceeds one hour')
     from metis.api import RoleSpec
     from metis.providers import ROLES
-    specs = json.loads(Path(plan['providers_file']).read_text())
+    specs = json.loads(Path(plan['providers_file']).read_text(encoding="utf-8"))
     if set(specs) != set(ROLES):
         raise ValueError('Explicit provider specification required for every pipeline role')
     for role, raw in specs.items():
@@ -81,7 +81,7 @@ def execute(plan, action, emit):
             if stream.read(5) != b'%PDF-':
                 raise ValueError('Local input must be PDF')
         from scripts.prepare_module import prepare
-        bundle = json.loads(Path(plan['bundle']).read_text())
+        bundle = json.loads(Path(plan['bundle']).read_text(encoding="utf-8"))
         if not any(g['id'] == plan['home_group'] and g['depth'] == 3 for g in bundle['groups']):
             raise ValueError('Home group must be a module subtopic')
         module = prepare(store, bundle, Providers(store, config), plan['setup_budget_usd'], plan.get('setup_attempt', 0))
@@ -159,10 +159,10 @@ def main():
     args = parser.parse_args()
     emit = lambda value: print(json.dumps(value), flush=True)
     try:
-        plan = json.loads(Path(args.config).read_text())
+        plan = json.loads(Path(args.config).read_text(encoding="utf-8"))
         validate_plan(plan)
         from scripts.prepare_module import validate
-        validate(json.loads(Path(plan['bundle']).read_text()))
+        validate(json.loads(Path(plan['bundle']).read_text(encoding="utf-8")))
         if not args.execute:
             emit({'action': args.action, 'execute': False, 'paid_calls': 0, 'status': 'offline plan validated'})
             return 0
