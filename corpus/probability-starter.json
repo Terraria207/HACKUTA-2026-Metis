@@ -1,0 +1,481 @@
+{
+  "module": {
+    "id": "probability-starter@2026-11-15.2",
+    "version": "2026-11-15.2",
+    "name": "probability curated foundations",
+    "islands": [
+      "probability"
+    ],
+    "fixture": false,
+    "source": {
+      "urls": [
+        "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+        "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "https://www.probabilitycourse.com/chapter1/1_4_0_conditional_probability.php"
+      ],
+      "review": "Manual source inspection, 2026-11-15"
+    },
+    "coverage": "Elementary probability axioms, event identities and finite Markov evolution; excludes measure construction, limit laws and random matrices",
+    "remaining_gaps": "Not exhaustive; no automated mathlib extraction, embeddings, or formal verification. Advanced and research topics omitted."
+  },
+  "groups": [
+    {
+      "id": "probability-starter@2026-11-15.2:60",
+      "name": "Elementary probability axioms, event identities and finite Markov evolution",
+      "msc": "60",
+      "depth": 1,
+      "parent": null,
+      "ancestors": [
+        "probability-starter@2026-11-15.2:60"
+      ],
+      "island": "probability",
+      "description": "Elementary probability axioms, event identities and finite Markov evolution; excludes measure construction, limit laws and random matrices"
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:60A",
+      "name": "Elementary probability axioms, event identities and finite Markov evolution",
+      "msc": "60A",
+      "depth": 2,
+      "parent": "probability-starter@2026-11-15.2:60",
+      "ancestors": [
+        "probability-starter@2026-11-15.2:60",
+        "probability-starter@2026-11-15.2:60A"
+      ],
+      "island": "probability",
+      "description": "Elementary probability axioms, event identities and finite Markov evolution; excludes measure construction, limit laws and random matrices"
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:60A05",
+      "name": "Elementary probability axioms, event identities and finite Markov evolution",
+      "msc": "60A05",
+      "depth": 3,
+      "parent": "probability-starter@2026-11-15.2:60A",
+      "ancestors": [
+        "probability-starter@2026-11-15.2:60",
+        "probability-starter@2026-11-15.2:60A",
+        "probability-starter@2026-11-15.2:60A05"
+      ],
+      "island": "probability",
+      "description": "Elementary probability axioms, event identities and finite Markov evolution; excludes measure construction, limit laws and random matrices"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "probability-starter@2026-11-15.2:axioms",
+      "name": "Probability axioms",
+      "statement": "A probability measure is nonnegative, normalized on its sample space, and countably additive on disjoint events.",
+      "description": "A probability measure is nonnegative, normalized on its sample space, and countably additive on disjoint events.",
+      "kind": "definition",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+        "location": "§1.3.2 Axioms 1–3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:normalization",
+      "name": "Normalization",
+      "statement": "For a probability space with sample space S: P(S)=1.",
+      "description": "For a probability space with sample space S: P(S)=1.",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For a probability space with sample space S"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+        "location": "§1.3.2 Axiom 2",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:additivity",
+      "name": "Disjoint additivity",
+      "statement": "For disjoint events A_i in a probability space: P(union A_i)=sum P(A_i).",
+      "description": "For disjoint events A_i in a probability space: P(union A_i)=sum P(A_i).",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For disjoint events A_i in a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+        "location": "§1.3.2 Axiom 3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:complement",
+      "name": "Complement rule",
+      "statement": "For any event A in a probability space: P(A^c)=1-P(A).",
+      "description": "For any event A in a probability space: P(A^c)=1-P(A).",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For any event A in a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "location": "§1.3.3 Example, item 1 and solution",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:empty",
+      "name": "Empty event",
+      "statement": "For a probability space: P(empty)=0.",
+      "description": "For a probability space: P(empty)=0.",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "location": "§1.3.3 Example, item 2 and solution",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:bound",
+      "name": "Upper bound",
+      "statement": "For any event A in a probability space: P(A)<=1.",
+      "description": "For any event A in a probability space: P(A)<=1.",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For any event A in a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "location": "§1.3.3 Example, item 3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:union",
+      "name": "Two-event inclusion-exclusion",
+      "statement": "For events A,B in a probability space: P(A union B)=P(A)+P(B)-P(A intersection B).",
+      "description": "For events A,B in a probability space: P(A union B)=P(A)+P(B)-P(A intersection B).",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For events A,B in a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "location": "§1.3.3 Example, item 5",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:monotone",
+      "name": "Monotonicity",
+      "statement": "For events A subset B in a probability space: P(A)<=P(B).",
+      "description": "For events A subset B in a probability space: P(A)<=P(B).",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For events A subset B in a probability space"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+        "location": "§1.3.3 Example, item 6",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:conditional",
+      "name": "Conditional probability",
+      "statement": "For events A,B with P(B)>0: P(A|B)=P(A intersection B)/P(B).",
+      "description": "For events A,B with P(B)>0: P(A|B)=P(A intersection B)/P(B).",
+      "kind": "definition",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_4_0_conditional_probability.php",
+        "location": "§1.4.0 conditional probability formula",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:conditional-measure",
+      "name": "Conditional measure",
+      "statement": "For a fixed event B with P(B)>0: A maps to P(A|B) is a probability measure.",
+      "description": "For a fixed event B with P(B)>0: A maps to P(A|B) is a probability measure.",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For a fixed event B with P(B)>0"
+      ],
+      "source": {
+        "url": "https://www.probabilitycourse.com/chapter1/1_4_0_conditional_probability.php",
+        "location": "§1.4.0 conditional axioms 1–3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:markov",
+      "name": "Finite Markov evolution",
+      "statement": "A column stochastic matrix A evolves a finite probability column vector by x_(t+1)=Ax_t.",
+      "description": "A column stochastic matrix A evolves a finite probability column vector by x_(t+1)=Ax_t.",
+      "kind": "definition",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "location": "§5.6.1 Red Box example; §5.6.2 Markov chains",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:conservation",
+      "name": "Preserved total mass",
+      "statement": "For column stochastic A and a real column vector x: sum (Ax)_i=sum x_i.",
+      "description": "For column stochastic A and a real column vector x: sum (Ax)_i=sum x_i.",
+      "kind": "theorem",
+      "home_group": "probability-starter@2026-11-15.2:60A05",
+      "island": "probability",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For column stochastic A and a real column vector x"
+      ],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "location": "§5.6.2 sum-of-entries fact",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "probability-starter@2026-11-15.2:e1",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:normalization",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "Normalization is an axiom.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+          "location": "§1.3.2 Axiom 2",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e2",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:additivity",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "Disjoint additivity is an axiom.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_2_probability.php",
+          "location": "§1.3.2 Axiom 3",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e3",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:complement",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "The source derives the complement identity from the axioms.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+          "location": "§1.3.3 Example, item 1 and solution",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e4",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:empty",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "The source derives the empty-event identity.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+          "location": "§1.3.3 Example, item 2 and solution",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e5",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:bound",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "The source derives the upper bound.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+          "location": "§1.3.3 Example, item 3",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e6",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:union",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "The source derives the two-event formula.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+          "location": "§1.3.3 Example, item 5",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e7",
+      "premises": [
+        "probability-starter@2026-11-15.2:axioms"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:monotone",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "The source derives monotonicity.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_3_3_finding_probabilities.php",
+          "location": "§1.3.3 Example, item 6",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e8",
+      "premises": [
+        "probability-starter@2026-11-15.2:conditional"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:conditional-measure",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "The conditional measure requires a fixed positive-probability conditioning event.",
+      "evidence": [
+        {
+          "source": "https://www.probabilitycourse.com/chapter1/1_4_0_conditional_probability.php",
+          "location": "§1.4.0 conditional axioms 1–3",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "probability-starter@2026-11-15.2:e9",
+      "premises": [
+        "probability-starter@2026-11-15.2:markov"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:conservation",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "The conservation statement describes the transition matrix action.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+          "location": "§5.6.2 sum-of-entries fact",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    }
+  ]
+}

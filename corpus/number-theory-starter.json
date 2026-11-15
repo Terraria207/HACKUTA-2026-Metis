@@ -1,0 +1,451 @@
+{
+  "module": {
+    "id": "number-theory-foundations@2026-11-15.2",
+    "version": "2026-11-15.2",
+    "name": "number-theory curated foundations",
+    "islands": [
+      "number-theory"
+    ],
+    "fixture": false,
+    "source": {
+      "urls": [
+        "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm"
+      ],
+      "review": "Manual source inspection, 2026-11-15"
+    },
+    "coverage": "Integer divisibility, gcd and primes; additive foundations for the pinned Collatz base; excludes analytic/algebraic number theory",
+    "remaining_gaps": "Not exhaustive; no automated mathlib extraction, embeddings, or formal verification. Advanced and research topics omitted.",
+    "additive": true,
+    "requires": [
+      "number-theory@2026-11-15.1"
+    ]
+  },
+  "groups": [
+    {
+      "id": "number-theory-foundations@2026-11-15.2:11",
+      "name": "Integer divisibility, gcd and primes",
+      "msc": "11",
+      "depth": 1,
+      "parent": null,
+      "ancestors": [
+        "number-theory-foundations@2026-11-15.2:11"
+      ],
+      "island": "number-theory",
+      "description": "Integer divisibility, gcd and primes; additive foundations for the pinned Collatz base; excludes analytic/algebraic number theory"
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:11A",
+      "name": "Integer divisibility, gcd and primes",
+      "msc": "11A",
+      "depth": 2,
+      "parent": "number-theory-foundations@2026-11-15.2:11",
+      "ancestors": [
+        "number-theory-foundations@2026-11-15.2:11",
+        "number-theory-foundations@2026-11-15.2:11A"
+      ],
+      "island": "number-theory",
+      "description": "Integer divisibility, gcd and primes; additive foundations for the pinned Collatz base; excludes analytic/algebraic number theory"
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:11A05",
+      "name": "Integer divisibility, gcd and primes",
+      "msc": "11A05",
+      "depth": 3,
+      "parent": "number-theory-foundations@2026-11-15.2:11A",
+      "ancestors": [
+        "number-theory-foundations@2026-11-15.2:11",
+        "number-theory-foundations@2026-11-15.2:11A",
+        "number-theory-foundations@2026-11-15.2:11A05"
+      ],
+      "island": "number-theory",
+      "description": "Integer divisibility, gcd and primes; additive foundations for the pinned Collatz base; excludes analytic/algebraic number theory"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "number-theory-foundations@2026-11-15.2:divides",
+      "name": "Divisibility",
+      "statement": "For integers a,b, a divides b means b=ak for an integer k.",
+      "description": "For integers a,b, a divides b means b=ak for an integer k.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 paragraph after Theorem 2.9",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:common",
+      "name": "Common divisor",
+      "statement": "A common divisor of integers a,b divides both.",
+      "description": "A common divisor of integers a,b divides both.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 paragraph after Theorem 2.9",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:gcd",
+      "name": "Greatest common divisor",
+      "statement": "For nonzero integers a,b, gcd(a,b) is their greatest positive common divisor.",
+      "description": "For nonzero integers a,b, gcd(a,b) is their greatest positive common divisor.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 before Theorem 2.10",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:coprime",
+      "name": "Coprime a,b",
+      "statement": "Nonzero integers a,b are coprime when gcd(a,b)=1.",
+      "description": "Nonzero integers a,b are coprime when gcd(a,b)=1.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 before Theorem 2.10",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:bezout",
+      "name": "Bezout identity",
+      "statement": "For nonzero integers a,b: some integers r,s satisfy ar+bs=gcd(a,b).",
+      "description": "For nonzero integers a,b: some integers r,s satisfy ar+bs=gcd(a,b).",
+      "kind": "theorem",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For nonzero integers a,b"
+      ],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "Theorem 2.10",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:unit-bezout",
+      "name": "Coprime Bezout identity",
+      "statement": "For nonzero coprime integers a,b: some integers r,s satisfy ar+bs=1.",
+      "description": "For nonzero coprime integers a,b: some integers r,s satisfy ar+bs=1.",
+      "kind": "theorem",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For nonzero coprime integers a,b"
+      ],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "Corollary 2.11",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:euclidean",
+      "name": "Euclidean algorithm",
+      "statement": "Repeated integer divisions compute gcd; backward substitution gives Bezout coefficients.",
+      "description": "Repeated integer divisions compute gcd; backward substitution gives Bezout coefficients.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 The Euclidean Algorithm",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:prime",
+      "name": "Prime",
+      "statement": "An integer p>1 is prime if its only positive divisors are 1,p.",
+      "description": "An integer p>1 is prime if its only positive divisors are 1,p.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 Prime Numbers",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:composite",
+      "name": "Composite",
+      "statement": "An integer n>1 is composite if it is not prime.",
+      "description": "An integer n>1 is composite if it is not prime.",
+      "kind": "definition",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "§2.2 Prime Numbers",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:euclid",
+      "name": "Euclid lemma",
+      "statement": "For integers a,b and prime p: p divides ab implies p divides a or b.",
+      "description": "For integers a,b and prime p: p divides ab implies p divides a or b.",
+      "kind": "theorem",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For integers a,b and prime p"
+      ],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "Lemma 2.13",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:infinite",
+      "name": "Infinitely many primes",
+      "statement": "There are infinitely many positive primes.",
+      "description": "There are infinitely many positive primes.",
+      "kind": "theorem",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "Theorem 2.14",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:factorization",
+      "name": "Unique prime factorization",
+      "statement": "Every integer n>1 factors into primes, uniquely up to their order.",
+      "description": "Every integer n>1 factors into primes, uniquely up to their order.",
+      "kind": "theorem",
+      "home_group": "number-theory-foundations@2026-11-15.2:11A05",
+      "island": "number-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+        "location": "Theorem 2.15",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e1",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:divides"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:common",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Common divisors use divisibility.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "§2.2 paragraph after Theorem 2.9",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e2",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:common"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:gcd",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Gcd selects a positive common divisor.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "§2.2 before Theorem 2.10",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e3",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:gcd"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:coprime",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Coprimality fixes gcd to one.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "§2.2 before Theorem 2.10",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e4",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:coprime",
+        "number-theory-foundations@2026-11-15.2:bezout"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:unit-bezout",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "For the same nonzero a,b, substitute gcd=1.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "Corollary 2.11",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e5",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:euclidean"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:bezout",
+      "directed": true,
+      "type": "related",
+      "tier": "cited",
+      "argument": "Backward substitution computes coefficients; descriptive algorithm relation.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "§2.2 The Euclidean Algorithm",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e6",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:prime"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:composite",
+      "directed": true,
+      "type": "related",
+      "tier": "cited",
+      "argument": "These are complementary classes among integers greater than one.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "§2.2 Prime Numbers",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e7",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:prime"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:euclid",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "The lemma requires a prime divisor; no implication from a definition.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "Lemma 2.13",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "number-theory-foundations@2026-11-15.2:e8",
+      "premises": [
+        "number-theory-foundations@2026-11-15.2:prime"
+      ],
+      "conclusion": "number-theory-foundations@2026-11-15.2:factorization",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Factorization uses prime factors.",
+      "evidence": [
+        {
+          "source": "https://math.libretexts.org/Bookshelves/Abstract_and_Geometric_Algebra/Abstract_Algebra:_Theory_and_Applications_(Judson)/02:_The_Integers/2.02:_The_Division_Algorithm",
+          "location": "Theorem 2.15",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    }
+  ]
+}

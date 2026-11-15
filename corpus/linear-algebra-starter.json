@@ -1,0 +1,468 @@
+{
+  "module": {
+    "id": "linear-algebra-starter@2026-11-15.2",
+    "version": "2026-11-15.2",
+    "name": "linear-algebra curated foundations",
+    "islands": [
+      "linear-algebra"
+    ],
+    "fixture": false,
+    "source": {
+      "urls": [
+        "https://textbooks.math.gatech.edu/ila/dimension.html",
+        "https://textbooks.math.gatech.edu/ila/linear-independence.html",
+        "https://textbooks.math.gatech.edu/ila/spans.html",
+        "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html"
+      ],
+      "review": "Manual source inspection, 2026-11-15"
+    },
+    "coverage": "Finite real vector families and stochastic matrices; excludes general modules, spectral theory and numerical methods",
+    "remaining_gaps": "Not exhaustive; no automated mathlib extraction, embeddings, or formal verification. Advanced and research topics omitted."
+  },
+  "groups": [
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:15",
+      "name": "Finite real vector families and stochastic matrices",
+      "msc": "15",
+      "depth": 1,
+      "parent": null,
+      "ancestors": [
+        "linear-algebra-starter@2026-11-15.2:15"
+      ],
+      "island": "linear-algebra",
+      "description": "Finite real vector families and stochastic matrices; excludes general modules, spectral theory and numerical methods"
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:15A",
+      "name": "Finite real vector families and stochastic matrices",
+      "msc": "15A",
+      "depth": 2,
+      "parent": "linear-algebra-starter@2026-11-15.2:15",
+      "ancestors": [
+        "linear-algebra-starter@2026-11-15.2:15",
+        "linear-algebra-starter@2026-11-15.2:15A"
+      ],
+      "island": "linear-algebra",
+      "description": "Finite real vector families and stochastic matrices; excludes general modules, spectral theory and numerical methods"
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:15A03",
+      "name": "Finite real vector families and stochastic matrices",
+      "msc": "15A03",
+      "depth": 3,
+      "parent": "linear-algebra-starter@2026-11-15.2:15A",
+      "ancestors": [
+        "linear-algebra-starter@2026-11-15.2:15",
+        "linear-algebra-starter@2026-11-15.2:15A",
+        "linear-algebra-starter@2026-11-15.2:15A03"
+      ],
+      "island": "linear-algebra",
+      "description": "Finite real vector families and stochastic matrices; excludes general modules, spectral theory and numerical methods"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:combination",
+      "name": "Linear combination",
+      "statement": "For real vectors v_i, a linear combination is a sum of scalar multiples c_i v_i.",
+      "description": "For real vectors v_i, a linear combination is a sum of scalar multiples c_i v_i.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/spans.html",
+        "location": "§2.2.1 vector equations",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:span",
+      "name": "Span",
+      "statement": "Span(v_1,...,v_k) contains all their real linear combinations.",
+      "description": "Span(v_1,...,v_k) contains all their real linear combinations.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/spans.html",
+        "location": "§2.2.2 definition of span",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:membership",
+      "name": "Span membership",
+      "statement": "For real v_i and b: b belongs to their span iff sum c_i v_i=b is solvable.",
+      "description": "For real v_i and b: b belongs to their span iff sum c_i v_i=b is solvable.",
+      "kind": "theorem",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For real v_i and b"
+      ],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/spans.html",
+        "location": "§2.2.1 vector equation solvability; §2.2.2 span",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:independent",
+      "name": "Independent family B",
+      "statement": "For a finite real vector family B: sum c_i v_i=0 forces every c_i=0.",
+      "description": "For a finite real vector family B: sum c_i v_i=0 forces every c_i=0.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/linear-independence.html",
+        "location": "§2.5.1 definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:dependent",
+      "name": "Dependent family",
+      "statement": "A real vector family is dependent when a nonzero coefficient tuple gives zero.",
+      "description": "A real vector family is dependent when a nonzero coefficient tuple gives zero.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/linear-independence.html",
+        "location": "§2.5.1 definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:spanning",
+      "name": "B spans V",
+      "statement": "For a subspace V of R^n and B contained in V: span(B)=V.",
+      "description": "For a subspace V of R^n and B contained in V: span(B)=V.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/dimension.html",
+        "location": "§2.7.1 basis definition, condition 1",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:basis",
+      "name": "B is a basis of V",
+      "statement": "For a subspace V of R^n and B contained in V: B spans V and is independent.",
+      "description": "For a subspace V of R^n and B contained in V: B spans V and is independent.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/dimension.html",
+        "location": "§2.7.1 basis definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:dimension",
+      "name": "Dimension",
+      "statement": "Dimension of a real subspace is the cardinality of any basis.",
+      "description": "Dimension of a real subspace is the cardinality of any basis.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/dimension.html",
+        "location": "§2.7.1 dimension definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:equal-size",
+      "name": "Equal basis sizes",
+      "statement": "For a subspace V of R^n: every basis of V has the same size.",
+      "description": "For a subspace V of R^n: every basis of V has the same size.",
+      "kind": "theorem",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For a subspace V of R^n"
+      ],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/dimension.html",
+        "location": "§2.7.1 paragraph before dimension definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:stochastic",
+      "name": "Column stochastic matrix",
+      "statement": "A real square matrix is column stochastic when entries are nonnegative and each column sums to one.",
+      "description": "A real square matrix is column stochastic when entries are nonnegative and each column sums to one.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "location": "§5.6.2 stochastic definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:positive",
+      "name": "Positive stochastic matrix",
+      "statement": "A positive column stochastic matrix has every entry strictly positive.",
+      "description": "A positive column stochastic matrix has every entry strictly positive.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "location": "§5.6.2 positive stochastic definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:steady",
+      "name": "Steady state",
+      "statement": "For a column stochastic A: a steady state is a positive vector x with Ax=x and sum x_i=1.",
+      "description": "For a column stochastic A: a steady state is a positive vector x with Ax=x and sum x_i=1.",
+      "kind": "definition",
+      "home_group": "linear-algebra-starter@2026-11-15.2:15A03",
+      "island": "linear-algebra",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+        "location": "§5.6.2 steady state definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e1",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:combination"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:span",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Span collects linear combinations.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/spans.html",
+          "location": "§2.2.2 definition of span",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e2",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:span"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:membership",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Membership translates to solvability.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/spans.html",
+          "location": "§2.2.1 vector equation solvability; §2.2.2 span",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e3",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:independent",
+        "linear-algebra-starter@2026-11-15.2:spanning"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:basis",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "For the same B contained in the same real subspace V, the two basis conditions suffice.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/dimension.html",
+          "location": "§2.7.1 basis definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e4",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:basis"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:independent",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "A basis satisfies the independence condition.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/dimension.html",
+          "location": "§2.7.1 basis definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e5",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:basis"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:spanning",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "A basis satisfies the spanning condition.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/dimension.html",
+          "location": "§2.7.1 basis definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e6",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:basis"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:dimension",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Basis cardinality defines dimension.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/dimension.html",
+          "location": "§2.7.1 dimension definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e7",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:dependent"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:independent",
+      "directed": true,
+      "type": "related",
+      "tier": "cited",
+      "argument": "These are complementary properties, not implications.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/linear-independence.html",
+          "location": "§2.5.1 definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e8",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:positive"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:stochastic",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "Strict positivity strengthens nonnegativity while retaining column sums.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+          "location": "§5.6.2 positive stochastic definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "linear-algebra-starter@2026-11-15.2:e9",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:stochastic"
+      ],
+      "conclusion": "linear-algebra-starter@2026-11-15.2:steady",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Steady states are defined for stochastic matrices.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+          "location": "§5.6.2 steady state definition",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    }
+  ]
+}

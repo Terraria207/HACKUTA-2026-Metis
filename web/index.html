@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101c30" />
+    <title>Metis — Mathematical Connection Explorer</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script defer src="/static/app.js"></script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#home"
+        ><span class="mark">M</span
+        ><span>metis<small>MATHEMATICAL CONNECTION EXPLORER</small></span></a
+      >
+      <nav>
+        <button id="homeButton" class="quiet">Journeys</button
+        ><button id="settingsButton" class="quiet">Settings & costs</button>
+      </nav>
+      <span id="mode" class="pill">Connecting…</span>
+    </header>
+    <div id="notice" role="status"></div>
+    <div id="error" role="alert" hidden></div>
+    <main id="home">
+      <section class="hero">
+        <div class="eyebrow">A WORKSPACE FOR MATHEMATICAL EXPLORATION</div>
+        <h1>Follow an idea.<br /><em>Find a connection.</em></h1>
+        <p>
+          Explore the space between mathematical fields, with evidence you can
+          inspect at every step.
+        </p>
+        <button id="newButton" class="primary">＋ New journey</button>
+        <div class="orbit" aria-hidden="true">
+          <span>15A</span><span>05C</span><span>60B</span><i></i><i></i><i></i>
+        </div>
+      </section>
+      <section>
+        <div class="sectionTitle">
+          <h2>Your journeys</h2>
+          <span id="journeyCount"></span>
+        </div>
+        <div id="journeyList" class="cards"></div>
+      </section>
+      <section>
+        <h2>Potentially new connections</h2>
+        <p class="muted">
+          Negative literature searches are evidence of search coverage, never
+          proof of novelty.
+        </p>
+        <div id="discoveries"></div>
+      </section>
+    </main>
+    <main id="workspace" hidden>
+      <div class="workspaceHead">
+        <div>
+          <div class="eyebrow" id="islandsLabel"></div>
+          <h1 id="journeyTitle"></h1>
+          <div id="journeyMeta" class="muted"></div>
+        </div>
+        <button id="addFields" class="quiet">Add fields / modules</button>
+        <button id="journeySettings" class="quiet">Journey settings</button>
+      </div>
+      <nav class="tabs" aria-label="Journey workspace">
+        <button data-tab="run" class="active">Run <span>01</span></button
+        ><button data-tab="report">Report <span>02</span></button
+        ><button data-tab="graph">Graph <span>03</span></button
+        ><button data-tab="history">History <span>04</span></button>
+      </nav>
+      <section id="runTab" class="tab">
+        <div class="runGrid">
+          <aside class="panel">
+            <div class="eyebrow">START WITH A PAPER</div>
+            <h2>Bring an idea in</h2>
+            <form id="paperForm">
+              <label
+                >Paper title<input
+                  name="title"
+                  required
+                  placeholder="A paper worth exploring" /></label
+              ><label
+                >Source<select name="kind" id="sourceKind">
+                  <option value="fixture">Fixture sample (scripted)</option>
+                  <option value="text">Paper text</option>
+                  <option value="pdf">Upload PDF</option>
+                  <option value="arxiv">arXiv ID</option>
+                  <option value="url">Public URL</option>
+                  <option value="corpus">Existing corpus paper ID</option>
+                </select></label
+              ><label id="paperValueLabel"
+                >Text, ID or URL<textarea
+                  name="value"
+                  rows="3"
+                  placeholder="Paste paper text, arXiv ID, or public URL"
+                ></textarea></label
+              ><label id="pdfLabel" hidden
+                >PDF file<input
+                  name="file"
+                  type="file"
+                  accept="application/pdf" /></label
+              ><label
+                >Confirm MSC placement<select
+                  name="home_group"
+                  id="paperGroup"
+                  required
+                ></select
+              ></label>
+              <p class="hint">
+                Placement is confirmed before running. Imports alone do not call
+                a model. PDF limit: 12 MiB, 150 pages; text PDFs only.
+              </p>
+              <button class="primary" type="submit">Add to journey</button>
+            </form>
+            <details>
+              <summary>Bulk paper import</summary>
+              <form id="bulkForm">
+                <label>Import source<select name="mode"><option value="arxiv">arXiv IDs (up to 20)</option><option value="msc">Stored corpus by MSC category (up to 20)</option></select></label>
+                <textarea
+                  name="ids"
+                  rows="3"
+                  placeholder="arXiv IDs, or one MSC code such as 15A03"
+                ></textarea
+                ><button type="submit">Import papers only</button>
+              </form>
+              <p id="bulkResult" role="status"></p>
+            </details>
+          </aside>
+          <div>
+            <div class="panel">
+              <div class="sectionTitle">
+                <h2>Run an exploration</h2>
+                <span id="runStatus" class="pill">Ready</span>
+              </div>
+              <label>Input paper<select id="paperSelect"></select></label><button id="correctPlacement">Apply selected MSC group to input paper</button
+              ><label
+                >Maximum run cost (USD)<input
+                  id="runBudget"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value="0"
+              /></label>
+              <div class="actions">
+                <button id="startRun" class="primary">▶ Start run</button
+                ><button id="extractOnly">Extract corpus only</button
+                ><button data-control="pause">Pause</button
+                ><button data-control="resume">Resume</button
+                ><button data-control="retry">Retry</button
+                ><button data-control="cancel" class="danger">Cancel</button>
+              </div>
+              <p class="hint">
+                Controls take effect at durable stage boundaries. Live calls
+                require all three budget caps: server, journey and run.
+              </p>
+              <div id="stageList" class="stages"></div>
+            </div>
+            <div class="panel tracePanel">
+              <div class="sectionTitle">
+                <h2>Live activity</h2>
+                <span class="liveDot">● Public summaries</span>
+              </div>
+              <div class="filters">
+                <select id="traceAgent">
+                  <option value="">All agents</option></select
+                ><select id="traceStep">
+                  <option value="">All stages</option>
+                </select>
+              </div>
+              <div id="traceList" aria-live="polite"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="reportTab" class="tab" hidden>
+        <div class="sectionTitle">
+          <div>
+            <h2>Exploration report</h2>
+            <p class="muted">
+              Evidence first. Search coverage, proof strength and bridge value
+              remain distinct.
+            </p>
+          </div>
+          <div class="actions">
+            <button data-export="json">JSON ↓</button
+            ><button data-export="md">Markdown ↓</button
+            ><button data-export="pdf">PDF ↓</button>
+          </div>
+        </div>
+        <div id="reportContent"></div>
+      </section>
+      <section id="graphTab" class="tab" hidden>
+        <div class="filters panel">
+          <input
+            id="graphSearch"
+            placeholder="Search concepts"
+            aria-label="Search concepts"
+          /><select id="graphTier" aria-label="Tier">
+            <option value="">All tiers</option>
+            <option>verified</option>
+            <option>cited</option>
+            <option>intuitive</option></select
+          ><select id="graphExisting" aria-label="Literature status">
+            <option value="">All literature statuses</option>
+            <option>Existing</option>
+            <option>Not found</option>
+            <option>Unchecked</option></select
+          ><select id="graphIsland" aria-label="Island">
+            <option value="">All islands</option></select
+          ><select id="graphRun" aria-label="Run">
+            <option value="">All runs</option></select
+          ><label class="inline"
+            ><input id="graphNew" type="checkbox" /> New connections only</label
+          ><label class="inline"
+            ><input id="graphBefore" type="checkbox" /> Before run</label
+          ><label class="inline"
+            ><input id="graphSemantic" type="checkbox" /> Meaning search (uses
+            run cost cap)</label
+          ><button id="applyGraph">Apply</button>
+        </div>
+        <div class="graphLayout">
+          <div class="panel graphPanel">
+            <div class="legend">
+              <span>● Established</span><span>◇ Proposed</span
+              ><span>━━ Verified</span><span>┄ Cited</span
+              ><span>··· Intuitive</span><span>● Junction = AND premises</span>
+            </div>
+            <label class="check"><input id="graphRejected" type="checkbox"> Inspect rejected / invalidated (NON-EVIDENCE)</label>
+<label class="check"><input id="graphProposed" type="checkbox"> Inspect proposed (NON-EVIDENCE)</label>
+<label>Layer <select id="graphLayer"><option value="">Base + journey</option><option value="module">Base only</option><option value="journey">Journey only</option></select></label>
+<svg
+              id="graphSvg"
+              viewBox="0 0 1000 650"
+              role="img"
+              aria-label="Concept graph with island clusters"
+            ></svg>
+            <div id="graphEmpty" class="muted"></div>
+          </div>
+          <aside class="panel" id="graphDetails">
+            <h3>Inspect a connection</h3>
+            <p class="muted">
+              Choose a concept, arrow or junction to view statements, evidence,
+              provenance and review history.
+            </p>
+          </aside>
+        </div>
+        <div class="panel">
+          <h3>Proof reachability</h3>
+          <p class="hint">
+            Select explicit starting assumptions. AND premises must all be
+            reachable. Dependency and descriptive edges never become proof
+            steps. Graph composition is not a compiled formal proof.
+          </p>
+          <select id="proofStart" multiple size="3"></select
+          ><button id="proofButton">Inspect reachable results</button>
+          <pre id="proofResult"></pre>
+        </div>
+      </section>
+      <section id="historyTab" class="tab" hidden>
+        <div class="sectionTitle">
+          <h2>Journey history</h2>
+          <span class="muted">Saved checkpoints, reports and reviews</span>
+        </div>
+        <div id="historyList"></div>
+        <div class="panel">
+          <h3>Suggested next papers</h3>
+          <div id="suggestionList"></div>
+        </div>
+        <div class="panel">
+          <h3>Feedback re-review queue</h3>
+          <div id="recheckList"></div>
+        </div>
+      </section>
+    </main>
+    <dialog id="newDialog">
+      <form id="journeyForm">
+        <div class="sectionTitle">
+          <h2 id="catalogTitle">New journey</h2>
+          <button type="button" data-close="newDialog" class="quiet">✕</button>
+        </div>
+        <label
+          >Name<input
+            name="name"
+            required
+            maxlength="100"
+            placeholder="Spectral connections"
+        /></label>
+        <fieldset id="fieldCatalog"><legend>Available fields and pinned modules</legend></fieldset>
+        <p class="hint">
+          Journeys pin immutable module versions. Fixture modules are
+          illustrative, never a mathlib extraction.
+        </p>
+        <button class="primary" type="submit">Create journey →</button>
+      </form>
+    </dialog>
+    <dialog id="settingsDialog">
+      <div class="sectionTitle">
+        <h2 id="settingsTitle">Settings & costs</h2>
+        <button data-close="settingsDialog" class="quiet">✕</button>
+      </div>
+      <div id="settingsContent"></div>
+    </dialog>
+    <dialog id="detailDialog">
+      <div class="sectionTitle">
+        <h2>Evidence & provenance</h2>
+        <button data-close="detailDialog" class="quiet">✕</button>
+      </div>
+      <div id="detailContent"></div>
+    </dialog>
+    <footer>
+      METIS <span>Explore carefully. Keep the evidence.</span
+      ><button id="authButton" class="quiet">API access token</button>
+    </footer>
+  </body>
+</html>
