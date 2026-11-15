@@ -6,6 +6,7 @@ import io
 import json
 import os
 import math
+import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
@@ -75,7 +76,7 @@ class RoleSpec(BaseModel):
 
 
 def create_app(config=None, start_worker=True):
-    config = (config or Config()).validate()
+    config = (config or Config.current()).validate()
     store = Store(config)
     if config.mode == "fixture":
         seed(store)
@@ -93,7 +94,10 @@ def create_app(config=None, start_worker=True):
     app = FastAPI(title="Metis", version="1.0.0", lifespan=lifespan)
     app.state.store = store
     app.state.worker = worker
+    app.state.config = config
     app.state.build_threads = []
+    app.state.startup_error = None
+    app.state.request_restart = None  # set by metis.server when the supervisor runs the app
 
     @app.middleware("http")
     async def security(request, call_next):
@@ -233,7 +237,172 @@ def create_app(config=None, start_worker=True):
             "notice": "Fixture results are scripted demonstrations, not mathematical discoveries."
             if config.mode == "fixture"
             else "Live adapters fail closed. Literature search cannot establish novelty.",
+            "supervised": bool(getattr(app.state, "request_restart", None)),
+            "startup_error": getattr(app.state, "startup_error", None),
         }
+
+    @app.get("/api/overview")
+    def overview():
+        """What the title screen's harbour board shows: where this installation stands."""
+        from metis import installer
+
+        roster = worker.providers.roster()
+        keys = {r["key_env"] for r in roster.values()}
+        groups = catalog(store, config.mode == "live", islands_known())["fields"]
+        return {
+            "mode": config.mode,
+            "allow_live": config.allow_live,
+            "startup_error": getattr(app.state, "startup_error", None),
+            "groups_ready": sum(1 for f in groups if any(m["available"] and m["islands"] == [f["id"]] for m in f["modules"])),
+            "groups_total": len(groups),
+            "export_present": bool(export_index()),
+            "install_running": installer.running(),
+            "keys_set": sum(1 for k in keys if worker.providers.keys.status(k)["set"]),
+            "keys_total": len(keys),
+            "journeys": len(store.all("journeys")),
+            "supervised": bool(getattr(app.state, "request_restart", None)),
+        }
+
+    def local_or_token(request):
+        # Settings that change the machine or carry secrets: this machine only, or any client
+        # when every API call is already authenticated with METIS_API_TOKEN.
+        host = request.client.host if request.client else ""
+        return bool(config.api_token) or host in ("127.0.0.1", "::1", "localhost")
+
+    def server_payload():
+        from metis.config import Config as Cfg, read_settings
+
+        saved = Cfg.current()
+        running = config.describe()
+        wanted = saved.describe()
+        # Only what the Mode screen owns counts; import_corpus is an operator setting.
+        changed = {k for k in ("mode", "allow_live", "live_budget", "mongo_db", "mongo_uri") if wanted[k]["value"] != running[k]["value"]}
+        return {
+            "running": running,
+            "saved": wanted,
+            "restart_required": sorted(changed),
+            "supervised": bool(getattr(app.state, "request_restart", None)),
+            "startup_error": getattr(app.state, "startup_error", None),
+            "settings_file": config.settings_file,
+            "store": "mongodb" if store.mongo is not None else "sqlite",
+            "busy": bool(getattr(worker, "busy", lambda: False)()) if hasattr(worker, "busy") else False,
+        }
+
+    @app.get("/api/server")
+    def server_settings():
+        return server_payload()
+
+    @app.put("/api/server")
+    def update_server(data: dict, request: Request):
+        """Save mode, live switch, budget and MongoDB details; applied on the next (re)start."""
+        from metis.config import write_settings
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Server settings can be changed only from this machine or with METIS_API_TOKEN configured")
+        values = {}
+        if "mode" in data:
+            if data["mode"] not in ("fixture", "live"):
+                raise ValueError("Mode must be fixture or live")
+            values["mode"] = data["mode"]
+        if "allow_live" in data:
+            values["allow_live"] = bool(data["allow_live"])
+        if "live_budget" in data:
+            budget = float(data["live_budget"])
+            if not math.isfinite(budget) or not 0 <= budget <= 100000:
+                raise ValueError("The budget must be between 0 and 100000 USD")
+            values["live_budget"] = budget
+        if "mongo_db" in data:
+            if not re.fullmatch(r"[A-Za-z0-9_-]{1,63}", str(data["mongo_db"])):
+                raise ValueError("Database name: letters, digits, - and _ only")
+            values["mongo_db"] = str(data["mongo_db"])
+        if "mongo_uri" in data:
+            uri = data["mongo_uri"]
+            if uri in (None, ""):
+                worker.providers.keys.set("MONGODB_URI", None)
+            else:
+                if not isinstance(uri, str) or not uri.startswith(("mongodb://", "mongodb+srv://")):
+                    raise ValueError("The connection string must start with mongodb:// or mongodb+srv://")
+                worker.providers.keys.set("MONGODB_URI", uri)
+        if values:
+            write_settings(config.settings_file, values)
+        payload = server_payload()
+        if payload["saved"]["mode"]["value"] == "live" and not payload["saved"]["mongo_uri"]["value"]:
+            raise ValueError("Live mode needs a MongoDB connection string: enter one before applying")
+        return payload
+
+    @app.post("/api/server/test-mongo")
+    def test_mongo(data: dict, request: Request):
+        """Ping MongoDB with the given or saved connection string; never echoes it."""
+        from pymongo import MongoClient
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Only from this machine or with METIS_API_TOKEN configured")
+        uri = data.get("mongo_uri") or worker.providers.keys.get("MONGODB_URI") or config.mongo_uri
+        if not uri:
+            return {"ok": False, "detail": "No connection string saved yet."}
+        if not str(uri).startswith(("mongodb://", "mongodb+srv://")):
+            return {"ok": False, "detail": "The connection string must start with mongodb:// or mongodb+srv://"}
+        try:
+            client = MongoClient(uri, serverSelectionTimeoutMS=4000, connectTimeoutMS=4000, socketTimeoutMS=4000)
+            info = client.admin.command("ping")
+            version = client.server_info().get("version", "?")
+            client.close()
+            return {"ok": bool(info.get("ok")), "detail": "Connected. MongoDB " + str(version) + "."}
+        except Exception as exc:
+            text = re.sub(r"mongodb(\+srv)?://[^\s]*@", "mongodb://…@", str(exc))[:300]
+            return {"ok": False, "detail": type(exc).__name__ + ": " + text}
+
+    @app.post("/api/server/restart")
+    def restart_server(request: Request):
+        """Restart under the supervisor so the saved settings take effect."""
+        from metis import installer
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Only from this machine or with METIS_API_TOKEN configured")
+        if installer.running() or any(t.is_alive() for t in app.state.build_threads):
+            raise HTTPException(409, "An installation or build is running; wait for it to finish")
+        if any(r["status"] in ("queued", "running") for r in store.all("runs")):
+            raise HTTPException(409, "A run is in progress; pause or cancel it first")
+        restart = getattr(app.state, "request_restart", None)
+        if not restart or not restart():
+            return {"restarting": False, "supervised": False,
+                    "detail": "This server was started without its supervisor. Stop it (Ctrl+C) and start it again with `python -m metis` or the run script; the saved settings apply then."}
+        return {"restarting": True, "supervised": True}
+
+    @app.get("/api/install")
+    def install_status():
+        from metis import installer
+
+        return installer.status(store, config)
+
+    @app.post("/api/install", status_code=202)
+    def install_start(data: dict, request: Request):
+        from metis import installer
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Only from this machine or with METIS_API_TOKEN configured")
+        job = installer.start(store, config, "install", {"prebuild": bool(data.get("prebuild", True))})
+        return job.to_dict()
+
+    @app.post("/api/install/tools", status_code=202)
+    def install_tool(data: dict, request: Request):
+        from metis import installer
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Only from this machine or with METIS_API_TOKEN configured")
+        tool = {"lake": "elan", "lean": "elan"}.get(data.get("tool"), data.get("tool"))
+        if tool not in ("elan", "git"):
+            raise ValueError("Tool must be elan or git")
+        job = installer.start(store, config, "tool", {"tool": tool})
+        return job.to_dict()
+
+    @app.post("/api/install/cancel")
+    def install_cancel(request: Request):
+        from metis import installer
+
+        if not local_or_token(request):
+            raise HTTPException(403, "Only from this machine or with METIS_API_TOKEN configured")
+        return {"cancelled": installer.cancel()}
 
     spec_dir = Path(__file__).resolve().parent.parent / "deploy" / "msc"
 
@@ -1262,11 +1431,7 @@ def create_app(config=None, start_worker=True):
             "lean_image": config.lean_image or None,
         }
 
-    def key_writes_allowed(request):
-        # Keys travel in the request body: accept them only from this machine, or from a
-        # deployment that already authenticates every API call with METIS_API_TOKEN.
-        host = request.client.host if request.client else ""
-        return bool(config.api_token) or host in ("127.0.0.1", "::1", "localhost")
+    key_writes_allowed = local_or_token
 
     @app.put("/api/settings/keys")
     def update_keys(data: dict[str, str | None], request: Request):

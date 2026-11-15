@@ -335,4 +335,3 @@ def test_interface_structure_follows_the_ui_spec_and_keeps_the_csp(client):
     if shutil.which("node"):
         for name in scripts:
             assert subprocess.run(["node", "--check", str(ROOT / "web" / name)], capture_output=True).returncode == 0, name
-    assert (ROOT / "docs/metis-ui-spec.txt").read_text(encoding="utf-8").startswith("Metis — UI Spec")

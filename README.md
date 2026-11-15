@@ -1,31 +1,32 @@
 # Metis
 
-A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from `docs/metis-overview.txt` with the accepted corrections in `docs/implementation-review.md`. The review and acceptance documents are parent-owned and unchanged. See **Plan alignment (2026-11-15)** below for the corrections made after comparing the repository against the overview.
+A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from the design document *Metis — Lower-Level Overview* (2026-11-14) with the corrections its owner accepted in the implementation review; those documents are kept outside this repository. See **Plan alignment (2026-11-15)** below for the corrections made after comparing the repository against the overview.
 
 **The default is a clearly labeled, zero-cost fixture simulation. It is not real mathematical discovery.** Live mode uses MongoDB, actual provider HTTP adapters, and Atlas Vector Search. Missing credentials, unknown prices, zero budgets, or unavailable proof infrastructure stop the relevant operation; none silently falls back to a simulated success.
 
 ## Run locally
 
-Requires Python 3.12+ (tested with 3.12.3). Node 18+ is optional, for the JavaScript syntax check. No frontend build, CDN, npm dependency, cloud account or model key is needed for fixture mode.
+Requires Python 3.12+ (tested with 3.12.3). Nothing else is needed to start: no Node, no build step, no account, no API key. **Windows:** double-click `run.bat`. **macOS / Linux:** run `./run.sh`. The launcher creates the Python environment the first time, installs the packages, starts the server with its supervisor and opens **http://127.0.0.1:8000** in your browser; close its window (or Ctrl+C) to stop. The same by hand:
 
 ```bash
-cd /workspace
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.lock
-.venv/bin/python -m uvicorn metis.main:app --host 127.0.0.1 --port 8000 --workers 1
+.venv/bin/python -m metis            # supervisor: can restart itself when settings change; add --no-browser to stay quiet
 ```
 
-If `venv`/pip is unavailable and `uv` is installed:
+`uvicorn metis.main:app` still works, but a server started that way cannot restart itself from Settings.
 
-```bash
-uv venv .venv
-uv pip install --python .venv/bin/python -r requirements.lock
-.venv/bin/uvicorn metis.main:app --host 127.0.0.1 --port 8000 --workers 1
-```
+Everything after that happens in the browser:
 
-Open **http://127.0.0.1:8000**. The title screen shows the METIS wordmark over a pixel-art beach with three scrolls. Unroll **New Journey**, pick basis groups (islands) and **Set sail**; on the sea map open the **Paper** bottle, add a named **Fixture sample**, confirm its MSC group, and start a run. The report's scripted associations remain **Unchecked**; fixture mode never marks them potentially new or machine verified. Explore the map, the simplified view (G), the Odyssey discussion, the route finder, evidence, before/after, history, wrong-feedback re-review and all three exports. The interface is described under **Interface (UI spec)** below. SQLite data survives restarts in `.metis/fixture.sqlite`; use `METIS_SQLITE_PATH` to change it.
+- **Title screen.** Unroll **New Journey**, tick basis groups (islands) and **Set sail**; on the sea map open the **Paper** bottle, add the scripted **Fixture sample**, and **▶ Start**. A short *first voyage* card on the map walks through it the first time. The default is **fixture mode**: scripted agents, no keys, no cost, and nothing it reports is a real discovery.
+- **Harbour board** (under the scrolls) shows where this installation stands: basis groups ready, the mode, and API keys, each with a button into the right Settings tab.
+- **Settings › Basis groups** installs every basis group from mathlib without a command prompt (see *Basis groups from mathlib*): it checks the tools, offers to install the missing ones into the project folder, downloads mathlib and its compiled cache, builds the groups and shows live progress. The install keeps running if you close the dialog.
+- **Settings › Mode** switches between fixture and live mode, takes the MongoDB connection string and the spending cap, tests the connection, shows a readiness checklist and restarts the server in place when you apply. If the saved live settings cannot start (MongoDB unreachable, for example), the server comes back in fixture mode and says why, so you are never locked out.
+- **Settings › API keys** and **Models** hold the per-provider keys (entered once, masked, never returned) and a model per role, with a Test button in live mode. Keys and server settings go to private files under `.metis/`; an environment variable of the same name wins over a saved value and the screen says so.
 
-In Aether, start the long-running command through an Aether managed terminal, following `aether-internal skill terminal`. Do not use shell backgrounding. The initial build hit a scheduler failure; a separate validation session subsequently started managed terminals successfully (see verification below).
+SQLite data survives restarts in `.metis/fixture.sqlite`; use `METIS_SQLITE_PATH` to change it.
+
+In Aether, start the long-running command through an Aether managed terminal, following `aether-internal skill terminal`. Do not use shell backgrounding.
 
 Optional container startup (does not create a hosted Site):
 
@@ -55,7 +56,7 @@ Initial build validation had no managed terminal/browser or compiler access. A s
 
 ## Interface (UI spec)
 
-The interface follows `docs/metis-ui-spec.txt` (Metis — UI Spec, 2026-11-15), which restructures the design doc's four tabs into a title screen, a scroll transition and a sea map. No frontend build: `web/` holds plain scripts (`pixel.js` sprites and portraits, `title.js` the animated beach, `seamap.js` the island layout and renderer, `app.js` the flow and panels), the wordmark image (`web/art/metis-logo.png`, the supplied artwork at its true 170×70 pixel grid) and the vendored Cytoscape.js. Everything else is drawn in code on canvas at whole-number zoom.
+The interface follows *Metis — UI Spec* (2026-11-15, kept outside this repository), which restructures the design doc's four tabs into a title screen, a scroll transition and a sea map. No frontend build: `web/` holds plain scripts (`pixel.js` sprites and portraits, `title.js` the animated beach, `seamap.js` the island layout and renderer, `app.js` the flow and panels), the wordmark image (`web/art/metis-logo.png`, the supplied artwork at its true 170×70 pixel grid) and the vendored Cytoscape.js. Everything else is drawn in code on canvas at whole-number zoom.
 
 - **Title screen**: pixel-art beach with drifting clouds and rolling waves, the METIS wordmark, and scrolls for **New Journey**, **Load Journey** and **Key Discoveries** (the spec's suggested third scroll), plus Settings. A scroll unrolls on hover, on a tap, or with the keyboard (← → move between scrolls, Enter unrolls or selects, Esc rolls it back up) and rolls back up when the mouse leaves unless a choice is in progress.
 - **New Journey**: the scroll enlarges into the setup form: name (blank lists the journey by its creation date), every basis group the data holds (filterable by name or MSC code, up to twelve per journey) marked **Ready** or **Needs building** with its saved versions, mathlib tag and declaration count, a check mark or warning per model role, and the run settings under Advanced. **Set sail** is disabled until at least one group is chosen and, in live mode, every role has a model, a key and no failed key test. Bridge modules between the chosen islands are added automatically.
@@ -85,7 +86,7 @@ set +a
 .venv/bin/uvicorn metis.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-Set `METIS_MODE=live` and `MONGODB_URI` to an Atlas or local MongoDB URI. Live startup pings MongoDB and installs indexes, including unique layer/type/endpoint edge identities and durable job/call IDs. Startup fails if MongoDB is missing/unreachable. It does not seed fixture modules or use SQLite. The optional `local-mongo` compose profile provides MongoDB 8.0.4; it is not Atlas and does not supply Vector Search.
+Switch to live mode in **Settings › Mode** (or set `METIS_MODE=live` and `MONGODB_URI` in the environment, which then take precedence and are shown as such). The Mode tab stores the connection string in the private key file, tests it, checks that every role has a key and a model and that a spending cap is set, and restarts the supervised server to apply. Live startup pings MongoDB and installs indexes, including unique layer/type/endpoint edge identities and durable job/call IDs. Startup fails if MongoDB is missing/unreachable. It does not seed fixture modules or use SQLite. The optional `local-mongo` compose profile provides MongoDB 8.0.4; it is not Atlas and does not supply Vector Search.
 
 For Atlas, prefer the free tier with a small corpus and a connection pool limited to 10. The $50 database credit allowance is **not** a model budget or an application-enforced Atlas billing cap. The app never provisions/upgrades cloud resources. Configure Atlas access rules, billing controls and usage alerts in your Atlas account. Monitor database/index size, since papers, source excerpts, snapshots and traces consume storage. No automated retention/deletion runs against scientific records.
 
@@ -110,13 +111,13 @@ Live mode needs reviewed base modules before journeys can be created. The defaul
 
 **Which basis groups exist is decided by the data, not by a list in the code.** A basis group is an MSC 2020 field that holds mathlib declarations; at the pinned mathlib commit that is **42 groups** (206,558 declarations), from mathematical logic and category theory to general topology, measure and integration, functional analysis and game theory. Graph theory (05C) stays its own group, as in the design doc's demo islands, and Combinatorics covers the rest of 05. A group is built the first time a journey asks for it and saved; a journey may use up to twelve.
 
-**Install them all with one command** (Windows, macOS or Linux; needs git, [elan](https://lean-lang.org/install), about 8 GB of disk and 8 GB of memory; no model or key):
+**Install them all from the app**: Settings › Basis groups › *Install all basis groups*. It needs git and Lean's `lake` (from elan); the screen shows which are found and can install the missing ones into the project folder (`.lean/elan` on every platform, a portable Git under `.lean/git` on Windows), so nothing outside the project is touched. Then it downloads the pinned mathlib and its compiled cache (about 5 GB, the slow part), exports every declaration (about six minutes), fetches the MSC table, splits the export into basis groups and builds all 42 into the database, with live progress and a log in `.lean/install.log`. It can be cancelled and rerun; finished steps are skipped. The same job from a terminal, for scripted setups:
 
 ```bash
-python scripts/install_basis_groups.py        # Windows: .venv\Scripts\python scripts\install_basis_groups.py
+python scripts/install_basis_groups.py            # add --install-elan / --install-git (Windows) for the tools
 ```
 
-It checks the tools, downloads the pinned mathlib and its compiled cache (about 5 GB, the slow part), exports every declaration (about six minutes), fetches the MSC table, splits the export into basis groups and builds all 42 into the app's database. Run it again after an interruption: finished steps are skipped. Then start the server as usual; it finds `.lean/exports/index` by itself and New Journey lists every group as Ready. A fresh clone of this branch ran it end to end in seven minutes with the mathlib cache already downloaded.
+Afterwards New Journey lists every group as Ready; the server finds `.lean/exports/index` by itself. A fresh clone ran the whole job in seven minutes with the mathlib cache already downloaded. About 8 GB of disk and 8 GB of memory are needed.
 
 The overview's base graph is built in two halves. **By script**, with no model (these are the steps the installer runs):
 
