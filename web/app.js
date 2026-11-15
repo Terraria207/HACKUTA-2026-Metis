@@ -76,6 +76,20 @@ function goHome() {
   location.hash = "home";
   home().catch(error);
 }
+async function openCatalog(adding) {
+  const c = await api("/catalog");
+  state.addingFields = adding;
+  $("catalogTitle").textContent = adding ? "Add fields / modules" : "New journey";
+  state.catalogModules = [...new Map(c.fields.flatMap(f => f.modules).map(m => [m.id, m])).values()];
+  const pinned = new Set(adding ? state.journey.modules : []);
+  $("fieldCatalog").innerHTML = '<legend>Available fields and explicit module versions</legend><p class="hint">Cross-field modules appear once under their first field. Select their exact prerequisites too.</p>' + c.fields.map(f =>
+    `<section><h3>${esc(f.name)} — ${f.ready ? "ready" : "unavailable: import a reviewed module first"}</h3>${f.modules.filter(m => m.islands[0] === f.id).map(m =>
+      `<label class="check"><input type="checkbox" name="module" value="${esc(m.id)}" ${!m.available || pinned.has(m.id) ? "disabled" : ""}>${esc(m.id)} ${pinned.has(m.id) ? "(pinned)" : ""} · ${m.fixture ? "FIXTURE" : "SOURCED"} · ${m.counts.concepts} nodes / ${m.counts.edges} relations</label><p class="hint">${esc(m.coverage)} · requires: ${esc((m.requires || []).join(", ") || "none")}</p><details><summary>Source metadata and coverage gaps</summary><pre>${esc(JSON.stringify({source: m.source, remaining_gaps: m.remaining_gaps || "Curated scope only; no exhaustive coverage claim"}, null, 2))}</pre></details>`).join("")}</section>`).join("");
+  $("journeyForm").elements.name.required = !adding;
+  $("journeyForm").elements.name.closest("label").hidden = adding;
+  $("journeyForm").querySelector('button[type="submit"]').textContent = adding ? "Add selected modules (preserve existing pins)" : "Create journey";
+  $("newDialog").showModal();
+}
 async function home() {
   const journeys = await api("/journeys");
   $("journeyCount").textContent = journeys.length + " explorations";
@@ -146,6 +160,8 @@ async function refresh() {
     ? state.runs.find((r) => r.id === state.run.id) || state.runs[0]
     : state.runs[0];
   const run = state.run;
+  $("addFields").disabled = state.runs.some(r => ["queued", "running", "paused"].includes(r.status));
+  $("addFields").title = $("addFields").disabled ? "Finish or cancel the active run before changing modules" : "Preserve existing pins and add explicit compatible modules";
   $("runStatus").textContent = run ? run.status : "Ready";
   $("startRun").disabled =
     !state.papers.length ||
@@ -294,6 +310,7 @@ async function loadHistory() {
 async function loadGraph() {
   const params = new URLSearchParams();
   [
+    ["layer", "graphLayer"],
     ["tier", "graphTier"],
     ["existing", "graphExisting"],
     ["island", "graphIsland"],
@@ -302,6 +319,8 @@ async function loadGraph() {
   ].forEach(([k, id]) => {
     if ($(id).value) params.set(k, $(id).value);
   });
+  if ($("graphRejected").checked) params.set("include_rejected", "true");
+  if ($("graphProposed").checked) params.set("include_proposed", "true");
   if ($("graphNew").checked) params.set("new_only", "true");
   if ($("graphBefore").checked) params.set("before", "true");
   let g = await api(`/journeys/${state.journey.id}/graph?${params}`);
@@ -333,26 +352,20 @@ function drawGraph(g) {
   const pos = {};
   let svg =
     '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8b999d"/></marker></defs>';
-  const centers =
-    islands.length === 1
-      ? [[500, 320]]
-      : islands.length === 2
-        ? [
-            [260, 320],
-            [740, 320],
-          ]
-        : [
-            [250, 230],
-            [750, 230],
-            [500, 490],
-          ];
+  const maxRows = Math.max(1, ...islands.map(i => Math.ceil(g.concepts.filter(n => n.island === i).length/3)));
+  const clusterHeight = Math.max(290, maxRows * 55 + 85);
+  const height = islands.length < 3 ? clusterHeight + 60 : 2 * clusterHeight + 90;
+  $("graphSvg").setAttribute("viewBox", `0 0 1000 ${height}`);
+  const centers = islands.map((_, i) => islands.length === 1 ? [500, height/2] :
+    islands.length === 2 ? [260 + i * 480, height/2] : [250 + (i % 2) * 500, 30 + clusterHeight/2 + Math.floor(i / 2) * (clusterHeight + 30)]);
   islands.forEach((island, i) => {
     const [cx, cy] = centers[i];
-    svg += `<ellipse class="cluster" cx="${cx}" cy="${cy}" rx="215" ry="145"/><text class="clusterTitle" x="${cx}" y="${cy - 120}" text-anchor="middle">${esc(island.toUpperCase())}</text>`;
+    svg += `<ellipse class="cluster" cx="${cx}" cy="${cy}" rx="215" ry="${(clusterHeight-15)/2}"/><text class="clusterTitle" x="${cx}" y="${cy - clusterHeight/2 + 25}" text-anchor="middle">${esc(island.toUpperCase())}</text>`;
     const ns = g.concepts.filter((n) => n.island === island);
     ns.forEach((n, j) => {
-      const a = (2 * Math.PI * j) / Math.max(ns.length, 1);
-      pos[n.id] = [cx + Math.cos(a) * 140, cy + Math.sin(a) * 75];
+      const cols = Math.min(3, ns.length);
+      const rows = Math.ceil(ns.length / cols);
+      pos[n.id] = [cx + (j % cols - (cols-1)/2) * 138, cy + (Math.floor(j/cols) - (rows-1)/2) * 55];
     });
   });
   g.edges.forEach((e) => {
@@ -360,34 +373,40 @@ function drawGraph(g) {
     if (!end) return;
     const ps = e.premises.map((p) => pos[p]).filter(Boolean);
     if (ps.length !== e.premises.length) return;
-    let junction = end;
+    // Stop arrows outside the node circle so arrowheads remain visible.
+    const trim = (from, to) => { const d = Math.hypot(to[0]-from[0], to[1]-from[1]) || 1;
+      return [to[0] - 15*(to[0]-from[0])/d, to[1] - 15*(to[1]-from[1])/d]; };
+    const nonEvidence = e.review_status !== "passed" || e.invalidated;
+    const edgeClass = `${e.tier} ${nonEvidence ? "nonEvidence" : ""}`;
+    let junction = trim(ps[0], end);
     if (ps.length > 1) {
       junction = [
         (ps.reduce((s, p) => s + p[0], 0) / ps.length + end[0]) / 2,
         (ps.reduce((s, p) => s + p[1], 0) / ps.length + end[1]) / 2,
       ];
-      svg += `<circle class="graphNode" data-detail="${esc(e.id)}" data-kind="edge" cx="${junction[0]}" cy="${junction[1]}" r="5" fill="#577c77"/><path class="graphEdge ${esc(e.tier)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${junction} L ${end}" marker-end="url(#arrow)"/>`;
+      svg += `<circle class="graphNode" data-detail="${esc(e.id)}" data-kind="edge" cx="${junction[0]}" cy="${junction[1]}" r="5" fill="#577c77"/><path class="graphEdge ${esc(edgeClass)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${junction} L ${trim(junction, end)}" marker-end="url(#arrow)"/>`;
     }
     ps.forEach((p) => {
-      svg += `<path class="graphEdge ${esc(e.tier)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${p} L ${junction}" ${ps.length === 1 && e.directed ? 'marker-end="url(#arrow)"' : ""}/>`;
+      svg += `<path class="graphEdge ${esc(edgeClass)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${p} L ${junction}" ${ps.length === 1 && e.directed ? 'marker-end="url(#arrow)"' : ""}/>`;
     });
   });
   g.concepts.forEach((n) => {
     const p = pos[n.id];
     if (!p) return;
-    const color = ["#397c70", "#647ba5", "#ac8552"][islands.indexOf(n.island)];
-    svg += `<g class="graphNode ${n.integrated ? "" : "unintegrated"} ${n.status === "Proposed" ? "proposed" : ""}" data-detail="${esc(n.id)}" data-kind="concept" tabindex="0" role="button" aria-label="${esc(n.name)}"><circle cx="${p[0]}" cy="${p[1]}" r="11" fill="${color}"/><text x="${p[0]}" y="${p[1] + 27}" text-anchor="middle">${esc(n.name.length > 27 ? n.name.slice(0, 25) + "…" : n.name)}</text></g>`;
+    const color = ["#397c70", "#647ba5", "#ac8552", "#9865a5"][islands.indexOf(n.island)];
+    svg += `<g class="graphNode ${n.integrated ? "" : "unintegrated"} ${n.status === "Proposed" ? "proposed" : ""}" data-detail="${esc(n.id)}" data-kind="concept" tabindex="0" role="button" aria-label="${esc(n.name)}">${n.layer.startsWith("journey:") ? `<rect x="${p[0]-11}" y="${p[1]-11}" width="22" height="22" fill="${color}"/>` : `<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="${color}"/>`}<text x="${p[0]}" y="${p[1] + 27}" text-anchor="middle">${esc(n.name.length > 19 ? n.name.slice(0, 17) + "…" : n.name)}</text></g>`;
   });
   $("graphSvg").innerHTML = svg;
+  const inv = g.inventory || {};
   $("graphEmpty").textContent =
-    `${g.concepts.length} concepts · ${g.edges.length} relations. Dotted outlines indicate unintegrated nodes. Click nodes or edges to inspect.`;
+    `Inventory: ${inv.base_nodes ?? "?"} base nodes / ${inv.base_edges ?? "?"} base relations; ${inv.journey_nodes ?? "?"} journey nodes / ${inv.journey_edges ?? "?"} journey relations. ${inv.accepted === 0 ? "No accepted relations: pinned modules may contain no edges and generated candidates may have failed review. Inspect rejected relations for reasons. " : (!g.edges.length ? "No relations match the current filters. " : "")}Visible: ${g.concepts.length} concepts · ${g.edges.length} relations. Circles: base nodes. Squares: journey nodes. Red dotted edges are NON-EVIDENCE; arrows show relation direction, junctions require all premises. Only implies/equivalent relations are proof steps. Base endpoints remain visible as context when filtering journey edges. Dotted outlines indicate unintegrated nodes. Click nodes or edges to inspect.`;
 }
 async function showDetail(kind, id) {
   const result = await api(
     `/journeys/${state.journey.id}/details/${kind}/${encodeURIComponent(id)}`,
   );
   const d = result.item;
-  const html = `<h3>${esc(d.name || d.type)}</h3><p>${esc(d.statement || d.argument)}</p>${pill(d.status || d.tier)} ${d.existing ? pill(d.existing) : ""}<h3>Evidence, provenance & history</h3><pre>${esc(JSON.stringify(result, null, 2))}</pre>`;
+  const html = `<h3>${esc(d.name || d.type)}</h3><p>${esc(d.statement || d.argument)}</p>${pill(d.status || d.tier)} ${d.existing ? pill(d.existing) : ""}${d.review_status && d.review_status !== "passed" || d.invalidated ? pill("NON-EVIDENCE — excluded from proofs and scores") : ""}<p>Layer: ${esc(d.layer)}</p><h3>Reviewer reasons</h3>${(result.reviews || []).map(r => `<p>${esc(r.verdict)}: ${esc(r.reason)}</p>`).join("") || "<p>No reviewer record; inspect source evidence below.</p>"}<h3>Evidence, provenance & history</h3><pre>${esc(JSON.stringify(result, null, 2))}</pre>`;
   if (state.tab === "graph") $("graphDetails").innerHTML = html;
   else {
     $("detailContent").innerHTML = html;
@@ -513,7 +532,8 @@ document.addEventListener("click", (e) => {
   ).catch(error);
 });
 on("homeButton", "click", goHome);
-on("newButton", "click", () => $("newDialog").showModal());
+on("newButton", "click", () => openCatalog(false));
+on("addFields", "click", () => openCatalog(true));
 on("settingsButton", "click", () => openSettings());
 on("journeySettings", "click", () => openSettings(true));
 on("authButton", "click", () => {
@@ -530,9 +550,12 @@ on("authButton", "click", () => {
 on("journeyForm", "submit", async (e) => {
   e.preventDefault();
   const f = new FormData(e.target);
-  const j = await api("/journeys", {
+  const modules = f.getAll("module");
+  if (!modules.length) throw Error("Select at least one ready module version");
+  const islands = [...new Set(modules.flatMap(mid => state.catalogModules.find(m => m.id === mid).islands))];
+  const j = await api(state.addingFields ? `/journeys/${state.journey.id}/modules` : "/journeys", {
     method: "POST",
-    body: JSON.stringify({ name: f.get("name"), islands: f.getAll("island") }),
+    body: JSON.stringify({ name: f.get("name"), islands, modules }),
   });
   $("newDialog").close();
   await openJourney(j.id);

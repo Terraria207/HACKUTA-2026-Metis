@@ -185,6 +185,8 @@ def distance(adj, start, end, cap):
 
 
 def score(edge, nodes, edges, settings, anchors=None):
+    if edge.get("review_status") == "rejected" or edge.get("invalidated"):
+        return {"value": None, "pairs": [], "reason": "Rejected or invalidated relation is NON-EVIDENCE", "measured_before_edge": True}
     if any(
         nodes[n]["status"] == "Proposed" or nodes[n].get("invalidated")
         for n in edge["premises"] + [edge["conclusion"]]

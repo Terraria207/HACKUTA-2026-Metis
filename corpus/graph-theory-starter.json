@@ -1,0 +1,464 @@
+{
+  "module": {
+    "id": "graph-theory-starter@2026-11-15.2",
+    "version": "2026-11-15.2",
+    "name": "graph-theory curated foundations",
+    "islands": [
+      "graph-theory"
+    ],
+    "fixture": false,
+    "source": {
+      "urls": [
+        "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "https://discrete.openmathbooks.org/dmoi3/sec_trees.html"
+      ],
+      "review": "Manual source inspection, 2026-11-15"
+    },
+    "coverage": "Finite simple graphs, subgraphs and trees; excludes spectral, extremal and algorithmic graph theory",
+    "remaining_gaps": "Not exhaustive; no automated mathlib extraction, embeddings, or formal verification. Advanced and research topics omitted."
+  },
+  "groups": [
+    {
+      "id": "graph-theory-starter@2026-11-15.2:05",
+      "name": "Finite simple graphs, subgraphs and trees",
+      "msc": "05",
+      "depth": 1,
+      "parent": null,
+      "ancestors": [
+        "graph-theory-starter@2026-11-15.2:05"
+      ],
+      "island": "graph-theory",
+      "description": "Finite simple graphs, subgraphs and trees; excludes spectral, extremal and algorithmic graph theory"
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:05C",
+      "name": "Finite simple graphs, subgraphs and trees",
+      "msc": "05C",
+      "depth": 2,
+      "parent": "graph-theory-starter@2026-11-15.2:05",
+      "ancestors": [
+        "graph-theory-starter@2026-11-15.2:05",
+        "graph-theory-starter@2026-11-15.2:05C"
+      ],
+      "island": "graph-theory",
+      "description": "Finite simple graphs, subgraphs and trees; excludes spectral, extremal and algorithmic graph theory"
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:05C05",
+      "name": "Finite simple graphs, subgraphs and trees",
+      "msc": "05C05",
+      "depth": 3,
+      "parent": "graph-theory-starter@2026-11-15.2:05C",
+      "ancestors": [
+        "graph-theory-starter@2026-11-15.2:05",
+        "graph-theory-starter@2026-11-15.2:05C",
+        "graph-theory-starter@2026-11-15.2:05C05"
+      ],
+      "island": "graph-theory",
+      "description": "Finite simple graphs, subgraphs and trees; excludes spectral, extremal and algorithmic graph theory"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "graph-theory-starter@2026-11-15.2:graph",
+      "name": "Simple graph",
+      "statement": "A simple graph has vertices V and edges that are two-element subsets of V.",
+      "description": "A simple graph has vertices V and edges that are two-element subsets of V.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "location": "§4.1 Graph Definition",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:isomorphism",
+      "name": "Graph isomorphism",
+      "statement": "A vertex bijection is an isomorphism if it preserves adjacency in both directions.",
+      "description": "A vertex bijection is an isomorphism if it preserves adjacency in both directions.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "location": "§4.1 Isomorphic Graphs",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:subgraph",
+      "name": "Subgraph H of G",
+      "statement": "H has a subset of the vertices and a subset of the edges of G.",
+      "description": "H has a subset of the vertices and a subset of the edges of G.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "location": "§4.1 Subgraphs",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:induced",
+      "name": "Induced subgraph H of G",
+      "statement": "H retains exactly the edges of G with both endpoints in its vertex set.",
+      "description": "H retains exactly the edges of G with both endpoints in its vertex set.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "location": "§4.1 Subgraphs",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:bipartite",
+      "name": "Bipartite graph",
+      "statement": "Vertices partition into two sets, with every edge between the sets.",
+      "description": "Vertices partition into two sets, with every edge between the sets.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+        "location": "§4.1 final definition before exercises",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:connected",
+      "name": "Connected G",
+      "statement": "Every pair of distinct vertices of G has a path.",
+      "description": "Every pair of distinct vertices of G has a path.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Proposition 4.2.1 proof, connectedness",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:forest",
+      "name": "Forest G",
+      "statement": "G has no cycles.",
+      "description": "G has no cycles.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Definition of a Tree, following paragraph",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:tree",
+      "name": "Tree G",
+      "statement": "G is connected and has no cycles.",
+      "description": "G is connected and has no cycles.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Definition of a Tree",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:unique",
+      "name": "Unique paths in G",
+      "statement": "Every pair of distinct vertices of G has exactly one path.",
+      "description": "Every pair of distinct vertices of G has exactly one path.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Proposition 4.2.1",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:at-most-one",
+      "name": "At most one path",
+      "statement": "Between each pair of distinct vertices there is at most one path.",
+      "description": "Between each pair of distinct vertices there is at most one path.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Corollary 4.2.2",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:leaf",
+      "name": "Leaf",
+      "statement": "A leaf is a vertex of degree one.",
+      "description": "A leaf is a vertex of degree one.",
+      "kind": "definition",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 paragraph before Proposition 4.2.3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:leaves",
+      "name": "Two leaves theorem",
+      "statement": "For a finite tree with at least two vertices: at least two vertices are leaves.",
+      "description": "For a finite tree with at least two vertices: at least two vertices are leaves.",
+      "kind": "theorem",
+      "home_group": "graph-theory-starter@2026-11-15.2:05C05",
+      "island": "graph-theory",
+      "status": "Established",
+      "integrated": true,
+      "fixture": false,
+      "hypotheses": [
+        "For a finite tree with at least two vertices"
+      ],
+      "source": {
+        "url": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+        "location": "§4.2 Proposition 4.2.3",
+        "note": "Curator paraphrase; inspected 2026-11-15. Literature supported, not machine verified."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e1",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:induced"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:subgraph",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "For the same H and G, induced subgraphs are subgraphs.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+          "location": "§4.1 Subgraphs",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e2",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:graph"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:isomorphism",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Isomorphism compares adjacency.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+          "location": "§4.1 Isomorphic Graphs",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e3",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:graph"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:bipartite",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Bipartition restricts adjacency.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_gt-intro.html",
+          "location": "§4.1 final definition before exercises",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e4",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:connected",
+        "graph-theory-starter@2026-11-15.2:forest"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:tree",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "For the same simple graph G, connected and acyclic means tree.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Definition of a Tree",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e5",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:tree"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:forest",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "Trees have no cycles.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Definition of a Tree",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e6",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:tree"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:connected",
+      "directed": true,
+      "type": "implies",
+      "tier": "cited",
+      "argument": "Trees are connected.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Definition of a Tree",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e7",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:tree"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:unique",
+      "directed": false,
+      "type": "equivalent",
+      "tier": "cited",
+      "argument": "For the same simple graph G, Proposition 4.2.1 gives both directions.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Proposition 4.2.1",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e8",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:forest"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:at-most-one",
+      "directed": false,
+      "type": "equivalent",
+      "tier": "cited",
+      "argument": "For the same simple graph G, Corollary 4.2.2 gives both directions.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Corollary 4.2.2",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    },
+    {
+      "id": "graph-theory-starter@2026-11-15.2:e9",
+      "premises": [
+        "graph-theory-starter@2026-11-15.2:leaf"
+      ],
+      "conclusion": "graph-theory-starter@2026-11-15.2:leaves",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "The theorem counts leaves under its stated size hypothesis; this is not an implication.",
+      "evidence": [
+        {
+          "source": "https://discrete.openmathbooks.org/dmoi3/sec_trees.html",
+          "location": "§4.2 Proposition 4.2.3",
+          "reviewed": true,
+          "reviewer": "source curator",
+          "note": "Definition links are descriptive; only implies/equivalent participate in proof closure."
+        }
+      ]
+    }
+  ]
+}

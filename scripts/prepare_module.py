@@ -16,6 +16,8 @@ from metis.base import import_module
 def vectorize(bundle, vectors, providers, run, dimensions=1024, attempt=0):
     result = copy.deepcopy(bundle)
     nodes = result['concepts'] + result.get('groups', [])
+    if not nodes:
+        return result  # Relation-only bridge: nothing to embed, no paid provider call.
     texts = [n['name'] + '\n' + n.get('statement', n.get('description', n['name'])) for n in nodes]
     digest = hashlib.sha256(json.dumps([texts, dimensions, providers.public().get('embeddings')], sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     base_key = 'base-module:' + bundle['module']['id'] + ':' + digest
@@ -45,7 +47,7 @@ def vectorize(bundle, vectors, providers, run, dimensions=1024, attempt=0):
     return result
 
 
-def validate(bundle):
+def validate(bundle, prerequisites=()):
     # Run the real importer against an ephemeral store, without touching deployment data.
     from tempfile import TemporaryDirectory
     from metis.config import Config
@@ -53,6 +55,8 @@ def validate(bundle):
     with TemporaryDirectory() as directory:
         store = Store(Config(mode="fixture", sqlite_path=str(Path(directory) / 'validation.sqlite')))
         try:
+            for prerequisite in prerequisites:
+                import_module(store, copy.deepcopy(prerequisite))
             import_module(store, copy.deepcopy(bundle))
         finally:
             store.mongo.client.close() if store.mongo is not None else store.sql.close()
@@ -91,11 +95,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('bundle')
     parser.add_argument('--execute', action='store_true')
+    parser.add_argument('--prerequisite', action='append', default=[], help='Bundle path for OFFLINE validation only, in prerequisite order; execute still requires published pins')
     parser.add_argument('--setup-budget', type=float, default=1)
     parser.add_argument('--setup-attempt', type=int, default=0, help='Explicit new billed attempt after an ambiguous failure')
     args = parser.parse_args()
     bundle = json.loads(Path(args.bundle).read_text())
-    validate(bundle)
+    validate(bundle, [json.loads(Path(p).read_text()) for p in args.prerequisite])
     if not args.execute:
         print(json.dumps({'module': bundle['module']['id'], 'paid_calls': 0, 'action': 'validated only'}))
         return

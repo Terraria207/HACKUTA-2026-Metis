@@ -1,0 +1,44 @@
+{
+  "module": {
+    "id": "markov-bridge@2026-11-15.2",
+    "version": "2026-11-15.2",
+    "name": "Finite Markov matrix bridge",
+    "islands": [
+      "linear-algebra",
+      "probability"
+    ],
+    "requires": [
+      "linear-algebra-starter@2026-11-15.2",
+      "probability-starter@2026-11-15.2"
+    ],
+    "fixture": false,
+    "source": {
+      "url": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+      "location": "\u00a75.6.1\u20132"
+    },
+    "coverage": "One descriptive matrix/Markov bridge, not a theorem implication"
+  },
+  "groups": [],
+  "concepts": [],
+  "edges": [
+    {
+      "id": "markov-bridge@2026-11-15.2:transition",
+      "premises": [
+        "linear-algebra-starter@2026-11-15.2:stochastic"
+      ],
+      "conclusion": "probability-starter@2026-11-15.2:markov",
+      "directed": true,
+      "type": "defined_from",
+      "tier": "cited",
+      "argument": "Finite Markov evolution uses a column stochastic transition matrix; this connects definitions and is not a proof implication.",
+      "evidence": [
+        {
+          "source": "https://textbooks.math.gatech.edu/ila/stochastic-matrices.html",
+          "location": "\u00a75.6.1 Red Box transition example and \u00a75.6.2 stochastic definition / Markov chains",
+          "reviewed": true,
+          "reviewer": "source curator"
+        }
+      ]
+    }
+  ]
+}

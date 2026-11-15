@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ConfigDict
 from metis.config import Config
 from metis.store import Store, uid, now
-from metis.base import seed, import_module, ISLANDS
+from metis.base import seed, import_module, ISLANDS, catalog, validate_selection
 from metis.graph import (
     Settings,
     graph,
@@ -226,6 +226,10 @@ def create_app(config=None, start_worker=True):
             else "Live adapters fail closed. Literature search cannot establish novelty.",
         }
 
+    @app.get("/api/catalog")
+    def field_catalog():
+        return catalog(store, config.mode == "live")
+
     @app.get("/api/modules")
     def modules():
         return store.all("modules", status="ready")
@@ -269,7 +273,7 @@ def create_app(config=None, start_worker=True):
                 ready = [
                     m
                     for m in store.all("modules", status="ready")
-                    if m["islands"] == [island]
+                    if m["islands"] == [island] and not m.get("additive")
                     and (config.mode == "fixture" or not m.get("fixture"))
                 ]
                 if not ready:
@@ -284,23 +288,10 @@ def create_app(config=None, start_worker=True):
                 for m in store.all("modules", status="ready")
                 if len(m["islands"]) > 1
                 and set(m["islands"]).issubset(data.islands)
+                and set(m.get("requires", [])).issubset(chosen)
                 and (config.mode == "fixture" or not m.get("fixture"))
             ]
-        for mid in chosen:
-            if not set(require("modules", mid).get("requires", [])).issubset(chosen):
-                raise ValueError(
-                    "Bridge module prerequisites must match selected pinned versions"
-                )
-        for island in data.islands:
-            if (
-                sum(require("modules", mid)["islands"] == [island] for mid in chosen)
-                > 1
-            ):
-                raise ValueError("Select only one version of each island module")
-        if set(data.islands) != {
-            i for mid in chosen for i in require("modules", mid)["islands"]
-        }:
-            raise ValueError("Modules must cover every selected island")
+        validate_selection(store, chosen, data.islands, config.mode == "live")
         j = {
             "id": uid("j_"),
             "name": data.name,
@@ -314,6 +305,26 @@ def create_app(config=None, start_worker=True):
         }
         store.put("journeys", j)
         return j
+
+    @app.post("/api/journeys/{jid}/modules")
+    def add_modules(jid: str, data: dict):
+        token = uid("module_change_")
+        if not store.insert("locks", {"id": "active:" + jid, "run_id": token}):
+            raise HTTPException(409, "Finish or cancel the active run before adding fields")
+        try:
+            j = journey(jid)
+            if any(r["status"] in ("queued", "running", "paused") for r in store.all("runs", journey_id=jid)):
+                raise HTTPException(409, "Finish or cancel the active run before adding fields")
+            additions = data.get("modules")
+            if not isinstance(additions, list) or not additions or any(not isinstance(m, str) for m in additions):
+                raise ValueError("Explicit module IDs are required")
+            chosen = j["modules"] + additions
+            islands = list(dict.fromkeys(j["islands"] + [i for mid in additions for i in require("modules", mid)["islands"]]))
+            validate_selection(store, chosen, islands, config.mode == "live")
+            history = j.get("module_history", []) + [{"time": now(), "before": j["modules"], "added": additions, "after": chosen}]
+            return store.patch("journeys", jid, modules=chosen, islands=islands, module_history=history, last_activity=now())
+        finally:
+            store.release_run_lock(jid, token)
 
     @app.get("/api/journeys/{jid}")
     def get_journey(jid: str):
@@ -557,6 +568,7 @@ def create_app(config=None, start_worker=True):
             raise HTTPException(409, "Finish or cancel the active run first")
         if not store.insert("locks", {"id": "active:" + jid, "run_id": rid}):
             raise HTTPException(409, "An active run holds this journey lock")
+        j = journey(jid)  # Re-read pins after acquiring the shared module/run lock.
         g = graph(store, j)
         run = {
             "id": rid,
@@ -709,6 +721,8 @@ def create_app(config=None, start_worker=True):
         before: bool = False,
         q: str | None = None,
         include_rejected: bool = False,
+        include_proposed: bool = False,
+        layer: str | None = None,
     ):
         j = journey(jid)
         g = graph(store, j)
@@ -723,10 +737,19 @@ def create_app(config=None, start_worker=True):
                 g["edges"] = [e for e in g["edges"] if e["id"] in r["before"]["edges"]]
             elif new_only:
                 g["edges"] = [e for e in g["edges"] if e.get("run_id") == run_id]
+        inventory = {"base_nodes": sum(n["layer"].startswith("module:") for n in g["concepts"]),
+                     "journey_nodes": sum(n["layer"].startswith("journey:") for n in g["concepts"]),
+                     "base_edges": sum(e["layer"].startswith("module:") for e in g["edges"]),
+                     "journey_edges": sum(e["layer"].startswith("journey:") for e in g["edges"]),
+                     "rejected": sum(e.get("review_status") == "rejected" for e in g["edges"]),
+                     "accepted": sum(e.get("review_status") == "passed" and not e.get("invalidated") for e in g["edges"])}
+        context_ids = {n for e in g["edges"] if layer and e["layer"].startswith(layer + ":")
+                       for n in e["premises"] + [e["conclusion"]]}
         g["concepts"] = [
             n
             for n in g["concepts"]
-            if (not island or n["island"] == island)
+            if (not layer or n["layer"].startswith(layer + ":") or n["id"] in context_ids)
+            and (not island or n["island"] == island)
             and (not q or q.casefold() in (n["name"] + " " + n["statement"]).casefold())
         ]
         ids = {n["id"] for n in g["concepts"]}
@@ -737,11 +760,15 @@ def create_app(config=None, start_worker=True):
                 include_rejected
                 or (e.get("review_status") != "rejected" and not e.get("invalidated"))
             )
+            and (not layer or e["layer"].startswith(layer + ":"))
+            and (include_proposed or e.get("review_status") in ("passed", "rejected"))
             and all(n in ids for n in e["premises"] + [e["conclusion"]])
             and (not tier or e["tier"] == tier)
             and (not existing or e["existing"] == existing)
             and (not new_only or e.get("provenance", {}).get("kind") != "integration")
         ]
+        g["inventory"] = inventory
+        g["filters"] = {"layer": layer, "tier": tier, "island": island, "include_rejected": include_rejected, "include_proposed": include_proposed}
         return g
 
     @app.post("/api/journeys/{jid}/search/semantic")

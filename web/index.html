@@ -59,6 +59,7 @@
           <h1 id="journeyTitle"></h1>
           <div id="journeyMeta" class="muted"></div>
         </div>
+        <button id="addFields" class="quiet">Add fields / modules</button>
         <button id="journeySettings" class="quiet">Journey settings</button>
       </div>
       <nav class="tabs" aria-label="Journey workspace">
@@ -224,7 +225,10 @@
               ><span>━━ Verified</span><span>┄ Cited</span
               ><span>··· Intuitive</span><span>● Junction = AND premises</span>
             </div>
-            <svg
+            <label class="check"><input id="graphRejected" type="checkbox"> Inspect rejected / invalidated (NON-EVIDENCE)</label>
+<label class="check"><input id="graphProposed" type="checkbox"> Inspect proposed (NON-EVIDENCE)</label>
+<label>Layer <select id="graphLayer"><option value="">Base + journey</option><option value="module">Base only</option><option value="journey">Journey only</option></select></label>
+<svg
               id="graphSvg"
               viewBox="0 0 1000 650"
               role="img"
@@ -271,7 +275,7 @@
     <dialog id="newDialog">
       <form id="journeyForm">
         <div class="sectionTitle">
-          <h2>New journey</h2>
+          <h2 id="catalogTitle">New journey</h2>
           <button type="button" data-close="newDialog" class="quiet">✕</button>
         </div>
         <label
@@ -281,32 +285,7 @@
             maxlength="100"
             placeholder="Spectral connections"
         /></label>
-        <fieldset>
-          <legend>Choose your islands</legend>
-          <label class="check"
-            ><input
-              type="checkbox"
-              name="island"
-              value="linear-algebra"
-              checked
-            />
-            Linear algebra <small>15</small></label
-          ><label class="check"
-            ><input
-              type="checkbox"
-              name="island"
-              value="graph-theory"
-              checked
-            />
-            Graph theory <small>05C</small></label
-          ><label class="check"
-            ><input type="checkbox" name="island" value="probability" checked />
-            Probability <small>60</small></label
-          ><label class="check"
-            ><input type="checkbox" name="island" value="number-theory" />
-            Number theory <small>11 (import module first)</small></label
-          >
-        </fieldset>
+        <fieldset id="fieldCatalog"><legend>Available fields and pinned modules</legend></fieldset>
         <p class="hint">
           Journeys pin immutable module versions. Fixture modules are
           illustrative, never a mathlib extraction.

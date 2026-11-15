@@ -541,15 +541,15 @@ svg {
   fill: var(--ink);
   pointer-events: none;
 }
-.graphNode circle {
+.graphNode circle, .graphNode rect {
   stroke: #fff;
   stroke-width: 3;
 }
-.graphNode.unintegrated circle {
+.graphNode.unintegrated circle, .graphNode.unintegrated rect {
   stroke: var(--amber);
   stroke-dasharray: 3 3;
 }
-.graphNode.proposed circle {
+.graphNode.proposed circle, .graphNode.proposed rect {
   fill: #fff !important;
   stroke: var(--teal);
 }
@@ -781,3 +781,8 @@ footer button {
   stroke: var(--ink);
   stroke-width: 5;
 }
+
+.graphEdge.nonEvidence { stroke: #bc3e45; stroke-dasharray: 2 6; }
+#fieldCatalog { min-width: 0; }
+#fieldCatalog section { min-width: 0; overflow-wrap: anywhere; }
+#fieldCatalog .check { overflow-wrap: anywhere; }

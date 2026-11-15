@@ -317,3 +317,10 @@ created in Atlas. For a direct Voyage account, set
 `METIS_VOYAGE_API_HOST=api.voyageai.com`. Only those two fixed hosts are accepted;
 arbitrary endpoint overrides are rejected. Geography-scoped keys require an
 explicit future adapter extension. See MongoDB's [embedding API documentation](https://www.mongodb.com/docs/api/doc/atlas-embedding-and-reranking-api/).
+
+The field picker now reads `GET /api/catalog`: readiness, immutable versions,
+source/fixture labels, counts and curated coverage reflect the current database.
+Use **Add fields / modules** to select compatible ready versions without
+rewriting existing pins; active runs block changes. The graph reports base vs
+journey inventory and can inspect rejected/proposed relations as NON-EVIDENCE.
+See [starter corpus sources and budgeted publication/migration commands](corpus/README.md#curated-starter-foundations-2026-11-152).

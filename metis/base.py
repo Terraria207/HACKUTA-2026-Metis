@@ -148,6 +148,10 @@ def import_module(store, bundle):
         raise ValueError("Module version already exists; publish a new version")
     if not m.get("version") or not m.get("source") or not m.get("islands"):
         raise ValueError("Module requires version, source and islands")
+    for name in ("groups", "concepts", "edges"):
+        ids = [d["id"] for d in bundle.get(name, [])]
+        if len(ids) != len(set(ids)):
+            raise ValueError("Duplicate identifiers within bundle")
     layer = "module:" + mid
     required = m.get("requires", [])
     if any(
@@ -246,3 +250,31 @@ def import_module(store, bundle):
         for d in docs:
             store.put(collection, dict(d, layer=layer))
     return store.put("modules", dict(m, status="ready", bundle_sha256=fingerprint))
+
+
+def catalog(store, live=False):
+    """Deployment inventory, never a claim of exhaustive mathematical coverage."""
+    modules = []
+    for m in store.all("modules"):
+        layer = "module:" + m["id"]
+        counts = {key: len(store.all(key, layer=layer)) for key in ("concepts", "edges", "groups")}
+        modules.append(dict(m, counts=counts, available=m.get("status") == "ready" and not (live and m.get("fixture")),
+                            coverage=m.get("coverage", "Illustrative fixture" if m.get("fixture") else "Curated scope; incomplete")))
+    return {"fields": [{"id": i, "name": meta[0], "ready": any(m["available"] and i in m["islands"] for m in modules),
+                        "modules": [m for m in modules if i in m["islands"]]} for i, meta in ISLANDS.items()]}
+
+
+def validate_selection(store, chosen, islands, live=False):
+    if len(set(chosen)) != len(chosen) or any(i not in ISLANDS for i in islands):
+        raise ValueError("Duplicate module or unknown field")
+    modules = [store.get("modules", mid) for mid in chosen]
+    if any(not m or m.get("status") != "ready" or (live and m.get("fixture")) for m in modules):
+        raise ValueError("Select ready modules compatible with the deployment mode")
+    if any(not set(m.get("requires", [])).issubset(chosen) for m in modules):
+        raise ValueError("Select exact pinned prerequisites")
+    for island in islands:
+        roots = [m for m in modules if m["islands"] == [island] and not m.get("additive")]
+        if len(roots) != 1:
+            raise ValueError("Select exactly one root version per field; use an additive extension or a new journey")
+    if set(islands) != {i for m in modules for i in m["islands"]}:
+        raise ValueError("Modules must cover exactly the selected fields")
