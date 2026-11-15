@@ -462,3 +462,40 @@ def test_base_rereview_downgrade_is_effective_without_mutating_module(
     assert not adjacency(
         {n["id"]: n for n in effective["concepts"]}, effective["edges"]
     )[a["id"]]
+
+
+def test_malformed_cached_extracted_edges_are_rejected_without_losing_valid_edges(app, client, journey):
+    import copy
+    r = run(client, journey, paper(client, journey))
+    w, s = app.state.worker, app.state.store
+    w.stage0(r)
+    cached = s.all('extractions')[0]
+    extraction = copy.deepcopy(cached['extraction'])
+    bad_tier = dict(extraction['edges'][0], tier=1)
+    bad_ref = dict(extraction['edges'][0], premises=['unknown-concept'])
+    extraction['edges'].extend([bad_tier, bad_ref])
+    s.patch('extractions', cached['id'], extraction=extraction)
+    before = {e['id'] for e in w.run_edges(r)}
+    w.stage0(r)
+    assert {e['id'] for e in w.run_edges(r)} == before
+    rejected = [t for t in s.all('trace', run_id=r['id']) if t['summary'] == 'Malformed extracted edge rejected']
+    assert len(rejected) == 2
+    assert s.get('papers', r['paper_id'])['extracted']
+
+
+def test_malformed_crew_proposal_does_not_discard_valid_sibling(app, client, journey, monkeypatch):
+    r = run(client, journey, paper(client, journey))
+    w, s = app.state.worker, app.state.store
+    w.stage0(r)
+    w.stage1(r)
+    target = next(t for t in s.get('runs',r['id'])['targets'] if not t.get('unavailable'))
+    s.patch('runs',r['id'],targets=[target])
+    j=s.get('journeys',journey['id']);j['settings']['p']=3;s.put('journeys',j)
+    src=s.get('papers',r['paper_id'])['concept_ids'][0]
+    dest=next(n for n in target['concept_ids'] if n!=src)
+    valid={'premises':[src],'conclusion':dest,'type':'related','directed':True,'tier':'intuitive','argument':'A specific comparison of these mathematical structures.','evidence':[]}
+    monkeypatch.setattr(w,'call',lambda *a,**kw:{'proposals':[dict(valid,premises=['missing-node']),dict(valid,tier=1),valid]})
+    w.stage2(dict(r,fixture=False))
+    traces=s.all('trace',run_id=r['id'])
+    assert sum(t['summary']=='Malformed crew proposal rejected' for t in traces)==2
+    assert sum(t['summary']=='Proposal recorded' for t in traces)==1

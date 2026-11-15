@@ -440,6 +440,7 @@ class Pipeline:
                     + " levels. For excerpts from the input paper use source=input-paper and exact location. No review or verification claims. Allowed types: implies,equivalent,defined_from,generalizes,special_case,related.",
                     "paper_text": paper["text"],
                     "contract": Extraction.model_json_schema(),
+                    "edge_schema": EdgeInput.model_json_schema(),
                 },
                 run,
                 "extract",
@@ -554,14 +555,19 @@ class Pipeline:
             self.store.put("concepts", doc)
             nodes[ident] = doc
         for i, raw in enumerate(extraction["edges"]):
-            e = dict(
-                raw,
-                premises=[mapping[x] for x in raw["premises"]],
-                conclusion=mapping[raw["conclusion"]],
-            )
-            if e["conclusion"] in e["premises"]:
+            try:
+                e = dict(
+                    raw,
+                    premises=[mapping[x] for x in raw["premises"]],
+                    conclusion=mapping[raw["conclusion"]],
+                )
+                if e["conclusion"] in e["premises"]:
+                    continue
+                e = EdgeInput.model_validate(e).model_dump()
+            except (ValueError, KeyError, TypeError):
+                self.trace(run, 0, "decomposer", "Malformed extracted edge rejected",
+                           edge_index=i, reason="Invalid edge fields or unknown concept reference")
                 continue
-            e = EdgeInput.model_validate(e).model_dump()
             self.save_edge(
                 run,
                 e,
@@ -835,9 +841,15 @@ class Pipeline:
                         if e["conclusion"] == c["key"]:
                             e["conclusion"] = ident
             for j, raw in enumerate(proposals):
-                e = EdgeInput.model_validate(raw).model_dump()
-                if not all(n in nodes for n in e["premises"] + [e["conclusion"]]):
-                    raise ValueError("Crew proposal references an unavailable node")
+                try:
+                    e = EdgeInput.model_validate(raw).model_dump()
+                    if not all(n in nodes for n in e["premises"] + [e["conclusion"]]):
+                        raise ValueError("Crew proposal references an unavailable node")
+                except (ValueError, KeyError, TypeError):
+                    self.trace(run, 2, target["crew"], "Malformed crew proposal rejected",
+                               proposal_index=j, target_index=i,
+                               reason="Invalid edge fields or unavailable node")
+                    continue
                 saved = self.save_edge(
                     run, e, target["crew"], target, "crew:" + str(i) + ":" + str(j)
                 )
