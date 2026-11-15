@@ -3,6 +3,7 @@
 from metis.graph import EdgeInput, duplicate_key
 
 ISLANDS = {
+    "number-theory": ("Number theory", "11", "11B", "11B83"),
     "linear-algebra": ("Linear algebra", "15", "15A", "15A03"),
     "graph-theory": ("Graph theory", "05", "05C", "05C50"),
     "probability": ("Probability", "60", "60B", "60B20"),
@@ -11,6 +12,8 @@ ISLANDS = {
 
 def seed(store):
     for island, (name, field, region, village) in ISLANDS.items():
+        if island == "number-theory":
+            continue  # Explicitly import the real corpus; never fabricate a fixture.
         mid = island + "@fixture-1"
         if store.get("modules", mid):
             continue

@@ -29,7 +29,7 @@ from metis.providers import AtlasVectors, ProviderUnavailable, BudgetExceeded
 
 class JourneyInput(BaseModel):
     name: str = Field(min_length=1, max_length=100)
-    islands: list[str] = Field(min_length=1, max_length=3)
+    islands: list[str] = Field(min_length=1, max_length=4)
     modules: list[str] = Field(default_factory=list)
     settings: Settings = Field(default_factory=Settings)
 
@@ -250,7 +250,7 @@ def create_app(config=None, start_worker=True):
     @app.post("/api/journeys", status_code=201)
     def new_journey(data: JourneyInput):
         if any(i not in ISLANDS for i in data.islands):
-            raise ValueError("Unknown demo island")
+            raise ValueError("Unknown island")
         chosen = []
         if data.modules:
             for mid in data.modules:
