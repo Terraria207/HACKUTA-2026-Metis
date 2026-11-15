@@ -1,0 +1,32 @@
+services:
+  metis:
+    build: .
+    ports: ["127.0.0.1:8000:8000"]
+    environment:
+      METIS_MODE: ${METIS_MODE:-fixture}
+      METIS_SQLITE_PATH: /data/fixture.sqlite
+      MONGODB_URI: ${MONGODB_URI:-}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-metis}
+      METIS_API_TOKEN: ${METIS_API_TOKEN:-}
+      METIS_ALLOW_LIVE: ${METIS_ALLOW_LIVE:-false}
+      METIS_LIVE_BUDGET_USD: ${METIS_LIVE_BUDGET_USD:-0}
+      METIS_PROVIDERS_FILE: ${METIS_PROVIDERS_FILE:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+    volumes: ["metis-data:/data"]
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+  mongo:
+    image: mongo:8.0.4
+    profiles: [local-mongo]
+    ports: ["127.0.0.1:27017:27017"]
+    volumes: ["mongo-data:/data/db"]
+    restart: unless-stopped
+volumes:
+  metis-data:
+  mongo-data:
