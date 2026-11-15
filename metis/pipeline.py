@@ -2,6 +2,7 @@ import hashlib
 import json
 import random
 import threading
+from typing import Literal
 from pydantic import BaseModel, Field
 from metis.store import uid, now
 from metis.graph import (
@@ -37,10 +38,41 @@ class Interrupted(RuntimeError):
 CREW = ["Eurylochus", "Elpenor", "Polites", "Perimedes"]
 
 
+class ExtractedConcept(BaseModel):
+    key: str = Field(min_length=1)
+    name: str = Field(min_length=1)
+    statement: str = Field(min_length=1)
+    description: str = Field(min_length=1)
+    kind: Literal["axiom", "definition", "theorem", "conjecture", "construction", "lemma"]
+    msc: str = Field(min_length=1)
+
+
 class Extraction(BaseModel):
     concepts: list[dict] = Field(default_factory=list, max_length=100)
     edges: list[dict] = Field(default_factory=list, max_length=200)
     msc_codes: list[str] = Field(default_factory=list, max_length=10)
+
+
+def extraction_edge_errors(extraction):
+    """Validate concepts and local references before embeddings or integration."""
+    keys = set()
+    errors = []
+    for index, raw in enumerate(extraction["concepts"]):
+        try:
+            concept = ExtractedConcept.model_validate(raw)
+            if concept.key in keys:
+                raise ValueError("Duplicate concept key")
+            keys.add(concept.key)
+        except (ValueError, TypeError) as exc:
+            errors.append({"concept_index": index, "reason": str(exc)[:1000]})
+    for index, raw in enumerate(extraction["edges"]):
+        try:
+            edge = EdgeInput.model_validate(raw)
+            if any(k not in keys for k in edge.premises + [edge.conclusion]):
+                raise ValueError("Unknown extracted concept key")
+        except (ValueError, TypeError) as exc:
+            errors.append({"edge_index": index, "reason": str(exc)[:1000]})
+    return errors
 
 
 class Pipeline:
@@ -385,7 +417,7 @@ class Pipeline:
         journey, g, nodes = self.context(run)
         paper = self.store.get("papers", run["paper_id"])
         layer = "journey:" + journey["id"]
-        schema = "extraction-v2"
+        schema = "extraction-v5"
         spec = self.providers.roles.get("decomposer", {})
         cache_key = hashlib.sha256(
             (
@@ -437,15 +469,38 @@ class Pipeline:
                 {
                     "task": "Extract mathematical concepts and relationships with full hypotheses. Do not invent citations. Return concepts [{key,name,statement,description,kind,msc}], edges [{premises:[key],conclusion:key,type,directed,tier,argument,evidence:[{source,location,excerpt}]}], msc_codes. For integration include standard referenced concepts and their supporting citations, at most "
                     + str(journey["settings"]["integration_depth"])
-                    + " levels. For excerpts from the input paper use source=input-paper and exact location. No review or verification claims. Allowed types: implies,equivalent,defined_from,generalizes,special_case,related.",
+                    + " levels. Independently of integration depth, extract relationships WITHIN the paper, including definitions and dependencies used by its results. Preserve all quantifiers, domain restrictions and conditional assumptions in each statement (including hypothetical divergence); a statement must be understandable without the paper. Extract the definitions needed to understand each result. Use dependency or defined_from for descriptive relationships; do not turn them into implications. An association is not a theorem. For excerpts from the input paper use source=input-paper, an exact location and a verbatim quote, not a paraphrase or ellipsis. Tier must be the string cited or intuitive, never a number or verified. No review or verification claims. Allowed types: implies,equivalent,defined_from,dependency,generalizes,special_case,related. Do not invent edges to satisfy a count; an empty list is allowed when unsupported.",
+                    "evidence_rules": "Copy excerpts character-for-character from paper_text, allowing only whitespace normalization. Do not translate PDF formula text to LaTeX inside excerpts. Prefer intact prose excerpts around the cited definition/proof step. Separate multi-part theorems into individual claims so a dependency can identify the specific result it supports.",
+                    "output_budget": "Keep the complete JSON response concise, within 6500 tokens. Prioritize the paper's principal definitions, results and explicit internal dependencies. Avoid duplicating long statements in descriptions or arguments. Return valid, complete JSON.",
                     "paper_text": paper["text"],
                     "contract": Extraction.model_json_schema(),
                     "edge_schema": EdgeInput.model_json_schema(),
+                    "concept_schema": ExtractedConcept.model_json_schema(),
                 },
                 run,
                 "extract",
             )
         extraction = Extraction.model_validate(extraction).model_dump()
+        if not cached and not run["fixture"]:
+            errors = extraction_edge_errors(extraction)
+            if errors or not extraction["edges"]:
+                self.trace(run, 0, "decomposer", "Extraction relationship repair requested",
+                           errors=errors, empty=not extraction["edges"])
+                extraction = Extraction.model_validate(self.call(
+                    "decomposer",
+                    {
+                        "task": "Repair the complete extraction using the original paper. Correct schema errors and unknown references; preserve valid concepts and relationships. Check for omitted relationships WITHIN the paper, including defined_from and dependency relations. Preserve all hypotheses and quantifiers in standalone statements. Use only source-supported relationships and exact verbatim evidence with source=input-paper and location. Tier must be cited or intuitive, never numeric or verified. Return the complete extraction. Do not invent relationships: empty edges is valid if none are supported.",
+                        "paper_text": paper["text"], "extraction": extraction,
+                        "errors": errors, "contract": Extraction.model_json_schema(),
+                        "edge_schema": EdgeInput.model_json_schema(),
+                        "concept_schema": ExtractedConcept.model_json_schema(),
+                    }, run, "extract:repair",
+                )).model_dump()
+                remaining = extraction_edge_errors(extraction)
+                if remaining:
+                    raise ValueError("Extraction relationships invalid after one repair attempt")
+            if not extraction["edges"]:
+                self.trace(run, 0, "decomposer", "No within-paper relationships extracted after coverage check")
         if not cached:
             self.store.insert(
                 "extractions",
@@ -943,6 +998,16 @@ class Pipeline:
             else self.citation_context(run, e)
         )
         blinded["source_validation"] = citation_checks
+        relation_semantics = (
+            "This is a descriptive relation, not a logical implication. For dependency, "
+            "check whether the source documents use of the premise in defining or proving "
+            "the conclusion (possibly only a specified part). Do not require that the premise "
+            "alone proves the entire conclusion. For defined_from, check the stated definition. "
+            "Check every listed dependency is actually used and accurately scoped. A passed "
+            "descriptive edge must never be interpreted as a proof step."
+            if e["type"] in ("dependency", "defined_from", "related", "generalizes", "special_case")
+            else "This is a logical relation: require every stated hypothesis and the complete conclusion."
+        )
         if run["fixture"]:
             independent = {
                 "hypotheses_match": True,
@@ -964,6 +1029,7 @@ class Pipeline:
                 {
                     "task": "Independently test hypotheses, direction, necessity of EVERY premise and edge cases. Return hypotheses_match:boolean, premises_necessary:boolean,counterexample_found:boolean,reason:string. Do not rely on other reviews.",
                     "edge": blinded,
+                    "relation_semantics": relation_semantics,
                 },
                 run,
                 key + ":independent",
@@ -973,6 +1039,7 @@ class Pipeline:
                 {
                     "task": "Review well-formedness, nontriviality, duplicate/new-node definitions, logical correctness and evidence. For equivalence verify both directions. Return verdict (pass/reject),reason,citation_valid,well_defined,not_duplicate,not_trivial booleans. citation_valid true ONLY if the source excerpt at exact location states identical hypotheses/result. Never confirm machine verification.",
                     "edge": blinded,
+                    "relation_semantics": relation_semantics,
                     "new_nodes": [
                         {
                             "statement": nodes[n]["statement"],

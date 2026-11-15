@@ -37,3 +37,35 @@ Record separately: deterministic fixture tests, MongoDB integration tests, real 
 ## Atlas deployment constraint
 
 Prefer M0/free with bounded corpus, traces and connection pool. Atlas lists 512 MB including index storage for free clusters: https://www.mongodb.com/docs/atlas/manage-clusters/ . Automatic upgrade is disabled by application policy; no promise that an application setting caps cloud billing. Usage alerts and cloud billing controls must be configured in Atlas. The $50 credit balance is not model-provider authorization.
+
+### Internal-paper extraction regression (2026-11-15)
+
+Inspection of the first live Collatz extraction found four concepts and one internal
+relation. The relation used a numeric tier (`1`) instead of the required enum,
+so it was rejected before review; the six reviewed rejections were later crew
+proposals. Thus pipeline completion did not demonstrate successful extraction
+of the paper's internal relationships.
+
+Extraction v5 explicitly requests internal definition/dependency relationships,
+self-contained hypotheses, and verbatim source evidence. It validates concept fields and local
+references and relation schemas before integration and makes at most one
+budget-accounted repair call for malformed or empty relationships. Still-invalid
+repair output fails the stage before caching; a supported empty result remains
+allowed and is traced. The cache version prevents reusing the deficient v2
+extraction in fresh runs. This does not relax mathematical or citation review,
+nor does it repair previously saved runs retroactively.
+
+Descriptive relation review distinguishes a documented dependency from logical
+entailment; accepting a dependency does not make it traversable as a proof step.
+Provider read timeouts are bounded at 180 seconds (connect: 15 seconds) to allow
+complete structured extraction responses from slower models.
+
+Live re-extraction run `r_1bc78738aef57acb34e0c57a8e92b6b2` completed
+in ingestion-only mode: 17 extracted concepts and 10 reviewed relations, 7 passed
+and 3 rejected. Five accepted relations connect journey concepts to each other;
+two connect paper concepts with reused base concepts. Six passed relations are
+cited and one is intuitive; none is machine-verified. The live default graph now
+has 43 concepts and 15 relations, including the eight pre-existing base relations.
+This is paper integration, not a new cross-field discovery run. Conservative
+global provider ledger after validation: $39.22 of the authorized $100 cap.
+Regression suite: 113 passed, 2 optional integrations skipped.

@@ -202,7 +202,7 @@ class Providers:
         body = json.dumps(payload, ensure_ascii=False)
         # Hosts are fixed provider hosts: user input can never select an outbound model URL.
         with httpx.Client(
-            timeout=60, follow_redirects=False, trust_env=False
+            timeout=httpx.Timeout(180, connect=15), follow_redirects=False, trust_env=False
         ) as client:
             if "texts" in payload and provider == "openai":
                 r = client.post(
