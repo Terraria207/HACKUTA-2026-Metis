@@ -1,0 +1,2205 @@
+{
+ "module": {
+  "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1",
+  "version": "2026-11-15.1",
+  "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+  "islands": [
+   "linear-algebra",
+   "number-theory"
+  ],
+  "requires": [
+   "linear-algebra-mathlib@2026-11-15.1",
+   "number-theory-mathlib@2026-11-15.1"
+  ],
+  "name": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1",
+  "source": {
+   "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+   "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+   "requires": [
+    "linear-algebra-mathlib@2026-11-15.1",
+    "number-theory-mathlib@2026-11-15.1"
+   ]
+  },
+  "fixture": false,
+  "coverage": "Cross-field dependency metadata between the required island modules; no inference edges"
+ },
+ "groups": [],
+ "concepts": [],
+ "edges": [
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:6dff634259a1b6df8880",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:c99113ae32619efd5abf",
+    "number-theory-mathlib@2026-11-15.1:945d0b425f9f65aa8f94",
+    "number-theory-mathlib@2026-11-15.1:c9472e5152d0e82d20f8",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:6dff634259a1b6df8880",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ClassGroup.cardM",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 4,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:438262e6b82b056ee47c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:6dff634259a1b6df8880",
+    "number-theory-mathlib@2026-11-15.1:c9472e5152d0e82d20f8",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:438262e6b82b056ee47c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ClassGroup.distinctElems",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:e9923d58bf2e4c886138",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:438262e6b82b056ee47c",
+    "number-theory-mathlib@2026-11-15.1:6dff634259a1b6df8880",
+    "number-theory-mathlib@2026-11-15.1:c9472e5152d0e82d20f8",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:e9923d58bf2e4c886138",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ClassGroup.finsetApprox",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 4,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:c99113ae32619efd5abf",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:7ed892bfce1be33b678b",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:c99113ae32619efd5abf",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ClassGroup.normBound",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:9fd5047415b85886ca64",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:9fd5047415b85886ca64",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CongruenceSubgroup.Gamma",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:8c33b12109ecad104d58",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e",
+    "linear-algebra-mathlib@2026-11-15.1:14bbdcf76222c8b00921"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:8c33b12109ecad104d58",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CongruenceSubgroup.Gamma0",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:9d1edafb300b2ad055d1",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:eeef48396e5f7784d597",
+    "number-theory-mathlib@2026-11-15.1:8c33b12109ecad104d58",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:9d1edafb300b2ad055d1",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CongruenceSubgroup.Gamma1",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:eeef48396e5f7784d597",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:8c33b12109ecad104d58",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:eeef48396e5f7784d597",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CongruenceSubgroup.Gamma1'",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:35ed57c515beddbbc334",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:9fd5047415b85886ca64",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:35ed57c515beddbbc334",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CongruenceSubgroup.IsCongruenceSubgroup",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:e13b1d2b6b4aaef6f59b",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:e13b1d2b6b4aaef6f59b",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CuspForm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:9a625c563f26c919304e",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:e13b1d2b6b4aaef6f59b",
+    "number-theory-mathlib@2026-11-15.1:d02f02b261f43b3ace4f",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:9a625c563f26c919304e",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CuspForm.toSlashInvariantForm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:41d0a988fbfb8eed059d",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:41d0a988fbfb8eed059d",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "CuspFormClass",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:d4431066dcc8041e4aad",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:d4431066dcc8041e4aad",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "FunctionField",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:adf6e1605a0c6abee5c4",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:adf6e1605a0c6abee5c4",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "Ideal.exists_map_eq_of_isGalois",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:1537cef809a4028dedf5",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:1537cef809a4028dedf5",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "Ideal.inertiaDeg",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:cf9454cb3a4a0a884f83",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:7aab38f457959c8d4b1b",
+    "number-theory-mathlib@2026-11-15.1:50067a43fa3916fd4c70",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9",
+    "linear-algebra-mathlib@2026-11-15.1:903737874c86869be3eb",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:cf9454cb3a4a0a884f83",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.Rat.isIntegralClosure_adjoin_singleton_of_prime_pow",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:9f750cdc7394ec959914",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:de6727b144eec6046278",
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "number-theory-mathlib@2026-11-15.1:76405e6c1950d7492b5f",
+    "number-theory-mathlib@2026-11-15.1:8d2c52a1d80bb3bbd009",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:9f750cdc7394ec959914",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.Rat.nrComplexPlaces_eq_totient_div_two",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 8,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:0b7c70a9269fa19a8d62",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:9f750cdc7394ec959914",
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "number-theory-mathlib@2026-11-15.1:76405e6c1950d7492b5f",
+    "number-theory-mathlib@2026-11-15.1:d294eddb2356f0dc09be",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:0b7c70a9269fa19a8d62",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.Rat.three_pid",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 9,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:e67f77434291aa7f9051",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:1a8c83b3df995c2ffb4b",
+    "number-theory-mathlib@2026-11-15.1:982e3cc78da5b1431bfe",
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "linear-algebra-mathlib@2026-11-15.1:9fb339f5c92430c28db3",
+    "number-theory-mathlib@2026-11-15.1:ab8edf6d65812d665ab5",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:30f9d0a278c76c0758e1",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "linear-algebra-mathlib@2026-11-15.1:14bbdcf76222c8b00921",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:e67f77434291aa7f9051",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.discr_prime_pow",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 10,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:1a8c83b3df995c2ffb4b",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:5780a3b8c7c363819ac0",
+    "number-theory-mathlib@2026-11-15.1:7aab38f457959c8d4b1b",
+    "number-theory-mathlib@2026-11-15.1:982e3cc78da5b1431bfe",
+    "number-theory-mathlib@2026-11-15.1:451c0ca84b1828eec4b4",
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "number-theory-mathlib@2026-11-15.1:ab8edf6d65812d665ab5",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:1a8c83b3df995c2ffb4b",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.discr_prime_pow_ne_two",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 9,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:9d531b9c2727005ce15e",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:903737874c86869be3eb"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:9d531b9c2727005ce15e",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.finite",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:7aab38f457959c8d4b1b",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:9d531b9c2727005ce15e",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:7aab38f457959c8d4b1b",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.finiteDimensional",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:8e3fd1e639793517ce60",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:451c0ca84b1828eec4b4",
+    "number-theory-mathlib@2026-11-15.1:54f9a599d1ca4744d6a7",
+    "number-theory-mathlib@2026-11-15.1:ab8edf6d65812d665ab5",
+    "number-theory-mathlib@2026-11-15.1:3fbf9c64be889c5c2603",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsCyclotomicExtension.finrank",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:b17cdb48ee531283632d",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:7aab38f457959c8d4b1b",
+    "number-theory-mathlib@2026-11-15.1:50067a43fa3916fd4c70",
+    "number-theory-mathlib@2026-11-15.1:ab8edf6d65812d665ab5",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:b17cdb48ee531283632d",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsPrimitiveRoot.discr_zeta_eq_discr_zeta_sub_one",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:5780a3b8c7c363819ac0",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:982e3cc78da5b1431bfe",
+    "number-theory-mathlib@2026-11-15.1:451c0ca84b1828eec4b4",
+    "number-theory-mathlib@2026-11-15.1:ab8edf6d65812d665ab5",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:5780a3b8c7c363819ac0",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsPrimitiveRoot.norm_eq_one",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:17fb64e8a7c2bfe3023f",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:7aab38f457959c8d4b1b",
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:17fb64e8a7c2bfe3023f",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsPrimitiveRoot.norm_pow_sub_one_of_prime_pow_ne_two",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:2692f84610a5b4129b45",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:8e3fd1e639793517ce60",
+    "number-theory-mathlib@2026-11-15.1:e7e5dae4de1734b72f22",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:2692f84610a5b4129b45",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "IsPrimitiveRoot.norm_pow_sub_one_two",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:a211c6c91fc211677763",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:a211c6c91fc211677763",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ModularForm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:87fb834ac70d5ab44259",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:a211c6c91fc211677763",
+    "number-theory-mathlib@2026-11-15.1:d02f02b261f43b3ace4f",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:87fb834ac70d5ab44259",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ModularForm.toSlashInvariantForm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:0ac18cab00d7464eadeb",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:0ac18cab00d7464eadeb",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ModularFormClass",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:04e888c8624fa6820238",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:7c5f762c0695611136fc"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:04e888c8624fa6820238",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ModularGroup.lcRow0",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:4bcf94c765f1b03a0a93",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:1da169ffa5773ddb4ebf",
+    "linear-algebra-mathlib@2026-11-15.1:3b6c5039de05d4296696",
+    "linear-algebra-mathlib@2026-11-15.1:02be6472f4b4f989158e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:4bcf94c765f1b03a0a93",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "ModularGroup.lcRow0Extend",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:041b834e275e97ff1961",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:041b834e275e97ff1961",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.Embeddings.card",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:f4492c2856c04b4a5714",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:f4492c2856c04b4a5714",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.Embeddings.finite_of_norm_le",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:de6727b144eec6046278",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:041b834e275e97ff1961",
+    "number-theory-mathlib@2026-11-15.1:8d2c52a1d80bb3bbd009",
+    "number-theory-mathlib@2026-11-15.1:061da0b0ada3a27e3285",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:de6727b144eec6046278",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.InfinitePlace.card_add_two_mul_card_eq_rank",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:1a9557d011faaf6963fa",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:041b834e275e97ff1961",
+    "number-theory-mathlib@2026-11-15.1:6f7b92641c5d69712c10",
+    "number-theory-mathlib@2026-11-15.1:0e3594a9169220c9be88",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:1a9557d011faaf6963fa",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.InfinitePlace.sum_mult_eq",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:4b019630189db72a18fc",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:d4bf05cc3239036a28f1",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.RingOfIntegers.basis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:d3d549c038789cfb57db",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:cc0b1d2e6a477e5f5277",
+    "number-theory-mathlib@2026-11-15.1:0e2525c11edaab8c97c0",
+    "linear-algebra-mathlib@2026-11-15.1:d4bf05cc3239036a28f1",
+    "linear-algebra-mathlib@2026-11-15.1:6bd5718fc1278ca7c7bd",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:d3d549c038789cfb57db",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.Units.basisModTorsion",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 8,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:50264fea613aea7aa4a5",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:4e581600974a3a2a2489",
+    "number-theory-mathlib@2026-11-15.1:d3d549c038789cfb57db",
+    "number-theory-mathlib@2026-11-15.1:488c537ad8789023be65",
+    "number-theory-mathlib@2026-11-15.1:cc0b1d2e6a477e5f5277",
+    "number-theory-mathlib@2026-11-15.1:0e2525c11edaab8c97c0",
+    "number-theory-mathlib@2026-11-15.1:a4c5b9eba64ae35281c2",
+    "linear-algebra-mathlib@2026-11-15.1:37d42ca2c45b5478dcdc",
+    "number-theory-mathlib@2026-11-15.1:b719fc62ac61febb04d9",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:50264fea613aea7aa4a5",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.Units.basisUnitLattice",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 12,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:459e33cb9e99017862ab",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:d3d549c038789cfb57db",
+    "number-theory-mathlib@2026-11-15.1:cc0b1d2e6a477e5f5277",
+    "number-theory-mathlib@2026-11-15.1:0e2525c11edaab8c97c0",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:459e33cb9e99017862ab",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.Units.fundSystem",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:29582e4fe1a921db60d6",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:53402c5cc4fa8231a95d",
+    "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:29582e4fe1a921db60d6",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.basisMatrix",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:854744ce5013138e1c3c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:fa9ed2453b93507c1046",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:854744ce5013138e1c3c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.basisOfFractionalIdeal",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:6682722ffaf490230d4d",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+    "number-theory-mathlib@2026-11-15.1:a693b6a8b9b80111ebd6",
+    "linear-algebra-mathlib@2026-11-15.1:7787f05e205dfff50e40",
+    "linear-algebra-mathlib@2026-11-15.1:df1028b3f2ad8e97b128",
+    "linear-algebra-mathlib@2026-11-15.1:6bd5718fc1278ca7c7bd",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "linear-algebra-mathlib@2026-11-15.1:14bbdcf76222c8b00921",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.canonicalEmbedding.latticeBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 10,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:bf158030ca42552585df",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:e2a035a6c21c755e233c",
+    "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+    "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+    "linear-algebra-mathlib@2026-11-15.1:c616f81cb142c7e4ab69",
+    "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+    "number-theory-mathlib@2026-11-15.1:a693b6a8b9b80111ebd6",
+    "linear-algebra-mathlib@2026-11-15.1:6bd5718fc1278ca7c7bd",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "linear-algebra-mathlib@2026-11-15.1:b23a8399c2ebea579803",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:bf158030ca42552585df",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.canonicalEmbedding.latticeBasis_apply",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 12,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:d294eddb2356f0dc09be",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:d294eddb2356f0dc09be",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.discr",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:53402c5cc4fa8231a95d",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:53402c5cc4fa8231a95d",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.equivReindex",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 3,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:fa9ed2453b93507c1046",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:d4bf05cc3239036a28f1",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:fa9ed2453b93507c1046",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.fractionalIdealBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:071a00f898b87eacfc48",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:38e5f645fcf893cecab4",
+    "number-theory-mathlib@2026-11-15.1:d294eddb2356f0dc09be",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:071a00f898b87eacfc48",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.hermiteTheorem.rank_le_rankOfDiscrBdd",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 4,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.integralBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:e2a035a6c21c755e233c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+    "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:e2a035a6c21c755e233c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.integralBasis_apply",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:83bb5e6a8525b4baefb9",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:8d2c52a1d80bb3bbd009",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:83bb5e6a8525b4baefb9",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.convexBodySumFactor",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 4,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:8788e2a596f4dc3897d9",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:041b834e275e97ff1961",
+    "number-theory-mathlib@2026-11-15.1:8d2c52a1d80bb3bbd009",
+    "number-theory-mathlib@2026-11-15.1:061da0b0ada3a27e3285",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:8788e2a596f4dc3897d9",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.finrank",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 10,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:502f12cde5b7cb8b7f13",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:854744ce5013138e1c3c",
+    "number-theory-mathlib@2026-11-15.1:1c07361de59bcbc094fa",
+    "linear-algebra-mathlib@2026-11-15.1:f98d21692b872fd32a11",
+    "linear-algebra-mathlib@2026-11-15.1:42ad23ca7bdba7d51990",
+    "linear-algebra-mathlib@2026-11-15.1:6bd5718fc1278ca7c7bd",
+    "number-theory-mathlib@2026-11-15.1:4f189676ca8fbb16df3f",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "linear-algebra-mathlib@2026-11-15.1:e277522cc2747a0ec62c",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:502f12cde5b7cb8b7f13",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fractionalIdealLatticeBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 15,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:d9e83b8b8e3961a93ef6",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:0a4acaf45c3fcbcd68ab",
+    "linear-algebra-mathlib@2026-11-15.1:924178fd1c405b02a808",
+    "number-theory-mathlib@2026-11-15.1:770e7b56554af6278a03",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:d9e83b8b8e3961a93ef6",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fundamentalCone.completeBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:7135c3b239d5de406fe0",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:ae6b6d76dfb931ec39ee",
+    "number-theory-mathlib@2026-11-15.1:d9e83b8b8e3961a93ef6",
+    "linear-algebra-mathlib@2026-11-15.1:9c516fb9292b6968e440",
+    "number-theory-mathlib@2026-11-15.1:770e7b56554af6278a03",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:7135c3b239d5de406fe0",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fundamentalCone.fderiv_expMapBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:93a11d37327b51b06783",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:d46e9cb533a5c8ed03b0",
+    "number-theory-mathlib@2026-11-15.1:6c16e73f80b1f89b94a1",
+    "number-theory-mathlib@2026-11-15.1:cc0b1d2e6a477e5f5277",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:93a11d37327b51b06783",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fundamentalCone.integerSetEquiv",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:ca0d656b9d133ede14a4",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:93a11d37327b51b06783",
+    "linear-algebra-mathlib@2026-11-15.1:d46e9cb533a5c8ed03b0",
+    "number-theory-mathlib@2026-11-15.1:6c16e73f80b1f89b94a1",
+    "number-theory-mathlib@2026-11-15.1:cc0b1d2e6a477e5f5277",
+    "number-theory-mathlib@2026-11-15.1:e9d31dcd557cc616c2f7",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:ca0d656b9d133ede14a4",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fundamentalCone.integerSetEquivNorm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 11,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:cb82d084e667bd3cd182",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:b719fc62ac61febb04d9",
+    "number-theory-mathlib@2026-11-15.1:770e7b56554af6278a03",
+    "number-theory-mathlib@2026-11-15.1:0e3594a9169220c9be88",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:cb82d084e667bd3cd182",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.fundamentalCone.realSpaceToLogSpace",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 6,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:1c07361de59bcbc094fa",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:a00419baee0ecfb6ebf4",
+    "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+    "linear-algebra-mathlib@2026-11-15.1:924178fd1c405b02a808",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "linear-algebra-mathlib@2026-11-15.1:b23a8399c2ebea579803",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:1c07361de59bcbc094fa",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.latticeBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 12,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:2dff3a6c1b0fe06aa143",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:e2a035a6c21c755e233c",
+    "number-theory-mathlib@2026-11-15.1:bf158030ca42552585df",
+    "number-theory-mathlib@2026-11-15.1:a00419baee0ecfb6ebf4",
+    "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+    "number-theory-mathlib@2026-11-15.1:4b019630189db72a18fc",
+    "linear-algebra-mathlib@2026-11-15.1:924178fd1c405b02a808",
+    "number-theory-mathlib@2026-11-15.1:1c07361de59bcbc094fa",
+    "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+    "number-theory-mathlib@2026-11-15.1:a693b6a8b9b80111ebd6",
+    "number-theory-mathlib@2026-11-15.1:4f189676ca8fbb16df3f",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:2dff3a6c1b0fe06aa143",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.latticeBasis_apply",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 18,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:f68bc5e08999120a9ef4",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:a4c5b9eba64ae35281c2",
+    "number-theory-mathlib@2026-11-15.1:e9d31dcd557cc616c2f7",
+    "number-theory-mathlib@2026-11-15.1:6b0b5838189cab3563f6",
+    "number-theory-mathlib@2026-11-15.1:b719fc62ac61febb04d9",
+    "number-theory-mathlib@2026-11-15.1:0e3594a9169220c9be88",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:f68bc5e08999120a9ef4",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.logMap",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 11,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:0ea68fabb8a61ffea58c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:502f12cde5b7cb8b7f13",
+    "linear-algebra-mathlib@2026-11-15.1:17bd7a8eb66f825a013b",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:0ea68fabb8a61ffea58c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.minkowskiBound",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 9,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:df6eb5d3fd379c47b82c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:58e909b6e171d65160ff",
+    "number-theory-mathlib@2026-11-15.1:1a9557d011faaf6963fa",
+    "number-theory-mathlib@2026-11-15.1:e9d31dcd557cc616c2f7",
+    "number-theory-mathlib@2026-11-15.1:6b0b5838189cab3563f6",
+    "number-theory-mathlib@2026-11-15.1:0e3594a9169220c9be88",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "linear-algebra-mathlib@2026-11-15.1:7c9a3928d851eae38193",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:df6eb5d3fd379c47b82c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.norm_smul",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 11,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:201333713337122e02ef",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:eb481d1c9f70977600c0",
+    "linear-algebra-mathlib@2026-11-15.1:67a90cf50994928dc59e",
+    "number-theory-mathlib@2026-11-15.1:6a69d0fc351191aa0f6f",
+    "linear-algebra-mathlib@2026-11-15.1:7787f05e205dfff50e40",
+    "linear-algebra-mathlib@2026-11-15.1:6bd5718fc1278ca7c7bd",
+    "number-theory-mathlib@2026-11-15.1:d6ef0d34967307221538",
+    "number-theory-mathlib@2026-11-15.1:e29193564881958f002e",
+    "number-theory-mathlib@2026-11-15.1:6773dc692fead3eb30ff",
+    "number-theory-mathlib@2026-11-15.1:33d2e4fc3d2bf0faca9f",
+    "number-theory-mathlib@2026-11-15.1:c407aacd61b6368d74ae",
+    "linear-algebra-mathlib@2026-11-15.1:cb8d295f1603859ad022"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:201333713337122e02ef",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.stdBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 11,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:0c09f69d402ff83dd584",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:a08ad6eb32eef5ff2a22",
+    "number-theory-mathlib@2026-11-15.1:2dff3a6c1b0fe06aa143",
+    "number-theory-mathlib@2026-11-15.1:a00419baee0ecfb6ebf4",
+    "number-theory-mathlib@2026-11-15.1:d8f1a9ebb716f3772354",
+    "linear-algebra-mathlib@2026-11-15.1:936e88ca77abc632abb4",
+    "number-theory-mathlib@2026-11-15.1:6682722ffaf490230d4d",
+    "number-theory-mathlib@2026-11-15.1:201333713337122e02ef",
+    "number-theory-mathlib@2026-11-15.1:1c07361de59bcbc094fa",
+    "linear-algebra-mathlib@2026-11-15.1:f3b9e7e2d89db697d82d",
+    "linear-algebra-mathlib@2026-11-15.1:c616f81cb142c7e4ab69",
+    "number-theory-mathlib@2026-11-15.1:6a69d0fc351191aa0f6f",
+    "number-theory-mathlib@2026-11-15.1:cb2ff58c20d23ef0dfc0",
+    "number-theory-mathlib@2026-11-15.1:a693b6a8b9b80111ebd6",
+    "number-theory-mathlib@2026-11-15.1:d294eddb2356f0dc09be",
+    "linear-algebra-mathlib@2026-11-15.1:af8ee0e7060e56b9c955",
+    "linear-algebra-mathlib@2026-11-15.1:2ea97d6bcd991c69c311",
+    "linear-algebra-mathlib@2026-11-15.1:7787f05e205dfff50e40",
+    "linear-algebra-mathlib@2026-11-15.1:42ad23ca7bdba7d51990",
+    "number-theory-mathlib@2026-11-15.1:e9898c7d49f7c8a63133",
+    "linear-algebra-mathlib@2026-11-15.1:df1028b3f2ad8e97b128"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:0c09f69d402ff83dd584",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "NumberField.mixedEmbedding.volume_fundamentalDomain_latticeBasis",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 33,
+     "truncated": true
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:594d2832cd3886c10d5a",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:737020d73c502a8c47e9",
+    "number-theory-mathlib@2026-11-15.1:3af8f3428bb29f5dc236"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:594d2832cd3886c10d5a",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "RingOfIntegers.norm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:d02f02b261f43b3ace4f",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:d02f02b261f43b3ace4f",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SlashInvariantForm",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:4463eeea3c94fdf0766c",
+   "premises": [
+    "number-theory-mathlib@2026-11-15.1:d02f02b261f43b3ace4f",
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:4463eeea3c94fdf0766c",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SlashInvariantForm.toFun",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 2,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-number-theory-mathlib-bridge@2026-11-15.1:7066aa4d1374268fd8d1",
+   "premises": [
+    "linear-algebra-mathlib@2026-11-15.1:5bf6c6f04366a2b8138e"
+   ],
+   "conclusion": "number-theory-mathlib@2026-11-15.1:7066aa4d1374268fd8d1",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "number-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SlashInvariantFormClass",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 1,
+     "truncated": false
+    }
+   ]
+  }
+ ]
+}

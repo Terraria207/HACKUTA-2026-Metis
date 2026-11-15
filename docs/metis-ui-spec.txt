@@ -1,0 +1,386 @@
+Metis — UI Spec
+Nov 15, 2026  ·  @Elliot
+Overview
+Metis's interface runs from a pixel-art title screen, through New Journey or Load Journey,
+to a top-down sea map where each basis group is an island. This spec restructures the
+original UI notes and fills gaps from the design doc, Metis — Lower-Level Overview; items
+marked Added are suggestions found in neither.
+Both menus end in the same scroll transition, and only a review document opens without
+going to the map first. On the map, the paper input, Odyssey discussion and route finder
+sit around the sea, and a toggle switches to the simplified view.
+Terms: a basis group is what the design doc calls an island module: a field of mathematics
+(e.g., linear algebra) built once by the gods and shared by every journey.
+Title screen
+The title screen offers two choices, New Journey and Load Journey, each on a rolled scroll
+in front of a pixel-art beach.
+screen flow · title screen to sea map
+Metis — UI Spec
+Page 1 of 12
+Scene
+Background: pixel art of an ocean view from an island beach, under a bright blue sky.
+Logo: the METIS pixel-art wordmark, centered above the two scrolls.
+Added: light animation (waves rolling in, drifting clouds) so the screen doesn't look
+frozen.
+Menu scrolls
+Added: keyboard and touch. Arrow keys move between scrolls, Enter unrolls or
+selects, Esc rolls back up. On touch screens, which have no hover, a tap unrolls the
+scroll.
+New Journey
+New Journey creates a journey: a name, the basis groups to explore, the models and their
+API keys, and the run settings from the design doc. Added: clicking the New Journey
+scroll enlarges it into this setup form.
+Basis groups
+Pick one or more basis groups (islands) from the database, e.g., linear algebra, graph
+theory, probability.
+Each basis group is built once by a powerful model (the gods, Claude Fable 5.2) and
+saved. If an earlier journey already built it, it is linked at once, read-only.
+The picker marks each group as Ready (saved) or Needs building, so the user knows
+before starting whether a build is coming.
+State New Journey Load Journey
+At rest Label above a rolled-up scroll Label above a rolled-up scroll
+Mouse over Scroll unrolls; the label stays "New
+Journey"
+Scroll unrolls into a scrollable list of past
+journeys
+Click Opens journey setup (see New
+Journey)
+Click a journey, then choose Open
+journey or Open review document (see
+Load Journey)
+Mouse
+leaves
+Scroll rolls back up Scroll rolls back up, unless a choice is in
+progress
+Metis — UI Spec
+Page 2 of 12
+From the design doc: each saved group is tagged with the mathlib version it was built
+from and rebuilt only when mathlib is updated. Bridge modules between any two
+selected islands are included automatically.
+Models and API keys
+Every model role takes an API key. Defaults come from the design doc's model roster.
+Each role has a model dropdown and a key field. Roles that share a provider can share
+one key.
+Added: keys are entered once, in a Settings screen reachable from the title screen,
+and reused by every journey; New Journey only shows a check mark per role, or a
+warning where a key is missing.
+Added: keys are masked after entry, with a Test button that makes one small call to
+confirm the key works.
+Role Default model Key needed
+The gods (build basis
+groups)
+Claude Fable 5.2 Anthropic
+Decomposer Gemini 3.5 Flash Google
+Eurylochus (crew) Claude Haiku 5.5 Anthropic
+Elpenor (crew) Gemini 3.5 Flash-Lite Google
+Polites (crew) Grok 4.3 xAI
+Perimedes (crew) NVIDIA Nemotron 3 Ultra NVIDIA
+Penelope GPT-6.1 Sol OpenAI
+Hephaestus Leanstral 1.5 Mistral
+Tiresias Gemini 3.5 Flash with Google Search
+grounding
+Google
+Odysseus Claude Opus 5.5 Anthropic
+Narrator (Odyssey
+discussion)
+Claude Haiku 5.5 Anthropic
+Embeddings Voyage AI voyage-4 via MongoDB Atlas MongoDB
+Atlas
+Metis — UI Spec
+Page 3 of 12
+Start is disabled until every role the journey uses has a working key.
+Run settings (collapsed under Advanced, prefilled with the design doc's defaults)
+Start
+Added: the button reads "Set sail".
+If every chosen basis group is saved, the scroll transition starts right away. Otherwise
+the gods build the missing groups first, with progress shown on the scroll (see
+Transition).
+Load Journey
+Load Journey lists past journeys on the unrolled scroll; each one can be reopened on the
+map or have its review documents opened.
+The list
+Setting Default
+Journey name Blank; an unnamed journey is listed by its
+creation date
+Bridge-score weights w_t and w_g 0.5 and 0.5 (must sum to 1)
+D_max (graph-distance cap) Not set in the design doc
+Group-or-paper target ratio 50/50
+K, concepts per target About 50
+P, proposals per comparison About 5
+Integration depth 2 levels
+New-node trigger 3 intuitive edges from different papers or
+runs
+Blind-test bar for new nodes Edges from 2 different crew mates
+Hephaestus's budget per run Not set in the design doc
+Budget cap (pauses a run before it is
+exceeded)
+Set by the user
+Metis — UI Spec
+Page 4 of 12
+One row per journey, labeled by its name, or by its creation date if it was never named.
+Dates are shown in the user's time zone.
+From the design doc, each row also shows the journey's islands, papers run, new
+connections found, last activity and status (ready, running or paused).
+Added: sorted by last activity, newest first. With no journeys yet, the scroll says so
+and points to New Journey.
+Choosing a journey
+Added: a review document opens on the same full-screen scroll as the transition, with
+a "Sail to the map" button that finishes the transition into that journey.
+Transition
+Once the final choice is made in either menu, the scroll flies to fill the screen and fades
+into the top-down ocean.
+1. The user confirms: Set sail (New Journey) or Open journey (Load Journey).
+2. The scroll flies toward the viewer and grows until it covers the whole screen.
+3. It fades into the top-down ocean view of the journey's islands.
+Added: if any basis group still has to be built, the scroll holds at full screen and shows
+the build's progress (for example, the island being inked onto the parchment) until
+the journey is ready. The design doc calls for a progress indicator here.
+Added: keep the animation short and let a click or Esc skip it, since returning users will
+see it every time.
+Choice What happens
+Open journey Scroll transition to that journey's sea map, where it
+left off. A paused or interrupted run offers Resume.
+Open review document Shows the journey's run reports, newest first;
+picking one opens that ranked report (see Other UI
+elements, Report).
+Metis — UI Spec
+Page 5 of 12
+Sea map
+The sea map shows each selected basis group as an island sized by its node count, with
+papers, edges and cross-island links drawn as Odyssey scenery the user can zoom and
+pan.
+What each part of the graph looks like
+Boats (Added: a proposed mapping)
+Hull shows strength: a trireme with oars for a verified link, a merchant ship for a cited
+one, a raft for an intuitive one.
+Sail shows age: a bright new sail for a link added in the latest run, a weathered,
+patched sail for one from an earlier run.
+Walkers (Added)
+Walkers move from premise to conclusion, so direction is visible; on an undirected
+(two-way) edge they walk both ways.
+Graph element On the map
+Basis group (field) An island; its area scales with its node count
+Basis nodes Not drawn, since there are too many; they are laid
+out slightly apart, so the island's size still reflects
+its count
+Subgroups (subfields, subtopics) Patches of different-colored grass
+Papers Patches of grass of their own (see Open
+questions)
+Paper nodes Random pixel-art Odyssey items and creatures
+Edge between two nodes on one
+island
+People walking between them
+Edge between islands An Odyssey-style boat; its kind shows whether
+the link is new or old, strong or weak
+Everything else Open water around and between the islands
+Metis — UI Spec
+Page 6 of 12
+A hyperedge (several premises that together give one conclusion) shows walkers
+from each premise meeting at a campfire, then one walking on to the conclusion. This
+mirrors the design doc's junction dot.
+Status on the map (from the design doc)
+Nodes and edges new in the latest run are highlighted.
+Unintegrated concepts are outlined. Proposed nodes are quarantined, so they look
+faded until accepted.
+Zoom and pan
+Zoom in and out with the scroll wheel, a trackpad pinch or + and − buttons; drag to
+pan; a Fit all button shows every island again.
+Added: zoom in whole steps (1×, 2×, 3×…) so the pixel art stays sharp.
+Added: more detail appears as the user zooms in. Zoomed out shows islands, grass
+patches and boats; zoomed in adds paper characters and walkers.
+Zooming also means the map no longer has to fit on one screen, so islands keep their
+spacing on smaller windows.
+Added: a small minimap in a corner while zoomed in.
+Pointing at a patch, character, walker or boat shows its name; clicking opens its details
+(see Other UI elements).
+Simplified view
+A toggle swaps the scenery for the bare node system: nodes as dots, edges as lines and
+groups as highlighted, labeled regions.
+Toggled by a button on the map and a keyboard shortcut (G).
+Unlike the sea map, this view draws every node, basis nodes included.
+Added: the camera carries over, so zoom, pan and the current selection stay put when
+switching views.
+Styling (from the design doc)
+Nodes colored by status: Established, Proposed, Accepted, Proven. Unintegrated
+concepts outlined.
+Edges styled by tier: solid for verified, dashed for cited, dotted for intuitive.
+Hyperedges drawn as lines converging on a junction dot before the conclusion.
+Nodes and edges new in the latest run highlighted.
+Metis — UI Spec
+Page 7 of 12
+Filters and search (from the design doc; they apply in both views)
+Filter by tier, existing tag (Existing, Not found, Unchecked), island, run, or new
+connections only.
+Search concepts by name or by meaning (vector search).
+Paper input
+A panel on the map takes a research paper, by attaching it or typing it in, and starts a run
+on it.
+Attach a PDF, or type or paste an arXiv ID or URL. From the design doc: or pick a paper
+already in the journey's corpus.
+Before the run starts, the panel shows where the paper sits in the tree (its MSC
+codes, which the decomposer assigns if the paper has none) and lets the user correct
+it.
+From the design doc: add papers without running them, in bulk by arXiv IDs or MSC
+category, so the crew has papers to draw as targets.
+Run controls: Start, Pause, Resume and Cancel, available throughout the run.
+As the run finishes, new paper characters appear on their islands and new boats set
+sail, highlighted as new.
+Added: the panel is styled as a message in a bottle washed up at the map's edge.
+Odyssey discussion
+While a run is going, a narrator model, Claude Haiku 5.5, turns each agent's output into
+dialogue between the Odyssey characters, shown as pop-ups with the speaker's portrait.
+Why Claude Haiku 5.5: it runs on every trace entry, so it has to be fast and cheap; it
+reliably follows a rule like "keep these facts word for word"; and it reuses the Anthropic
+key the journey already needs for the gods, Eurylochus and Odysseus. It can be swapped
+in the models table like any other role.
+Pop-ups
+Each pop-up shows the speaker's pixel portrait, name and line, in the order the agents
+produced them.
+Lines advance on their own, with a speed control; a click advances, and the discussion
+can be skipped or muted.
+Metis — UI Spec
+Page 8 of 12
+Added: a scrollable log keeps the whole discussion for the run.
+Added: when a line is about a specific node, edge or island, its walker, boat or patch is
+highlighted, and the user can click to pan there.
+Who speaks for each step
+Keeping it accurate (Added)
+The narrator restyles wording only. Verdicts, tiers, existing tags, concept names and
+citations are passed through unchanged.
+Each pop-up links to the trace entry it came from.
+From the design doc, the raw live trace stays one click away: grouped by pipeline step,
+filterable by agent, crew mate or step, and expandable to full text and evidence. Like
+the trace, the discussion shows only what agents write, not hidden model reasoning.
+When many entries arrive at once (four crew mates proposing together), the narrator
+folds them into one short exchange so pop-ups stay readable.
+Route finder
+The route finder connects any two nodes, draws the route on the map, and writes it out
+formally as a chain of logical steps.
+Picking the ends
+Choose the start and end nodes by clicking them on the map or searching by name or
+meaning.
+Pipeline step Speaker
+Building a basis group The gods
+Decomposing and integrating the paper No character yet (see Open questions)
+Crew exploration Eurylochus, Elpenor, Polites, Perimedes
+Proof review Penelope
+Lean proof attempt Hephaestus
+Literature check Tiresias
+Ranking and memory Odysseus
+Metis — UI Spec
+Page 9 of 12
+Route types (Added, following the design doc's rules for proofs)
+On the map
+The route is highlighted: walkers along each edge on an island, a boat for each
+crossing between islands.
+Added: a Play button sends a small ship or walker along the route, with the camera
+following.
+Formal view
+A numbered list of steps. Each step gives its premises, its conclusion, the edge type
+(implies, generalizes, …), its tier and its evidence or source.
+A hyperedge needs all of its premises reached, so a route through one is shown as a
+tree of steps rather than a single chain, as in the design doc's proofs.
+A summary line gives the route's length and overall tier, the lowest tier of any step.
+If no route exists under the chosen type, the finder says so.
+Added: the formal view can be copied or exported as text.
+Other UI elements from the original plan
+The design doc's User interface section has eight more pieces this spec needs; on the sea
+map they become buttons and panels around the map instead of the doc's four tabs (Run,
+Report, Graph, History).
+Route
+type
+Edges it may use What the result is
+Proof
+route
+Verified and cited edges, followed only
+in their direction
+A complete logical argument from
+start to end
+Any route All edges, including intuitive ones, in
+either direction
+A conjecture: as strong as its
+weakest edge
+Metis — UI Spec
+Page 10 of 12
+Element What it does Where it lives
+Report The run's ranked report: top new
+connections (tagged Not found)
+with tier, bridge score, evidence
+and a one-line explanation;
+rediscoveries; proposed concepts
+and new groups. Each item links to
+its spot on the map. The user can
+mark an item interesting or wrong;
+wrong sends the edge back to
+Penelope. Export as PDF,
+Markdown or JSON.
+A Report button on the map; also
+the review document in Load
+Journey
+Details panel Clicking a node or edge shows its
+statement, evidence, provenance
+(which model and perspective
+found it), tier history and the proof
+tree that reaches it
+Side panel on the map
+History Every run in the journey with its
+paper, date and results; any run's
+trace and report can be reopened.
+Run another paper suggests next
+papers placed near the latest
+bridges.
+A History button on the map
+Before-and-after
+view
+Compares the map before and
+after any run
+Opened from History
+Key discoveries A feed across all journeys of
+proven new results, top new
+connections and accepted
+conjectures, each linking to where
+it was found
+Added: a third scroll on the title
+screen, or a section of the Load
+Journey scroll
+Costs Usage and cost per run and per
+journey, with the budget cap that
+pauses a run
+Settings, and a small counter on
+the map during a run
+Metis — UI Spec
+Page 11 of 12
+Added, not in the design doc:
+Legend: what each grass color, character, walker and boat means, in a corner of the
+map.
+Return to title: a button on the map that saves and goes back to the title screen.
+Open questions
+Element What it does Where it lives
+Reliability Each finished step is saved, so an
+interrupted run resumes from its
+last finished step; failed agent
+calls retry automatically, then
+appear with a Retry button; a
+notification when a long run
+finishes
+Trace, discussion log and
+notifications
+Settings Models and API keys per role (see
+New Journey)
+Reached from the title screen and
+the map
+Boats: keep the proposed mapping (hull shows tier, sail shows new or old)?
+Walkers: the basis groups hold many mathlib edges, so walkers on all of them would
+crowd the islands. Show walkers only on edges that touch a paper node or came from
+the crew, and leave base edges to the simplified view?
+Paper patches: a paper's concepts can have home groups on several islands. Draw one
+patch per paper at its primary MSC group, or place each character in its home group's
+patch?
+Portraits: who speaks for the decomposer, which has no character, and which god or
+gods portray "the gods"?
+Characters: once a paper node is given a random character, store it so the map looks
+the same on every visit?
+Defaults: D_max and Hephaestus's budget per run have no values in the design doc.
+API keys: kept only in the user's browser, or stored on the server for this single-user
+hackathon build?
+Metis — UI Spec
+Page 12 of 12

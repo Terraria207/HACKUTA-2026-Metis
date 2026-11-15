@@ -1,6 +1,6 @@
 # Metis
 
-A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from `docs/metis-overview.txt` with the accepted corrections in `docs/implementation-review.md`. The review and acceptance documents are parent-owned and unchanged.
+A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from `docs/metis-overview.txt` with the accepted corrections in `docs/implementation-review.md`. The review and acceptance documents are parent-owned and unchanged. See **Plan alignment (2026-11-15)** below for the corrections made after comparing the repository against the overview.
 
 **The default is a clearly labeled, zero-cost fixture simulation. It is not real mathematical discovery.** Live mode uses MongoDB, actual provider HTTP adapters, and Atlas Vector Search. Missing credentials, unknown prices, zero budgets, or unavailable proof infrastructure stop the relevant operation; none silently falls back to a simulated success.
 
@@ -23,7 +23,7 @@ uv pip install --python .venv/bin/python -r requirements.lock
 .venv/bin/uvicorn metis.main:app --host 127.0.0.1 --port 8000 --workers 1
 ```
 
-Open **http://127.0.0.1:8000**. Create a journey, choose islands, add a named **Fixture sample**, confirm its MSC group, and start a run. The report's scripted associations remain **Unchecked**; fixture mode never marks them potentially new or machine verified. Explore the graph, evidence, before/after snapshots, history, wrong-feedback re-review and all three exports. SQLite data survives restarts in `.metis/fixture.sqlite`; use `METIS_SQLITE_PATH` to change it.
+Open **http://127.0.0.1:8000**. The title screen shows the METIS wordmark over a pixel-art beach with three scrolls. Unroll **New Journey**, pick basis groups (islands) and **Set sail**; on the sea map open the **Paper** bottle, add a named **Fixture sample**, confirm its MSC group, and start a run. The report's scripted associations remain **Unchecked**; fixture mode never marks them potentially new or machine verified. Explore the map, the simplified view (G), the Odyssey discussion, the route finder, evidence, before/after, history, wrong-feedback re-review and all three exports. The interface is described under **Interface (UI spec)** below. SQLite data survives restarts in `.metis/fixture.sqlite`; use `METIS_SQLITE_PATH` to change it.
 
 In Aether, start the long-running command through an Aether managed terminal, following `aether-internal skill terminal`. Do not use shell backgrounding. The initial build hit a scheduler failure; a separate validation session subsequently started managed terminals successfully (see verification below).
 
@@ -43,7 +43,7 @@ node --check web/app.js
 .venv/bin/python -m compileall -q metis scripts
 ```
 
-The tests cover hyperedge AND versus alternative OR routes, direction/equivalence, cycles, quarantine, typed proof semantics, distance/scoring, full fixture API journeys, paper uploads, exports, restart recovery, checkpoint replay, isolation, blinded payloads, wrong-feedback jobs, atomic reservations, expired leases, cancellation, no-call defaults, URL/DNS safety and conservative Lean failure paths.
+The tests cover hyperedge AND versus alternative OR routes, direction/equivalence, cycles, quarantine, typed proof semantics, distance/scoring, full fixture API journeys, paper uploads, exports, restart recovery, checkpoint replay, isolation, blinded payloads, wrong-feedback jobs, atomic reservations, expired leases, cancellation, no-call defaults, URL/DNS safety, conservative Lean failure paths, and (`tests/test_plan_alignment.py`) the integration loop, Proven conjectures, ranking order, the key-discoveries feed, the gods curation path, bridge modules, automated-embedding routing and the vendored graph library.
 
 An optional actual MongoDB integration test uses a randomly named temporary database and deletes only that database:
 
@@ -52,6 +52,27 @@ METIS_TEST_MONGODB_URI='mongodb://127.0.0.1:27017' .venv/bin/python -m pytest -q
 ```
 
 Initial build validation had no managed terminal/browser or compiler access. A separate Aether validation session on 2026-11-15 successfully started the app in a managed terminal, exercised the fixture browser journey, and prepared the pinned Lean project. See the independent browser/sandbox validation notes below for exact results. MongoDB, Atlas and paid provider integrations remain untested; no credentials or paid APIs were used.
+
+## Interface (UI spec)
+
+The interface follows `docs/metis-ui-spec.txt` (Metis — UI Spec, 2026-11-15), which restructures the design doc's four tabs into a title screen, a scroll transition and a sea map. No frontend build: `web/` holds plain scripts (`pixel.js` sprites and portraits, `title.js` the animated beach, `seamap.js` the island layout and renderer, `app.js` the flow and panels), the wordmark image (`web/art/metis-logo.png`, the supplied artwork at its true 170×70 pixel grid) and the vendored Cytoscape.js. Everything else is drawn in code on canvas at whole-number zoom.
+
+- **Title screen**: pixel-art beach with drifting clouds and rolling waves, the METIS wordmark, and scrolls for **New Journey**, **Load Journey** and **Key Discoveries** (the spec's suggested third scroll), plus Settings. A scroll unrolls on hover, on a tap, or with the keyboard (← → move between scrolls, Enter unrolls or selects, Esc rolls it back up) and rolls back up when the mouse leaves unless a choice is in progress.
+- **New Journey**: the scroll enlarges into the setup form: name (blank lists the journey by its creation date), every basis group the data holds (filterable by name or MSC code, up to twelve per journey) marked **Ready** or **Needs building** with its saved versions, mathlib tag and declaration count, a check mark or warning per model role, and the run settings under Advanced. **Set sail** is disabled until at least one group is chosen and, in live mode, every role has a model, a key and no failed key test. Bridge modules between the chosen islands are added automatically.
+- **Needs building**: with `METIS_MATHLIB_EXPORT` set to an export index, any group is built before the journey starts and the scroll holds at full screen showing the stages and the island being inked; bridges to the other chosen groups are worked out at the same time. In fixture mode, and in live mode without a gods role or build budget, the build is the script-mapped one and says so; in live mode with the gods role it is curated and embedded within the build budget (see *Base modules from mathlib*).
+- **Load Journey**: past journeys newest first, by name or creation date in the browser's time zone, with islands, papers run, new connections, last activity and status. Choosing one offers **Open journey** or **Open review document**; the review document lists the run reports newest first on the full-screen scroll with **Sail to the map**. A paused or failed run offers Resume when the journey opens.
+- **Transition**: the scroll flies out from the menu, fills the screen and fades into the sea; a click or Esc skips it, and reduced-motion settings shorten it to nothing.
+- **Sea map**: each basis group is an island whose area scales with its node count; subgroups are patches of different-coloured grass (a treemap of the MSC subfields and subtopics); a paper gets a flowered patch of its own in its primary MSC group; its concepts are Odyssey items and creatures chosen by a hash of the node id, so they look the same on every visit. Basis nodes are laid out but not drawn. A link on one island is a walker going premise → conclusion (both ways for an equivalence), with a campfire where a hyperedge's premises meet; a link between islands is a boat — trireme for verified, merchant ship for cited, raft for intuitive, with a bright sail for the latest run and a weathered one otherwise. Walkers are drawn only for links that touch a paper node or came from the crew. New items sparkle gold, unintegrated concepts have a dashed amber outline, proposed ones are faded. Zoom is in whole steps (½×, 1×, 2×, 3×, 4×, 6×, 8×) with wheel, pinch, + and −, drag to pan, Fit all, a minimap while zoomed in, more detail as you zoom, names on hover and details on click.
+- **Simplified view** (button or G): every node as a dot coloured by status, edges solid/dashed/dotted by tier, hyperedges through a junction dot, groups as labeled regions. It uses the same world coordinates, so zoom, pan and selection carry over in both directions. Filters (tier, existing tag, island, run, new connections only, rejected, pending) and search by name or meaning apply in both views.
+- **Paper input**: a message-in-a-bottle panel: PDF, arXiv ID, URL, text, a corpus paper or the fixture sample; MSC placement shown and correctable; bulk import; Start, Pause, Resume, Retry and Cancel; the seven steps with progress.
+- **Odyssey discussion**: each agent's trace entry becomes a line spoken by its character with a pixel portrait, in order, advancing on a timer (three speeds) or a click, with Skip, Mute and a full log. A crew mate's proposals for one comparison are folded into one exchange. The narrator restyles wording only: verdicts, tiers, existing tags, names, citations and reviewer reasons are read from the stored records and shown beside the line, and a narrated line that mentions a status word its entry does not carry is replaced by the template. Fixture mode and any narrator failure use deterministic templates; narration never pauses or fails a run. Every line links to its trace entry and, where it concerns a node or edge, to its place on the map.
+- **Route finder**: pick two concepts on the map or by search. *Proof route* uses verified and cited inference edges in their direction; a hyperedge needs every premise, so the route is a tree of steps, and a side premise that cannot be derived from the start is listed as an additional assumption (only a route without any is called a complete argument). *Any route* uses every accepted edge either way and is labeled a conjecture as strong as its weakest edge. The route is drawn on the map, Play sends a walker or ship along it with the camera following, and the formal view can be copied or exported as text. If no route exists under the chosen type, the finder says so.
+- **Around the map**: Report (ranked report with links to the map, feedback, PDF/Markdown/JSON), Details side panel (statement, evidence, provenance, tier history, proof tree), History (runs, trace and report, before-and-after, suggested next papers), Trace (grouped by step, filters, Retry), Legend, cost counter, Settings and Return to title.
+- **Settings**: API keys per provider, entered once, masked, reused by every journey; a model per role with roster defaults; **Test** makes one small budgeted call for that role in live mode and records the result. Model IDs are prefilled only where the provider's own documentation confirms them (Anthropic, Google, Voyage); `gpt-6.1-sol` and `grok-4-3` come from third-party listings and are marked unverified; Leanstral 1.5 and Nemotron 3 Ultra have no confirmed ID and must be entered.
+
+Choices made on the spec's open questions, all easy to change: boats keep the proposed hull/sail mapping; walkers only on paper or crew links; one patch per paper at its primary MSC group (a concept on another island stands in its home group there); the decomposer and the gods speak under their role names with a scroll and a temple as portraits rather than a chosen character; characters are stable by hashing the node id; D_max stays 8 and Hephaestus's budget 3 proof attempts; keys are stored on the server.
+
+**Keys.** Keys entered in Settings go to a private server file (`METIS_KEYS_FILE`, default `.metis/keys.json`, mode 0600, git-ignored) and are never returned by any endpoint; an environment variable of the same name wins. Because a key travels in the request body, the server accepts key writes only from the same machine, or from any client when `METIS_API_TOKEN` is set. Use TLS for anything that is not loopback.
 
 ## Live MongoDB and providers
 
@@ -71,7 +92,7 @@ For Atlas, prefer the free tier with a small corpus and a connection pool limite
 Before any paid call:
 
 1. Copy `deploy/providers.example.json` to a private **writable** server path and set `METIS_PROVIDERS_FILE` to it. Replace placeholder model IDs with models actually available to your accounts; the speculative roster in the overview is not treated as verified provider availability.
-2. Put API keys in server environment variables named by each role's `key_env`. The settings API never accepts or returns actual keys. For externally reachable deployments, set a strong `METIS_API_TOKEN` and use the browser's **API access token** button (session storage only), TLS and a private network or authenticated reverse proxy. This is a single-user application, not a multi-tenant authentication system.
+2. Put API keys in server environment variables named by each role's `key_env`, or enter them in the Settings screen (see **Keys** above). No endpoint ever returns a key. For externally reachable deployments, set a strong `METIS_API_TOKEN` and use the browser's **API access token** button (session storage only), TLS and a private network or authenticated reverse proxy. This is a single-user application, not a multi-tenant authentication system.
 3. Set `METIS_ALLOW_LIVE=true`, an explicit `METIS_LIVE_BUDGET_USD`, the journey's `budget_usd` and the input run budget. All default to **zero**. Resume can raise a run's cap; journey settings can raise its cap. Changing the global cap requires server configuration/restart.
 4. For every role configure a positive `max_cost_usd` and known `input_usd_per_million` / `output_usd_per_million` prices. Grounded literature calls additionally need `request_overhead_usd`. The app uses a conservative UTF-8-byte input bound plus framing allowance and configured output limit, and refuses estimates above the configured maximum. Supply conservative provider prices including search/tool charges. This is protective accounting, **not a guarantee about provider invoices or an external billing cap**.
 
@@ -85,6 +106,45 @@ Live API calls were not made during this build, and no paid resource was created
 
 Live mode needs reviewed base modules before journeys can be created. The default three islands are linear algebra (15/15A/15A03), graph theory (05/05C/05C50) and probability (60/60B/60B20). Fixture MSC paths are deliberately a tiny illustrative subset, not the full MSC taxonomy or a curated mathematical corpus.
 
+### Basis groups from mathlib (the gods)
+
+**Which basis groups exist is decided by the data, not by a list in the code.** A basis group is an MSC 2020 field that holds mathlib declarations; at the pinned mathlib commit that is **42 groups** (206,558 declarations), from mathematical logic and category theory to general topology, measure and integration, functional analysis and game theory. Graph theory (05C) stays its own group, as in the design doc's demo islands, and Combinatorics covers the rest of 05. A group is built the first time a journey asks for it and saved; a journey may use up to twelve.
+
+The overview's base graph is built in two halves. **By script**, with no model:
+
+```bash
+# once: pinned toolchain + cached oleans (minutes, several GB)
+python scripts/setup_lean.py /abs/path/mathlib
+# every mathematical area of mathlib: about six minutes, ~130 MB, one declaration per line
+python scripts/extract_mathlib.py --project /abs/path/mathlib --output .lean/exports/mathlib-full.jsonl
+# the official MSC 2020 table (fetched, not committed: it is CC BY-NC-SA)
+python scripts/fetch_msc.py --output .lean/msc/msc2020.json
+# place every declaration in an MSC subtopic and split the export into basis groups (seconds)
+python -m scripts.index_export --export .lean/exports/mathlib-full.jsonl --msc .lean/msc/msc2020.json --output .lean/exports/index
+# serve with the index: the picker now offers every group in it
+METIS_MATHLIB_EXPORT=.lean/exports/index .venv/bin/uvicorn metis.main:app --host 127.0.0.1 --port 8000 --workers 1
+```
+
+- `deploy/lean/Extract.lean` exports each declaration's name, kind, module, source line, pretty-printed type with every hypothesis, docstring, structure fields, and the exported constants its proof uses. Instances, structure projection functions, deprecated aliases and compiler-generated declarations are left out as plumbing. (An earlier version of this extractor also dropped every lemma whose name begins `eq_`; that is fixed, and the four `corpus/*-mathlib.json` bundles of 2026-11-15.1 predate the fix and the wider export. The picker offers "Build a new version from the full export" for those four.)
+- The group tree of a basis group is its complete MSC 2020 subtree (field, subfields, subtopics), taken from the official table. `deploy/msc/mathlib-paths.txt` places each declaration by the longest matching module-path prefix; the indexer refuses a code that is not in the table and counts, rather than guesses, any declaration no rule covers (none at this commit). The sea map draws only the subgroups that hold concepts or papers.
+- A build selects up to 800 declarations per group: those other declarations in the group depend on, or that mathlib documents, ranked by how many depend on them (many central theorems, `Matrix.det_mul` for one, have no docstring, so documentation alone is not the test). Descriptions are the first docstring sentence or, without one, the name with its formal statement; nothing is invented. Each declaration's proof dependencies form one `dependency` hyperedge into it (at most 20 premises, the most specific first; the full count is recorded).
+- **Bridges between any two groups** come from the same data: when a journey first puts two built groups together, the dependency links that cross between them become a bridge module requiring both. A pair with no link gets none. On the sea map the base links between two islands are drawn as one small fleet per direction (hover for the count, click to list them), not one boat each.
+
+**By judgment**, the `gods` provider role (Claude in the roster) decides which declarations count as foundational, places each in exactly one subtopic, merges duplicates, writes group and concept descriptions, and proposes textbook gap-fillers. In live mode with the gods role and a build budget, an in-app build is curated and embedded; otherwise it is the script build and says so. Gap-fillers land in `pending_review` with `reviewed: false`; a human must check each source before anything cited is imported, because a model's citation claim is not a reviewed citation. Everything the gods do runs as a durable, budgeted `module_build` operation that admits only the gods and embeddings roles. The gods re-place a declaration within its basis group; which group it belongs to is fixed by the script's field.
+
+`scripts/build_module.py` remains for building a bundle file offline from a single-area export and one of the hand-written specs in `deploy/msc/` (see `deploy/msc/README.md`); that is how the four shipped bundles were made:
+
+| Module | Islands | Concepts | Dependency hyperedges |
+|---|---|---|---|
+| `graph-theory-mathlib@2026-11-15.1` | graph-theory | 800 | 787 |
+| `linear-algebra-mathlib@2026-11-15.1` | linear-algebra | 800 | 675 |
+| `number-theory-mathlib@2026-11-15.1` | number-theory | 800 | 680 |
+| `probability-mathlib@2026-11-15.1` | probability | 800 | 752 |
+| `linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1` | graph-theory, linear-algebra | 0 | 6 |
+| `linear-algebra-number-theory-mathlib-bridge@2026-11-15.1` | linear-algebra, number-theory | 0 | 69 |
+
+Dependency edges are compiler metadata, never inference, and import can never mint `verified` edges; see the trust model below. In fixture mode the server imports every bundle in `corpus/` at startup (`METIS_IMPORT_CORPUS=false` disables this); mathlib-built concepts report similarity as unavailable there rather than inventing vectors.
+
 Import an immutable module bundle with `POST /api/modules/import` or:
 
 ```bash
@@ -95,7 +155,7 @@ Bundle schema: `module:{id,name,version,islands,mathlib_version,source,fixture:f
 
 Import never mints `verified` inference edges. A cited inference needs an explicitly reviewed source and location. Compiler dependencies are stored as **dependency metadata**, not inference. `scripts/import_mathlib.py --help` converts a supplied declaration/dependency JSON export plus reviewed MSC mapping into such a bundle. It retains the complete formal type, including hypotheses, and only creates dependency relations. It is not a bundled mathlib extractor or a claim that the declarations have been locally recompiled/axiom-audited. Curating real module mappings, citations and declaration exports is required before scientific use.
 
-For real matching, configure the Voyage embedding role and Atlas Vector Search indexes named `metis_concepts` and `metis_groups` (names can be overridden by `METIS_ATLAS_CONCEPTS_INDEX`, `METIS_ATLAS_GROUPS_INDEX`). `deploy/atlas-vector-index.json` is an explicit-vector index definition with a layer filter; choose the dimension matching your configured embedding model. Base concepts/groups must already carry vectors generated with the **same** model. New paper concept vectors are generated through the budgeted Voyage adapter. This implementation uses explicit Voyage embeddings rather than provisioning Atlas Automated Embedding. Failed/missing vector services fail the live stage; lexical fixture search is labeled separately.
+For real matching, configure the Voyage embedding role and Atlas Vector Search indexes named `metis_concepts` and `metis_groups` (names can be overridden by `METIS_ATLAS_CONCEPTS_INDEX`, `METIS_ATLAS_GROUPS_INDEX`). Two index modes exist. **Explicit vectors (default)**: `deploy/atlas-vector-index.json` indexes vectors the application generated through the budgeted Voyage adapter; base concepts/groups must already carry vectors from the **same** model. **Atlas Automated Embedding (opt-in, `METIS_ATLAS_AUTO_EMBED=true`)**: `deploy/atlas-auto-embed-index.json` defines an `autoEmbed` index on `description` with the same Voyage model, so Atlas embeds descriptions on write and query text at search time; duplicate matching and semantic search then spend no embedding call. In both modes the pairwise similarity in bridge scores still uses explicit vectors from the embeddings role, exactly as the overview's Storage section specifies, so the embeddings role stays required. Automated Embedding was a Preview feature when this was written and has not been exercised against a live cluster here; the default mode is the one validated so far. Failed/missing vector services fail the live stage; lexical fixture search is labeled separately.
 
 ## Mathematical trust model
 
@@ -107,6 +167,8 @@ For real matching, configure the Voyage embedding role and Atlas Vector Search i
 - `Not found` means **potentially new in the recorded completed searches**, never proven novelty. Grounded queries, sources, timestamps and failures are stored. Incomplete/failed/ungrounded search remains `Unchecked`. Cited edges are Existing only after source review; a literature hit still needs a separate cited review before tier promotion.
 - The reachability inspector gives a proof DAG of accepted edges from explicit assumptions, with its supporting edge IDs. Even a DAG of individually verified steps is labeled **composition unverified**; it is not silently promoted to a compiled Lean theorem. Definitions are never marked Proven.
 - Rejected counterexamples survive as structured invalidation signals. Wrong feedback immediately removes a claim from valid reasoning and queues independent re-review. Declared dependent proof edges are recursively invalidated; restoring the original claim does not automatically restore its dependents. Journey overlays invalidate shared base claims without mutating base documents.
+- Odysseus ranks accepted findings by tier, then bridge score, then literature status (`Not found` above `Unchecked` above `Existing`), then independent agreement, and never ranks his own proposed nodes. New paper concepts go through an enforced integration loop before the crew starts: level by level, up to `integration_depth`, the decomposer states what each still-unconnected concept rests on or leads to, links attach to matched existing nodes, and standard concepts the graph lacks become Established integration nodes with the paper's reference as source; whatever is still unconnected is flagged unintegrated and scored with tree distance alone. Fixture mode records the skipped loop instead of inventing links.
+- An accepted Odysseus **conjecture** can be attempted by Hephaestus (in the run that accepts it and, within the remaining per-run proof budget, in later runs). The node becomes **Proven** only when an independently aligned statement compiles in the pinned sandbox and clears the axiom audit; a failed or unavailable attempt leaves it Accepted and is never evidence against it. Definitions stop at Accepted. The Home feed lists machine-verified potentially new results, Proven concepts, potentially new connections and accepted conjectures, in that order.
 - Odysseus records recurrent cross-run island-pair patterns. A pattern threshold can trigger a quarantined definition/conjecture proposal, strict review, grounded concept search, and fresh blinded crew tests. Acceptance needs independently reviewed edges from the configured number of distinct crew mates and no counterexample. Found concepts become sourced rediscoveries. These nodes/edges are kept out of Odysseus's ranking. Optional definition formalization is available with journey setting `formalize_definitions=true`. After blind testing, the prover submits a type and value, a separate alignment reviewer checks the definition, and the controlled Lean sandbox type-checks it. Unavailable/failed checks keep the concept quarantined. A type-checked definition is never labeled machine verified or Proven.
 
 ## Controlled Lean runner
@@ -133,8 +195,8 @@ URLs only allow public HTTP(S), ports 80/443, no userinfo, and public IPs for ev
 
 This is an independently reviewable implementation, **not a fully validated scientific discovery system**. In addition to the unperformed live MongoDB/Atlas/provider tests:
 
-- No bundled, licensed, scientifically curated full mathlib/MSC/textbook corpus. The module converter needs an external declaration export and reviewed namespace/MSC mapping. Bridge bundles can refer to concepts in explicit pinned `module.requires` versions; journeys reject mismatched prerequisites.
-- No automatic Atlas index/embedding provisioning or change-stream consumer. Durable polling/SSE and explicit Voyage vectors are the implemented alternatives. Atlas real matching must be acceptance-tested with a populated, correctly indexed corpus.
+- Basis groups built in-app are selected and placed by recorded script heuristics unless the gods role has run: descriptions are mathlib docstrings, placement follows `deploy/msc/mathlib-paths.txt`, and a declaration's basis group is fixed by that placement. mathlib's `to_additive` twins appear as separate concepts in a script build. The MSC 2020 table is CC BY-NC-SA and is fetched, not shipped. Gap-fillers proposed by the gods are never imported without human source review. Bridge bundles can refer to concepts in explicit pinned `module.requires` versions; journeys reject mismatched prerequisites.
+- No automatic Atlas index provisioning or change-stream consumer. Durable cursor-indexed events feed SSE. Atlas real matching, in either index mode, must be acceptance-tested with a populated, correctly indexed corpus.
 - Graph search supports lexical search and explicit budgeted meaning search through Voyage/Atlas; fixture meaning search is explicitly lexical. Suggested next papers are corpus papers near the latest bridge groups, rather than external recommendations. MSC-category bulk import scans the stored corpus only (at most 20 unique papers), preserves matching MSC placement in the selected modules, and reports unsupported placements. External MSC discovery is not implemented; bounded arXiv-ID import retrieves external papers.
 - No automatic OCR, deep citation bibliography resolver, exact formal proof composition, or automatic external MSC harvesting. Human review of statement alignment and source quality is still required for scientific trust, even when model reviews pass.
 - Pattern triggers group edges by island pair across different runs, which is a heuristic; recognizing a genuinely shared missing idea still depends on the proposer/reviewer. Blind concept acceptance exists but has not been exercised against live models.
@@ -143,6 +205,23 @@ This is an independently reviewable implementation, **not a fully validated scie
 
 Review live adapters against provider account/model contracts before setting any nonzero budget. Fixture success must never be used to assert real integration success.
 
+
+## Plan alignment (2026-11-15)
+
+An evaluation of this repository against the overview found the reasoning substrate faithful (bridge score, distances, hyperedge semantics, blinding, isolation, durable jobs, budgets, Lean sandbox) and the documented deviations deliberate, but listed gaps. The following were corrected in this branch:
+
+- **Base graph and the gods**: `deploy/lean/Extract.lean`, `scripts/extract_mathlib.py`, `deploy/msc/*.json`, `metis/gods.py` and `scripts/build_module.py` implement the overview's two-half base-module build (script extraction + model curation) and bridge modules; the `gods` provider role exists and is admitted only inside durable budgeted `module_build` operations.
+- **Integration loop**: the decomposer's "repeat until the chain reaches existing nodes, up to integration_depth" is now an enforced loop (`Pipeline.integrate`), not a prompt parameter.
+- **Proven node status** and **Hephaestus attempts on accepted conjectures** are implemented (`metis/concepts.py`); Proven means machine verified only.
+- **Ranking** uses tier, bridge score, literature status and agreement, in that order (`pipeline.ranking_key`).
+- **Key discoveries** feed includes Proven concepts and accepted conjectures as well as potentially new connections.
+- **Automated Embedding** is available as an opt-in index mode alongside explicit vectors; the default is unchanged and the choice is documented above.
+- **Graph** renders with vendored Cytoscape.js (same-origin, CSP intact) with island compound nodes, hyperedge junctions, status colours (Established/Accepted/Proven/Proposed), layer shapes and unintegrated outlines. Since the UI spec it is the sea map's simplified view.
+- **SSE** reads only events newer than the client's cursor through an indexed query instead of rescanning the events collection each second; the unused `adjacency` collection index is gone (distance is computed in code, as the overview allows at demo scale).
+- **Any basis group**: the picker offers every MSC 2020 field that holds declarations in the mathlib export (42 at the pinned commit) instead of four hardcoded islands; groups and the bridges between them are built on demand from a full export (`scripts/extract_mathlib.py`, `scripts/fetch_msc.py`, `scripts/index_export.py`, `metis/exportindex.py`).
+- `deploy/providers.example.json` follows the roster's provider families (xAI, NVIDIA, Mistral, Gemini, OpenAI, Anthropic, Voyage); model IDs remain placeholders until verified against your accounts.
+
+Still outstanding and not claimable from this environment: a live cross-field discovery run (needs provider credentials and budget) and a gods-curated module (needs the `gods` role configured); the shipped mathlib modules are script-mapped and say so.
 
 ## Independent repair verification
 

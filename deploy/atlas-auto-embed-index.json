@@ -1,0 +1,7 @@
+{
+  "_comment": "Optional Atlas Automated Embedding index (Preview feature at the time of writing; do not rely on it in production). Create one per collection (concepts, groups) named metis_<collection>_auto, or set METIS_ATLAS_<COLLECTION>_INDEX. Enable with METIS_ATLAS_AUTO_EMBED=true and METIS_ATLAS_AUTO_EMBED_MODEL (default voyage-4, the same Voyage model as the embeddings role). Atlas embeds `description` on write and embeds query text at search time, so duplicate matching and semantic search spend no embedding call; pairwise bridge-score similarity still uses explicit vectors from the embeddings role, as the overview specifies.",
+  "fields": [
+    { "type": "autoEmbed", "modality": "text", "path": "description", "model": "voyage-4" },
+    { "type": "filter", "path": "layer" }
+  ]
+}

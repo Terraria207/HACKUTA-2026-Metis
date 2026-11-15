@@ -245,13 +245,23 @@ def consider(pipeline, run, patterns):
             formalization = formalize_definition(pipeline, run, journey, node, key)
             checks.append({"stage": "definition type-check", "result": formalization})
             passed = formalization.get("type_checked") is True
+        status = "Accepted" if passed else "Proposed"
+        formal_attempt = None
+        if passed and node["kind"] == "conjecture":
+            # Overview, new-node check 4: an accepted conjecture may be attempted in Lean; only an
+            # audited sandbox compilation with independent statement alignment makes it Proven.
+            formal_attempt = prove_conjecture(pipeline, run, journey, node, key)
+            checks.append({"stage": "formal proof attempt", "result": formal_attempt})
+            if formal_attempt.get("machine_verified"):
+                status = "Proven"
         store.patch(
             "concepts",
             ident,
-            status="Accepted" if passed else "Proposed",
+            status=status,
             checks=checks,
             check_status="passed" if passed else "failed or incomplete",
             accepted_edges=accepted_edges,
+            formal_attempt=formal_attempt,
         )
         store.patch(
             "memory",
@@ -263,7 +273,9 @@ def consider(pipeline, run, patterns):
             run,
             6,
             "Odysseus",
-            "Orchestrator concept accepted"
+            "Orchestrator conjecture machine-verified (Proven)"
+            if status == "Proven"
+            else "Orchestrator concept accepted"
             if passed
             else "Orchestrator concept remains quarantined",
             concept_id=ident,
@@ -273,14 +285,103 @@ def consider(pipeline, run, patterns):
     return created
 
 
+def lean_version(pipeline, journey):
+    versions = {
+        pipeline.store.get("modules", m).get("mathlib_version") for m in journey["modules"]
+    }
+    return next(iter(versions)) if len(versions) == 1 else None
+
+
+def prove_conjecture(pipeline, run, journey, node, key):
+    """Hephaestus attempts a Lean proof of an accepted conjecture node.
+
+    Proven means machine verified only: the generated statement must pass independent
+    alignment review, compile in the pinned sandbox and clear the axiom audit. A failed or
+    unavailable attempt leaves the node Accepted; failure is never evidence against it.
+    """
+    from metis import formal
+
+    if node.get("kind") != "conjecture":
+        raise ValueError("Only conjectures can be proven; definitions stop at Accepted")
+    version = lean_version(pipeline, journey)
+    if (
+        run["fixture"]
+        or not pipeline.config.lean_image
+        or not pipeline.config.lean_project
+    ):
+        return {
+            "status": "unavailable",
+            "machine_verified": False,
+            "reason": "Controlled Lean sandbox required; no prover call made",
+        }
+    candidate = pipeline.call(
+        "hephaestus",
+        {
+            "task": "Return statement and proof Lean expressions proving this exact conjecture with ALL hypotheses. No imports, commands, axioms, sorry, admit, or metaprogramming.",
+            "conjecture": {k: node[k] for k in ("statement", "description")},
+            "mathlib_version": version,
+        },
+        run,
+        "conjecture-formal:" + key,
+    )
+    alignment = pipeline.call(
+        "alignment",
+        {
+            "task": "Does the formal statement exactly match the conjecture, preserving every hypothesis and quantifier? Return matches:boolean,reason. Do not assume compilation.",
+            "conjecture": {k: node[k] for k in ("statement", "description")},
+            "statement": candidate["statement"],
+        },
+        run,
+        "conjecture-alignment:" + key,
+    )
+    result = formal.verify(
+        pipeline.config,
+        candidate["statement"],
+        candidate["proof"],
+        version,
+        alignment.get("matches") is True,
+    )
+    return dict(result, alignment_review=alignment, statement=candidate["statement"])
+
+
+def attempt_accepted_conjectures(pipeline, run, limit):
+    """Stage 4 follow-up: within the remaining per-run proof budget, Hephaestus can attempt
+    accepted conjectures from earlier runs that are not yet Proven."""
+    if limit <= 0 or run["fixture"]:
+        return []
+    store = pipeline.store
+    journey = store.get("journeys", run["journey_id"])
+    attempted = []
+    for node in store.all("concepts", layer="journey:" + journey["id"]):
+        if len(attempted) >= limit:
+            break
+        if (
+            node.get("status") != "Accepted"
+            or node.get("kind") != "conjecture"
+            or node.get("invalidated")
+            or (node.get("formal_attempt") or {}).get("status") in ("verified", "failed")
+        ):
+            continue
+        attempt = prove_conjecture(pipeline, run, journey, node, node["id"] + ":" + run["id"])
+        attempted.append(node["id"])
+        store.patch(
+            "concepts",
+            node["id"],
+            formal_attempt=attempt,
+            status="Proven" if attempt.get("machine_verified") else "Accepted",
+        )
+        pipeline.trace(
+            run, 4, "Hephaestus",
+            "Conjecture proof attempt " + attempt["status"],
+            concept_id=node["id"], attempt=attempt,
+        )
+    return attempted
+
+
 def formalize_definition(pipeline, run, journey, node, key):
     from metis import formal
 
-    versions = {
-        pipeline.store.get("modules", m).get("mathlib_version")
-        for m in journey["modules"]
-    }
-    version = next(iter(versions)) if len(versions) == 1 else None
+    version = lean_version(pipeline, journey)
     if (
         run["fixture"]
         or not pipeline.config.lean_image

@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from metis.store import uid, now
 from metis.graph import (
+    TIERS,
     graph,
     visible_layers,
     EdgeInput,
@@ -17,7 +18,7 @@ from metis.graph import (
     invalidate_dependents,
 )
 from metis.providers import Providers, ProviderUnavailable, BudgetExceeded, AtlasVectors
-from metis import formal
+from metis import formal, narrator
 
 STAGES = [
     "Decompose & integrate",
@@ -36,6 +37,18 @@ class Interrupted(RuntimeError):
 
 
 CREW = ["Eurylochus", "Elpenor", "Polites", "Perimedes"]
+EXISTING_RANK = {"Not found": 2, "Unchecked": 1, "Existing": 0}
+
+
+def ranking_key(edge, support_count):
+    """Odysseus ranks by tier, bridge score, literature status and independent agreement
+    (overview, Odysseus: Responsibilities), in that order. Higher sorts first."""
+    return (
+        TIERS.get(edge.get("tier"), 0),
+        (edge.get("bridge_score") or {}).get("value") or 0,
+        EXISTING_RANK.get(edge.get("existing"), 0),
+        support_count,
+    )
 
 
 class ExtractedConcept(BaseModel):
@@ -133,6 +146,8 @@ class Pipeline:
         }
         if self.store.insert("trace", entry):
             self.store.event(run["journey_id"], "trace", entry)
+            narrator.discuss(self, run, entry)
+        return ident
 
     def enqueue(self, run):
         jid = (
@@ -546,10 +561,9 @@ class Pipeline:
                 == c["statement"].strip().casefold()
             ]
             if not matches and not run["fixture"]:
-                hits = AtlasVectors(self.store).search(
-                    "concepts", embeddings[i], visible_layers(journey), 5
+                candidates = self.near_duplicates(
+                    journey, nodes, c["description"], embeddings[i]
                 )
-                candidates = [nodes[h["id"]] for h in hits if h["id"] in nodes]
                 if candidates:
                     verdict = self.call(
                         "penelope",
@@ -630,10 +644,12 @@ class Pipeline:
                 {"kind": "integration", "paper_id": paper["id"]},
                 "extract:" + str(i),
             )
+        integration = self.integrate(run, journey, g, nodes, paper, mapping)
         self.store.patch(
             "papers",
             paper["id"],
             concept_ids=list(dict.fromkeys(mapping.values())),
+            integration_ids=integration,
             extraction_id=cache_key,
             extracted=True,
         )
@@ -649,6 +665,181 @@ class Pipeline:
             concept_ids=list(mapping.values()),
             cache_key=cache_key,
         )
+
+    def near_duplicates(self, journey, nodes, description, vector, limit=5):
+        """Concept-index candidates for the duplicate check: in-database automated embedding
+        when enabled, otherwise the stored vector from the budgeted embeddings call."""
+        vectors = AtlasVectors(self.store)
+        hits = (
+            vectors.search_text("concepts", description, visible_layers(journey), limit)
+            if vectors.auto_embed
+            else vectors.search("concepts", vector, visible_layers(journey), limit)
+        )
+        return [nodes[h["id"]] for h in hits if h["id"] in nodes]
+
+    def connected_to(self, layer, ident, anchors):
+        """Structural check used by the integration loop: does any saved relation in this journey
+        link the node to a pre-existing node? Review and tier are applied later by stage 3."""
+        for e in self.store.all("edges", layer=layer):
+            ends = e["premises"] + [e["conclusion"]]
+            if ident in ends and any(n in anchors and n != ident for n in ends):
+                return True
+        return False
+
+    def integrate(self, run, journey, g, nodes, paper, mapping):
+        """Enforced integration loop (overview, pipeline step 1).
+
+        Each genuinely new concept must be connected to the graph that existed before this paper.
+        Level by level, the decomposer states what each still-unconnected concept rests on or leads
+        to. Links attach to existing nodes wherever matching finds them; a standard concept the graph
+        lacks becomes an Established integration node with the paper's reference as its source and is
+        linked onward the same way. The loop stops when every chain reaches an existing node or after
+        integration_depth levels; whatever is still unconnected stays flagged unintegrated by stage 3.
+        Fixture mode records that the loop was skipped; it never fabricates links.
+        """
+        depth = journey["settings"]["integration_depth"]
+        layer = "journey:" + journey["id"]
+        anchors = set(run["before"]["nodes"])
+        frontier = [i for i in dict.fromkeys(mapping.values()) if i not in anchors]
+        created = []
+        if run["fixture"] or not frontier or depth == 0:
+            self.trace(
+                run, 0, "decomposer", "Integration loop skipped",
+                reason="fixture mode never invents links" if run["fixture"]
+                else "no new concepts" if not frontier else "integration_depth is 0",
+            )
+            return created
+        for level in range(depth):
+            unconnected = [i for i in frontier if not self.connected_to(layer, i, anchors)]
+            if not unconnected:
+                break
+            result = self.call(
+                "decomposer",
+                {
+                    "task": "These concepts from the input paper are not yet linked to any pre-existing concept. For each, state what it rests on and what it leads to using the paper: for a definition, the standard concepts it is defined from (one defined_from hyperedge into it); for a theorem, the known results it uses (dependency) and any known result it generalizes, specializes or implies. Reuse existing_concepts by id wherever one matches exactly. Where a link needs a standard concept the graph lacks, add it to nodes as an integration node with the paper's own reference (source, location, verbatim excerpt) and link it with the same rules. Every node you add must appear in at least one edge. Tier must be cited (with the paper reference as evidence) or intuitive; never verified. Return nodes [{key,name,statement,description,kind,msc,source:{reference,location,excerpt}}] and edges matching edge_schema whose endpoints are existing ids or node keys. Do not invent relationships; empty lists are allowed.",
+                    "level": level,
+                    "unconnected_concepts": [nodes[i] for i in unconnected],
+                    "existing_concepts": [
+                        {"id": n["id"], "name": n.get("name"), "statement": n["statement"]}
+                        for n in nodes.values() if n["id"] in anchors
+                    ][:400],
+                    "paper_text": paper["text"],
+                    "edge_schema": EdgeInput.model_json_schema(),
+                    "concept_schema": ExtractedConcept.model_json_schema(),
+                },
+                run,
+                "integrate:" + str(level),
+            )
+            raw_nodes = list(result.get("nodes", []))[:40]
+            raw_edges = list(result.get("edges", []))[:80]
+            used = {k for e in raw_edges for k in list(e.get("premises", [])) + [e.get("conclusion")]}
+            texts, pending = [], []
+            for c in raw_nodes:
+                try:
+                    concept = ExtractedConcept.model_validate(c).model_dump()
+                except (ValueError, TypeError):
+                    self.trace(run, 0, "decomposer", "Malformed integration node rejected", level=level)
+                    continue
+                if concept["key"] not in used:
+                    self.trace(run, 0, "decomposer", "Standalone integration node dropped", level=level, key=concept["key"])
+                    continue
+                concept["source"] = c.get("source") if isinstance(c.get("source"), dict) else {}
+                pending.append(concept)
+                texts.append(concept["description"])
+            vectors = (
+                self.call("embeddings", {"texts": texts}, run, "integrate-vectors:" + str(level))["embeddings"]
+                if texts else []
+            )
+            if len(vectors) != len(pending):
+                raise ValueError("Integration embedding count mismatch")
+            level_ids = []
+            for concept, vector in zip(pending, vectors):
+                matches = [
+                    n for n in nodes.values()
+                    if n["statement"].strip().casefold() == concept["statement"].strip().casefold()
+                ]
+                if not matches:
+                    candidates = self.near_duplicates(journey, nodes, concept["description"], vector)
+                    if candidates:
+                        verdict = self.call(
+                            "penelope",
+                            {
+                                "task": "Is the integration concept mathematically identical, with identical hypotheses, to a candidate? Return match_id or null.",
+                                "concept": concept,
+                                "candidates": [{"id": n["id"], "statement": n["statement"]} for n in candidates],
+                            },
+                            run,
+                            "integrate-match:" + str(level) + ":" + concept["key"],
+                        )
+                        matches = [n for n in candidates if n["id"] == verdict.get("match_id")]
+                if matches:
+                    mapping["integration:" + str(level) + ":" + concept["key"]] = matches[0]["id"]
+                    continue
+                groups = [
+                    gg for gg in g["groups"]
+                    if gg["depth"] == 3 and concept["msc"].startswith(gg["msc"])
+                ] or [gg for gg in g["groups"] if gg["id"] == paper["home_group"]]
+                if not groups:
+                    raise ValueError("Paper home group unavailable in pinned journey modules")
+                ident = run["id"] + ":integration:" + str(level) + ":" + concept["key"]
+                doc = {
+                    "id": ident,
+                    "layer": layer,
+                    "run_id": run["id"],
+                    "name": concept["name"],
+                    "statement": concept["statement"],
+                    "description": concept["description"],
+                    "kind": concept["kind"],
+                    "status": "Established",
+                    "home_group": groups[0]["id"],
+                    "ancestors": groups[0]["ancestors"],
+                    "island": groups[0]["island"],
+                    "source": {
+                        "paper_id": paper["id"],
+                        "agent": "decomposer",
+                        "kind": "integration",
+                        "level": level,
+                        "reference": concept["source"],
+                    },
+                    "integrated": False,
+                    "fixture": False,
+                    "embedding": vector,
+                }
+                self.store.put("concepts", doc)
+                nodes[ident] = doc
+                mapping["integration:" + str(level) + ":" + concept["key"]] = ident
+                created.append(ident)
+                level_ids.append(ident)
+            keys = {c["key"]: mapping["integration:" + str(level) + ":" + c["key"]] for c in pending}
+            resolve = lambda x: keys.get(x, x)
+            for j, raw in enumerate(raw_edges):
+                try:
+                    e = dict(raw, premises=[resolve(x) for x in raw["premises"]], conclusion=resolve(raw["conclusion"]))
+                    if e["conclusion"] in e["premises"]:
+                        continue
+                    e = EdgeInput.model_validate(e).model_dump()
+                    if e["tier"] == "verified" or not all(n in nodes for n in e["premises"] + [e["conclusion"]]):
+                        raise ValueError("Integration edge claims verification or references an unknown node")
+                except (ValueError, KeyError, TypeError):
+                    self.trace(run, 0, "decomposer", "Malformed integration edge rejected", level=level, edge_index=j)
+                    continue
+                self.save_edge(
+                    run, e, "decomposer",
+                    {"kind": "integration", "paper_id": paper["id"], "level": level},
+                    "integrate:" + str(level) + ":" + str(j),
+                )
+            self.trace(
+                run, 0, "decomposer", "Integration level completed",
+                level=level, unconnected=unconnected, integration_nodes=level_ids, edges=len(raw_edges),
+            )
+            frontier = level_ids
+        remaining = [i for i in frontier if not self.connected_to(layer, i, anchors)]
+        if remaining:
+            self.trace(
+                run, 0, "decomposer", "Integration depth limit reached; chains still open",
+                depth=depth, unconnected=remaining,
+            )
+        return created
 
     def stage1(self, run):
         journey, g, nodes = self.context(run)
@@ -895,20 +1086,23 @@ class Pipeline:
                         ]
                         if e["conclusion"] == c["key"]:
                             e["conclusion"] = ident
+            folded, folded_edges, malformed = [], [], 0
             for j, raw in enumerate(proposals):
                 try:
                     e = EdgeInput.model_validate(raw).model_dump()
                     if not all(n in nodes for n in e["premises"] + [e["conclusion"]]):
                         raise ValueError("Crew proposal references an unavailable node")
                 except (ValueError, KeyError, TypeError):
-                    self.trace(run, 2, target["crew"], "Malformed crew proposal rejected",
-                               proposal_index=j, target_index=i,
-                               reason="Invalid edge fields or unavailable node")
+                    folded.append(self.trace(run, 2, target["crew"], "Malformed crew proposal rejected",
+                                             proposal_index=j, target_index=i,
+                                             reason="Invalid edge fields or unavailable node"))
+                    malformed += 1
                     continue
                 saved = self.save_edge(
                     run, e, target["crew"], target, "crew:" + str(i) + ":" + str(j)
                 )
-                self.trace(
+                folded_edges.append(saved["id"])
+                folded.append(self.trace(
                     run,
                     2,
                     target["crew"],
@@ -917,7 +1111,9 @@ class Pipeline:
                     argument=e["argument"],
                     perspective=target["perspective"],
                     band=target["band"],
-                )
+                ))
+            # One crew mate's proposals for one comparison arrive together: one exchange, not N pop-ups.
+            narrator.discuss_fold(self, run, target, folded, folded_edges, malformed)
 
     def citation_context(self, run, e):
         from metis.ingestion import fetch, extract_text, content_hash
@@ -1206,7 +1402,7 @@ class Pipeline:
         ids = {s["edge_id"] for s in self.store.all("support", run_id=run["id"])}
         return [
             e
-            for e in self.store.all("edges")
+            for e in self.store.all("edges", layer="journey:" + run["journey_id"])
             if e["id"] in ids
             and e.get("review_status") == "passed"
             and not e.get("invalidated")
@@ -1224,11 +1420,13 @@ class Pipeline:
             for m in journey["modules"]
         }
         version = next(iter(versions)) if len(versions) == 1 else None
+        attempted_edges = 0
         for e in [
             e
             for e in edges
             if e["tier"] == "intuitive" and e["type"] in ("implies", "equivalent")
         ][: journey["settings"]["proof_attempts"]]:
+            attempted_edges += 1
             if run["fixture"]:
                 attempt = {
                     "status": "unavailable",
@@ -1295,6 +1493,11 @@ class Pipeline:
                 edge_id=e["id"],
                 attempt=attempt,
             )
+        from metis.concepts import attempt_accepted_conjectures
+
+        conjectures = attempt_accepted_conjectures(
+            self, run, journey["settings"]["proof_attempts"] - attempted_edges
+        )
         self.trace(
             run,
             4,
@@ -1303,6 +1506,8 @@ class Pipeline:
             sandbox_configured=bool(
                 self.config.lean_image and self.config.lean_project
             ),
+            edge_attempts=attempted_edges,
+            conjecture_attempts=conjectures,
         )
 
     def stage5(self, run):
@@ -1431,10 +1636,7 @@ class Pipeline:
         ]
         ranked = sorted(
             findings,
-            key=lambda e: (
-                (e.get("bridge_score") or {}).get("value") or 0,
-                len(self.store.all("support", edge_id=e["id"])),
-            ),
+            key=lambda e: ranking_key(e, len(self.store.all("support", edge_id=e["id"]))),
             reverse=True,
         )
         summary = (

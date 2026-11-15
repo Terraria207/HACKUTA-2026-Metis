@@ -3,313 +3,325 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <meta name="theme-color" content="#101c30" />
+    <meta name="theme-color" content="#2a85c6" />
     <title>Metis — Mathematical Connection Explorer</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/static/style.css" />
+    <script defer src="/static/vendor/cytoscape.min.js"></script>
+    <script defer src="/static/pixel.js"></script>
+    <script defer src="/static/title.js"></script>
+    <script defer src="/static/seamap.js"></script>
     <script defer src="/static/app.js"></script>
   </head>
   <body>
-    <header>
-      <a class="brand" href="#home"
-        ><span class="mark">M</span
-        ><span>metis<small>MATHEMATICAL CONNECTION EXPLORER</small></span></a
-      >
-      <nav>
-        <button id="homeButton" class="quiet">Journeys</button
-        ><button id="settingsButton" class="quiet">Settings & costs</button>
-      </nav>
-      <span id="mode" class="pill">Connecting…</span>
-    </header>
     <div id="notice" role="status"></div>
     <div id="error" role="alert" hidden></div>
-    <main id="home">
-      <section class="hero">
-        <div class="eyebrow">A WORKSPACE FOR MATHEMATICAL EXPLORATION</div>
-        <h1>Follow an idea.<br /><em>Find a connection.</em></h1>
-        <p>
-          Explore the space between mathematical fields, with evidence you can
-          inspect at every step.
-        </p>
-        <button id="newButton" class="primary">＋ New journey</button>
-        <div class="orbit" aria-hidden="true">
-          <span>15A</span><span>05C</span><span>60B</span><i></i><i></i><i></i>
+    <div id="tooltip" role="tooltip" hidden></div>
+
+    <!-- Title screen: pixel-art beach, the METIS wordmark and the menu scrolls -->
+    <main id="titleScreen">
+      <canvas id="titleCanvas" aria-hidden="true"></canvas>
+      <div class="titleInner">
+        <img id="logo" src="/static/art/metis-logo.png" width="170" height="70" alt="METIS" />
+        <p class="tagline">Mathematical Exploration of Topics to Identify Similarity</p>
+        <div class="scrolls" id="scrolls">
+          <section class="scroll" id="scrollNew" data-scroll="new" tabindex="0" role="button" aria-expanded="false" aria-label="New Journey">
+            <h2 class="scrollLabel">New Journey</h2>
+            <div class="scrollBody">
+              <div class="roller"></div>
+              <div class="parchment"><div class="parchmentInner">
+                <p class="scrollTitle">New Journey</p>
+                <p>Name a voyage, choose the islands to explore, and set sail.</p>
+                <p class="hint">Click, or press Enter, to open the journey setup.</p>
+              </div></div>
+              <div class="roller"></div>
+            </div>
+          </section>
+          <section class="scroll" id="scrollLoad" data-scroll="load" tabindex="0" role="button" aria-expanded="false" aria-label="Load Journey">
+            <h2 class="scrollLabel">Load Journey</h2>
+            <div class="scrollBody">
+              <div class="roller"></div>
+              <div class="parchment"><div class="parchmentInner" id="journeyList"></div></div>
+              <div class="roller"></div>
+            </div>
+          </section>
+          <section class="scroll" id="scrollFound" data-scroll="found" tabindex="0" role="button" aria-expanded="false" aria-label="Key discoveries">
+            <h2 class="scrollLabel">Key Discoveries</h2>
+            <div class="scrollBody">
+              <div class="roller"></div>
+              <div class="parchment"><div class="parchmentInner" id="discoveries"></div></div>
+              <div class="roller"></div>
+            </div>
+          </section>
         </div>
-      </section>
-      <section>
-        <div class="sectionTitle">
-          <h2>Your journeys</h2>
-          <span id="journeyCount"></span>
+        <div class="titleFoot">
+          <button id="titleSettings" class="pixelButton">Settings · models &amp; keys</button>
+          <button id="authButton" class="pixelButton quiet">API access token</button>
+          <span id="mode" class="pill">Connecting…</span>
         </div>
-        <div id="journeyList" class="cards"></div>
-      </section>
-      <section>
-        <h2>Potentially new connections</h2>
-        <p class="muted">
-          Negative literature searches are evidence of search coverage, never
-          proof of novelty.
-        </p>
-        <div id="discoveries"></div>
-      </section>
-    </main>
-    <main id="workspace" hidden>
-      <div class="workspaceHead">
-        <div>
-          <div class="eyebrow" id="islandsLabel"></div>
-          <h1 id="journeyTitle"></h1>
-          <div id="journeyMeta" class="muted"></div>
-        </div>
-        <button id="addFields" class="quiet">Add fields / modules</button>
-        <button id="journeySettings" class="quiet">Journey settings</button>
+        <p class="keysHint">← → choose a scroll · Enter unrolls or selects · Esc rolls it back up</p>
       </div>
-      <nav class="tabs" aria-label="Journey workspace">
-        <button data-tab="run" class="active">Run <span>01</span></button
-        ><button data-tab="report">Report <span>02</span></button
-        ><button data-tab="graph">Graph <span>03</span></button
-        ><button data-tab="history">History <span>04</span></button>
-      </nav>
-      <section id="runTab" class="tab">
-        <div class="runGrid">
-          <aside class="panel">
-            <div class="eyebrow">START WITH A PAPER</div>
-            <h2>Bring an idea in</h2>
-            <form id="paperForm">
-              <label
-                >Paper title<input
-                  name="title"
-                  required
-                  placeholder="A paper worth exploring" /></label
-              ><label
-                >Source<select name="kind" id="sourceKind">
-                  <option value="fixture">Fixture sample (scripted)</option>
-                  <option value="text">Paper text</option>
-                  <option value="pdf">Upload PDF</option>
-                  <option value="arxiv">arXiv ID</option>
-                  <option value="url">Public URL</option>
-                  <option value="corpus">Existing corpus paper ID</option>
-                </select></label
-              ><label id="paperValueLabel"
-                >Text, ID or URL<textarea
-                  name="value"
-                  rows="3"
-                  placeholder="Paste paper text, arXiv ID, or public URL"
-                ></textarea></label
-              ><label id="pdfLabel" hidden
-                >PDF file<input
-                  name="file"
-                  type="file"
-                  accept="application/pdf" /></label
-              ><label
-                >Confirm MSC placement<select
-                  name="home_group"
-                  id="paperGroup"
-                  required
-                ></select
-              ></label>
-              <p class="hint">
-                Placement is confirmed before running. Imports alone do not call
-                a model. PDF limit: 12 MiB, 150 pages; text PDFs only.
-              </p>
-              <button class="primary" type="submit">Add to journey</button>
-            </form>
-            <details>
-              <summary>Bulk paper import</summary>
-              <form id="bulkForm">
-                <label>Import source<select name="mode"><option value="arxiv">arXiv IDs (up to 20)</option><option value="msc">Stored corpus by MSC category (up to 20)</option></select></label>
-                <textarea
-                  name="ids"
-                  rows="3"
-                  placeholder="arXiv IDs, or one MSC code such as 15A03"
-                ></textarea
-                ><button type="submit">Import papers only</button>
-              </form>
-              <p id="bulkResult" role="status"></p>
+    </main>
+
+    <!-- New Journey: the scroll enlarged into the setup form -->
+    <div id="setup" class="overlay" hidden>
+      <div class="bigScroll formScroll" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+        <div class="roller"></div>
+        <div class="parchment">
+          <form id="journeyForm" class="parchmentInner">
+            <h2 id="setupTitle">New Journey</h2>
+            <label>Journey name
+              <input name="name" maxlength="100" placeholder="Leave blank to list it by its creation date" autocomplete="off" />
+            </label>
+            <fieldset>
+              <legend>Basis groups (islands)</legend>
+              <p class="hint">Each basis group is built once by the gods and saved; a saved group is linked at once, read-only. Bridge modules between the islands you pick are included automatically.</p>
+              <p class="hint" id="catalogNote"></p>
+              <div class="actions"><input id="fieldFilter" type="search" placeholder="Filter basis groups by name or MSC code" aria-label="Filter basis groups" /><span id="chosenCount" class="pill" role="status"></span></div>
+              <div id="fieldCatalog"></div>
+            </fieldset>
+            <fieldset>
+              <legend>Models and API keys</legend>
+              <div id="setupRoles"></div>
+              <p><button type="button" id="setupSettings" class="pixelButton quiet">Open Settings to enter keys or change models</button></p>
+            </fieldset>
+            <details id="advanced">
+              <summary>Advanced · run settings</summary>
+              <div class="settingsGrid" id="setupSettingsGrid"></div>
             </details>
-          </aside>
-          <div>
-            <div class="panel">
-              <div class="sectionTitle">
-                <h2>Run an exploration</h2>
-                <span id="runStatus" class="pill">Ready</span>
-              </div>
-              <label>Input paper<select id="paperSelect"></select></label><button id="correctPlacement">Apply selected MSC group to input paper</button
-              ><label
-                >Maximum run cost (USD)<input
-                  id="runBudget"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value="0"
-              /></label>
-              <div class="actions">
-                <button id="startRun" class="primary">▶ Start run</button
-                ><button id="extractOnly">Extract corpus only</button
-                ><button data-control="pause">Pause</button
-                ><button data-control="resume">Resume</button
-                ><button data-control="retry">Retry</button
-                ><button data-control="cancel" class="danger">Cancel</button>
-              </div>
-              <p class="hint">
-                Controls take effect at durable stage boundaries. Live calls
-                require all three budget caps: server, journey and run.
-              </p>
-              <div id="stageList" class="stages"></div>
+            <p id="setupProblem" class="warn" role="status"></p>
+            <div class="actions">
+              <button type="submit" id="setSail" class="pixelButton primary">Set sail</button>
+              <button type="button" id="setupBack" class="pixelButton quiet">Back to the beach</button>
             </div>
-            <div class="panel tracePanel">
-              <div class="sectionTitle">
-                <h2>Live activity</h2>
-                <span class="liveDot">● Public summaries</span>
-              </div>
-              <div class="filters">
-                <select id="traceAgent">
-                  <option value="">All agents</option></select
-                ><select id="traceStep">
-                  <option value="">All stages</option>
-                </select>
-              </div>
-              <div id="traceList" aria-live="polite"></div>
-            </div>
-          </div>
+          </form>
         </div>
-      </section>
-      <section id="reportTab" class="tab" hidden>
-        <div class="sectionTitle">
-          <div>
-            <h2>Exploration report</h2>
-            <p class="muted">
-              Evidence first. Search coverage, proof strength and bridge value
-              remain distinct.
-            </p>
-          </div>
+        <div class="roller"></div>
+      </div>
+    </div>
+
+    <!-- Scroll transition: flies in, fills the screen, fades to the sea. Holds for builds and review documents. -->
+    <div id="transition" hidden aria-live="polite">
+      <div class="bigScroll" id="flyScroll">
+        <div class="roller"></div>
+        <div class="parchment"><div class="parchmentInner" id="holdContent"></div></div>
+        <div class="roller"></div>
+      </div>
+      <p id="skipHint" class="keysHint">Click or press Esc to skip</p>
+    </div>
+
+    <!-- Sea map -->
+    <main id="mapScreen" hidden>
+      <canvas id="seaCanvas" tabindex="0" aria-label="Sea map: islands are basis groups, grass patches are subgroups and papers, characters are paper concepts, walkers and boats are connections. Use the simplified view (G) and the lists in each panel for keyboard access."></canvas>
+      <div id="graphCanvas" hidden role="img" aria-label="Simplified view: nodes as dots, edges as lines, groups as labeled regions"></div>
+
+      <header class="hud hudTopLeft">
+        <button id="returnTitle" class="pixelButton" title="Save and go back to the title screen">⚓ Title</button>
+        <div class="journeyBadge">
+          <strong id="journeyTitle"></strong>
+          <span id="journeyMeta"></span>
+        </div>
+        <span id="runStatus" class="pill">Ready</span>
+        <button id="costCounter" class="pill" title="Usage and cost for this journey; opens Settings and costs">$0.0000</button>
+      </header>
+
+      <nav class="hud hudTopRight" aria-label="Map panels">
+        <button data-panel="bottle" class="pixelButton">🍾 Paper</button>
+        <button data-panel="report" class="pixelButton">Report</button>
+        <button data-panel="history" class="pixelButton">History</button>
+        <button data-panel="trace" class="pixelButton">Trace</button>
+        <button data-panel="route" class="pixelButton">Route</button>
+        <button data-panel="log" class="pixelButton">Discussion</button>
+        <button id="journeySettings" class="pixelButton quiet">Journey settings</button>
+        <button id="settingsButton" class="pixelButton quiet">Settings</button>
+      </nav>
+
+      <div class="hud filterBar" role="search">
+        <input id="graphSearch" placeholder="Search concepts by name" aria-label="Search concepts by name" />
+        <label class="inline"><input id="graphSemantic" type="checkbox" /> by meaning</label>
+        <button id="applySearch" class="pixelButton small">Find</button>
+        <select id="graphTier" aria-label="Tier"><option value="">All tiers</option><option>verified</option><option>cited</option><option>intuitive</option></select>
+        <select id="graphExisting" aria-label="Existing tag"><option value="">All existing tags</option><option>Existing</option><option>Not found</option><option>Unchecked</option></select>
+        <select id="graphIsland" aria-label="Island"><option value="">All islands</option></select>
+        <select id="graphRun" aria-label="Run"><option value="">All runs</option></select>
+        <label class="inline"><input id="graphNew" type="checkbox" /> new connections only</label>
+        <label class="inline" title="Rejected and invalidated links are non-evidence"><input id="graphRejected" type="checkbox" /> rejected</label>
+        <label class="inline" title="Links still awaiting review are non-evidence"><input id="graphProposed" type="checkbox" /> pending</label>
+        <span id="searchResult" class="hintLight" role="status"></span>
+      </div>
+
+      <div id="beforeBar" class="hud banner" hidden>
+        <span id="beforeLabel"></span>
+        <button id="beforeToggle" class="pixelButton small">Show after</button>
+        <button id="beforeClose" class="pixelButton small quiet">Close comparison</button>
+      </div>
+      <div id="resumeBanner" class="hud banner" hidden>
+        <span id="resumeLabel"></span>
+        <button id="resumeButton" class="pixelButton small primary">Resume</button>
+        <button id="resumeDismiss" class="pixelButton small quiet">Not now</button>
+      </div>
+
+      <!-- Paper input: a message in a bottle washed up at the map's edge -->
+      <aside id="bottle" class="hud sidePanel left bottlePanel" hidden aria-label="Paper input">
+        <div class="cork" aria-hidden="true"></div>
+        <button class="closeX" data-hide="bottle" aria-label="Close paper input">×</button>
+        <h2>Message in a bottle</h2>
+        <form id="paperForm">
+          <label>Title<input name="title" required maxlength="300" /></label>
+          <label>Source
+            <select name="kind" id="sourceKind">
+              <option value="pdf">Attach a PDF</option>
+              <option value="arxiv">arXiv ID</option>
+              <option value="url">URL</option>
+              <option value="text">Type or paste text</option>
+              <option value="corpus">A paper already in the corpus</option>
+              <option value="fixture">Fixture sample (scripted)</option>
+            </select>
+          </label>
+          <label id="paperValueLabel">arXiv ID, URL, corpus paper or text<textarea name="value" rows="2"></textarea></label>
+          <label id="pdfLabel" hidden>PDF file<input type="file" name="file" accept="application/pdf" /></label>
+          <label>Place in the tree (MSC group)
+            <input id="groupFilter" type="search" placeholder="Filter by MSC code or name" aria-label="Filter MSC groups" />
+            <select name="home_group" id="paperGroup"></select>
+          </label>
+          <p class="hint">The paper's MSC placement is shown here before the run and can be corrected.</p>
+          <button class="pixelButton">Add to journey</button>
+        </form>
+        <details>
+          <summary>Add papers without running them</summary>
+          <form id="bulkForm">
+            <label>Mode<select name="mode"><option value="arxiv">arXiv IDs</option><option value="msc">MSC category (stored corpus)</option></select></label>
+            <label>IDs (comma or line separated) or an MSC code<textarea name="ids" rows="2"></textarea></label>
+            <button class="pixelButton small">Import papers only</button>
+          </form>
+          <p id="bulkResult" role="status" class="hint"></p>
+        </details>
+        <h3>Run</h3>
+        <label>Input paper<select id="paperSelect"></select></label>
+        <button id="correctPlacement" class="pixelButton small quiet">Apply the selected MSC group to this paper</button>
+        <label>Run budget cap (USD)<input id="runBudget" type="number" min="0" step="0.01" value="0" /></label>
+        <div class="actions">
+          <button id="startRun" class="pixelButton primary">▶ Start</button>
+          <button id="extractOnly" class="pixelButton small">Extract only</button>
+        </div>
+        <div class="actions">
+          <button data-control="pause" class="pixelButton small">Pause</button>
+          <button data-control="resume" class="pixelButton small">Resume</button>
+          <button data-control="retry" class="pixelButton small">Retry</button>
+          <button data-control="cancel" class="pixelButton small quiet">Cancel</button>
+        </div>
+        <div id="stageList" class="stages"></div>
+      </aside>
+
+      <!-- Route finder -->
+      <aside id="routePanel" class="hud sidePanel left" hidden aria-label="Route finder">
+        <button class="closeX" data-hide="routePanel" aria-label="Close route finder">×</button>
+        <h2>Route finder</h2>
+        <p class="hint">Pick the two ends by clicking them on the map, or search by name or meaning.</p>
+        <div class="routeEnd"><span class="dot startDot"></span><strong id="routeStartName">No start chosen</strong>
+          <button data-pick="start" class="pixelButton small">Pick on map</button></div>
+        <div class="routeEnd"><span class="dot endDot"></span><strong id="routeEndName">No end chosen</strong>
+          <button data-pick="end" class="pixelButton small">Pick on map</button></div>
+        <label>Search<input id="routeSearch" placeholder="Concept name" autocomplete="off" /></label>
+        <label class="inline"><input id="routeSemantic" type="checkbox" /> by meaning (uses the run budget cap)</label>
+        <ul id="routeResults" class="resultList"></ul>
+        <fieldset>
+          <legend>Route type</legend>
+          <label class="inline"><input type="radio" name="routeKind" value="proof" checked /> Proof route — verified and cited edges, in their direction</label>
+          <label class="inline"><input type="radio" name="routeKind" value="any" /> Any route — all edges, either direction</label>
+        </fieldset>
+        <div class="actions">
+          <button id="routeFind" class="pixelButton primary">Find route</button>
+          <button id="routePlay" class="pixelButton small" disabled>▶ Play</button>
+          <button id="routeClear" class="pixelButton small quiet">Clear</button>
+        </div>
+        <div id="routeResult" aria-live="polite"></div>
+        <div class="actions" id="routeExport" hidden>
+          <button id="routeCopy" class="pixelButton small">Copy as text</button>
+          <button id="routeSave" class="pixelButton small">Export .txt</button>
+        </div>
+      </aside>
+
+      <!-- Details side panel -->
+      <aside id="details" class="hud sidePanel right" hidden aria-label="Details">
+        <button class="closeX" data-hide="details" aria-label="Close details">×</button>
+        <div id="detailContent"></div>
+      </aside>
+
+      <details id="legend" class="hud legend">
+        <summary>Legend</summary>
+        <div id="legendBody"></div>
+      </details>
+
+      <div class="hud mapControls">
+        <canvas id="minimap" width="170" height="116" hidden aria-label="Minimap; click to pan"></canvas>
+        <div class="zoomRow">
+          <button id="zoomOut" class="pixelButton small" aria-label="Zoom out">−</button>
+          <span id="zoomLabel" class="pill">1×</span>
+          <button id="zoomIn" class="pixelButton small" aria-label="Zoom in">+</button>
+          <button id="fitAll" class="pixelButton small">Fit all</button>
+        </div>
+        <button id="viewToggle" class="pixelButton" title="Keyboard shortcut: G">Simplified view (G)</button>
+      </div>
+
+      <!-- Odyssey discussion pop-up -->
+      <section id="discussion" class="hud discussion" hidden aria-live="polite" aria-label="Odyssey discussion">
+        <canvas id="portrait" width="16" height="16" aria-hidden="true"></canvas>
+        <div class="speech">
+          <div class="speechHead"><strong id="speaker"></strong><span id="speechMeta" class="hint"></span></div>
+          <p id="speechLine"></p>
+          <div id="speechFacts" class="facts"></div>
           <div class="actions">
-            <button data-export="json">JSON ↓</button
-            ><button data-export="md">Markdown ↓</button
-            ><button data-export="pdf">PDF ↓</button>
+            <button id="speechNext" class="pixelButton small">Next ▸</button>
+            <button id="speechTrace" class="pixelButton small quiet">Trace entry ↗</button>
+            <button id="speechPan" class="pixelButton small quiet" hidden>Show on map</button>
+            <label class="inline">Speed <select id="speechSpeed"><option value="7000">Slow</option><option value="4200" selected>Normal</option><option value="2200">Fast</option></select></label>
+            <button id="speechSkip" class="pixelButton small quiet">Skip</button>
+            <button id="speechMute" class="pixelButton small quiet" aria-pressed="false">Mute</button>
           </div>
-        </div>
-        <div id="reportContent"></div>
-      </section>
-      <section id="graphTab" class="tab" hidden>
-        <div class="filters panel">
-          <input
-            id="graphSearch"
-            placeholder="Search concepts"
-            aria-label="Search concepts"
-          /><select id="graphTier" aria-label="Tier">
-            <option value="">All tiers</option>
-            <option>verified</option>
-            <option>cited</option>
-            <option>intuitive</option></select
-          ><select id="graphExisting" aria-label="Literature status">
-            <option value="">All literature statuses</option>
-            <option>Existing</option>
-            <option>Not found</option>
-            <option>Unchecked</option></select
-          ><select id="graphIsland" aria-label="Island">
-            <option value="">All islands</option></select
-          ><select id="graphRun" aria-label="Run">
-            <option value="">All runs</option></select
-          ><label class="inline"
-            ><input id="graphNew" type="checkbox" /> New connections only</label
-          ><label class="inline"
-            ><input id="graphBefore" type="checkbox" /> Before run</label
-          ><label class="inline"
-            ><input id="graphSemantic" type="checkbox" /> Meaning search (uses
-            run cost cap)</label
-          ><button id="applyGraph">Apply</button>
-        </div>
-        <div class="graphLayout">
-          <div class="panel graphPanel">
-            <div class="legend">
-              <span>● Established</span><span>◇ Proposed</span
-              ><span>━━ Verified</span><span>┄ Cited</span
-              ><span>··· Intuitive</span><span>● Junction = AND premises</span>
-            </div>
-            <label class="check"><input id="graphRejected" type="checkbox"> Inspect rejected / invalidated (NON-EVIDENCE)</label>
-<label class="check"><input id="graphProposed" type="checkbox"> Inspect proposed (NON-EVIDENCE)</label>
-<label>Layer <select id="graphLayer"><option value="">Base + journey</option><option value="module">Base only</option><option value="journey">Journey only</option></select></label>
-<svg
-              id="graphSvg"
-              viewBox="0 0 1000 650"
-              role="img"
-              aria-label="Concept graph with island clusters"
-            ></svg>
-            <div id="graphEmpty" class="muted"></div>
-          </div>
-          <aside class="panel" id="graphDetails">
-            <h3>Inspect a connection</h3>
-            <p class="muted">
-              Choose a concept, arrow or junction to view statements, evidence,
-              provenance and review history.
-            </p>
-          </aside>
-        </div>
-        <div class="panel">
-          <h3>Proof reachability</h3>
-          <p class="hint">
-            Select explicit starting assumptions. AND premises must all be
-            reachable. Dependency and descriptive edges never become proof
-            steps. Graph composition is not a compiled formal proof.
-          </p>
-          <select id="proofStart" multiple size="3"></select
-          ><button id="proofButton">Inspect reachable results</button>
-          <pre id="proofResult"></pre>
-        </div>
-      </section>
-      <section id="historyTab" class="tab" hidden>
-        <div class="sectionTitle">
-          <h2>Journey history</h2>
-          <span class="muted">Saved checkpoints, reports and reviews</span>
-        </div>
-        <div id="historyList"></div>
-        <div class="panel">
-          <h3>Suggested next papers</h3>
-          <div id="suggestionList"></div>
-        </div>
-        <div class="panel">
-          <h3>Feedback re-review queue</h3>
-          <div id="recheckList"></div>
         </div>
       </section>
     </main>
-    <dialog id="newDialog">
-      <form id="journeyForm">
-        <div class="sectionTitle">
-          <h2 id="catalogTitle">New journey</h2>
-          <button type="button" data-close="newDialog" class="quiet">✕</button>
-        </div>
-        <label
-          >Name<input
-            name="name"
-            required
-            maxlength="100"
-            placeholder="Spectral connections"
-        /></label>
-        <fieldset id="fieldCatalog"><legend>Available fields and pinned modules</legend></fieldset>
-        <p class="hint">
-          Journeys pin immutable module versions. Fixture modules are
-          illustrative, never a mathlib extraction.
-        </p>
-        <button class="primary" type="submit">Create journey →</button>
-      </form>
+
+    <dialog id="reportDialog" class="parchmentDialog wide">
+      <div class="dialogHead"><h2>Ranked report</h2>
+        <div class="actions">
+          <select id="reportRun" aria-label="Run"></select>
+          <button data-export="pdf" class="pixelButton small">PDF</button>
+          <button data-export="md" class="pixelButton small">Markdown</button>
+          <button data-export="json" class="pixelButton small">JSON</button>
+          <button class="pixelButton small quiet" data-close="reportDialog">Close</button>
+        </div></div>
+      <div id="reportContent"></div>
     </dialog>
-    <dialog id="settingsDialog">
-      <div class="sectionTitle">
-        <h2 id="settingsTitle">Settings & costs</h2>
-        <button data-close="settingsDialog" class="quiet">✕</button>
-      </div>
+    <dialog id="historyDialog" class="parchmentDialog wide">
+      <div class="dialogHead"><h2>History</h2><button class="pixelButton small quiet" data-close="historyDialog">Close</button></div>
+      <div id="historyList"></div>
+      <h3>Run another paper</h3>
+      <p class="hint">Papers placed near the latest bridges.</p>
+      <div id="suggestionList"></div>
+      <h3>Wrong-feedback re-reviews</h3>
+      <div id="recheckList"></div>
+    </dialog>
+    <dialog id="traceDialog" class="parchmentDialog wide">
+      <div class="dialogHead"><h2>Live trace</h2>
+        <div class="actions">
+          <select id="traceAgent" aria-label="Agent"></select>
+          <select id="traceStep" aria-label="Pipeline step"></select>
+          <button data-control="retry" class="pixelButton small">Retry</button>
+          <button class="pixelButton small quiet" data-close="traceDialog">Close</button>
+        </div></div>
+      <p class="hint">What each agent writes: arguments, verdicts and summaries. Hidden model reasoning is never shown.</p>
+      <div id="traceList" aria-live="polite"></div>
+    </dialog>
+    <dialog id="logDialog" class="parchmentDialog">
+      <div class="dialogHead"><h2>Odyssey discussion log</h2><button class="pixelButton small quiet" data-close="logDialog">Close</button></div>
+      <p class="hint">The narrator restyles wording only. Verdicts, tiers, existing tags, names and citations are shown beside each line exactly as recorded.</p>
+      <div id="logList"></div>
+    </dialog>
+    <dialog id="settingsDialog" class="parchmentDialog wide">
+      <div class="dialogHead"><h2 id="settingsTitle">Settings</h2><button class="pixelButton small quiet" data-close="settingsDialog">Close</button></div>
       <div id="settingsContent"></div>
     </dialog>
-    <dialog id="detailDialog">
-      <div class="sectionTitle">
-        <h2>Evidence & provenance</h2>
-        <button data-close="detailDialog" class="quiet">✕</button>
-      </div>
-      <div id="detailContent"></div>
-    </dialog>
-    <footer>
-      METIS <span>Explore carefully. Keep the evidence.</span
-      ><button id="authButton" class="quiet">API access token</button>
-    </footer>
   </body>
 </html>

@@ -29,6 +29,7 @@ class Settings(BaseModel):
     blind_support: int = Field(2, ge=2, le=4)
     proof_attempts: int = Field(3, ge=0, le=20)
     formalize_definitions: bool = False
+    narration: bool = True  # Odyssey discussion: narrator model in live mode, templates otherwise
     budget_usd: float = Field(0, ge=0, allow_inf_nan=False)
 
 
@@ -80,10 +81,7 @@ def visible_layers(journey):
 
 def graph(store, journey):
     layers = visible_layers(journey)
-    result = {
-        name: [d for d in store.all(name) if d.get("layer") in layers]
-        for name in ("groups", "concepts", "edges")
-    }
+    result = {name: store.layered(name, layers) for name in ("groups", "concepts", "edges")}
     invalid = {
         m["target_id"]
         for m in store.all("memory", journey_id=journey["id"])
@@ -351,3 +349,176 @@ def invalidate_dependents(store, journey, edge_id, reason):
             ]
             store.patch("edges", e["id"], invalidated=True, tier_history=history)
     return sorted(bad)
+
+
+def route(nodes, edges, start, end, kind="proof", limit=200):
+    """Route finder (UI spec): connect two concepts and write the route as formal steps.
+
+    proof: verified and cited inference edges (implies/equivalent), followed only in their
+           direction. A hyperedge needs every premise, so the result is a tree of steps: a side
+           premise is either derived from the start as well or listed as an additional assumption.
+           Only a route with no additional assumptions is a complete argument from start to end.
+    any:   every accepted edge, any type, either direction; a conjecture as strong as its
+           weakest edge. Proposed nodes and rejected or invalidated edges are never used.
+    """
+    if kind not in ("proof", "any"):
+        raise ValueError("Route type must be proof or any")
+    if start not in nodes or end not in nodes:
+        raise ValueError("Unknown start or end concept")
+
+    def allowed(e):
+        if kind == "proof":
+            return e["type"] in INFERENCE and usable(e, nodes)
+        return (
+            e.get("review_status") == "passed"
+            and not e.get("invalidated")
+            and all(
+                n in nodes
+                and nodes[n]["status"] != "Proposed"
+                and not nodes[n].get("invalidated")
+                for n in e["premises"] + [e["conclusion"]]
+            )
+        )
+
+    moves = {}
+    for e in sorted((e for e in edges if allowed(e)), key=lambda e: e["id"]):
+        for p in e["premises"]:
+            moves.setdefault(p, []).append((e, p, e["conclusion"], True))
+        if kind == "any" or not e["directed"]:
+            for p in e["premises"]:
+                moves.setdefault(e["conclusion"], []).append((e, e["conclusion"], p, False))
+
+    def path(dst):
+        if dst == start:
+            return []
+        parent = {start: None}
+        queue = deque([start])
+        while queue:
+            node = queue.popleft()
+            for move in moves.get(node, ()):
+                if move[2] in parent:
+                    continue
+                parent[move[2]] = move
+                if move[2] == dst:
+                    found = []
+                    while parent[dst] is not None:
+                        found.append(parent[dst])
+                        dst = parent[dst][1]
+                    return found[::-1]
+                queue.append(move[2])
+        return None
+
+    name = lambda n: nodes[n].get("name") or nodes[n]["statement"][:80]
+    reached = {start: "start"}
+    steps = []
+
+    def derive(dst, stack, main):
+        if dst in reached:
+            return reached[dst] != "assumed"
+        found = path(dst)
+        if found is None or len(steps) + len(found) > limit:
+            return False
+        for e, via, to, forward in found:
+            if to in reached and reached[to] != "assumed":
+                continue
+            sides = [p for p in e["premises"] if p != via] if forward else []
+            for side in sides:
+                if side not in reached and (side in stack or not derive(side, stack | {dst}, False)):
+                    reached[side] = "assumed"
+            sources = ([via] + sides) if forward else [via]
+            steps.append(
+                {
+                    "n": len(steps) + 1,
+                    "edge_id": e["id"],
+                    "type": e["type"],
+                    "tier": e["tier"],
+                    "existing": e.get("existing"),
+                    "layer": e.get("layer"),
+                    "directed": e["directed"],
+                    "reversed": not forward and e["directed"],
+                    "main": main,
+                    "premises": [{"id": s, "name": name(s), "from": reached[s]} for s in sources],
+                    "conclusion": {"id": to, "name": name(to)},
+                    "argument": (e.get("argument") or "")[:600],
+                    "evidence": list(e.get("evidence") or [])[:5],
+                }
+            )
+            reached[to] = len(steps)
+        return True
+
+    label = {"proof": "Proof route", "any": "Any route"}[kind]
+    if not derive(end, frozenset(), True):
+        return {
+            "found": False,
+            "kind": kind,
+            "start": {"id": start, "name": name(start)},
+            "end": {"id": end, "name": name(end)},
+            "message": "No route exists from "
+            + name(start)
+            + " to "
+            + name(end)
+            + (
+                " using verified and cited inference edges followed in their direction."
+                if kind == "proof"
+                else " over accepted edges in either direction."
+            ),
+        }
+    assumptions = [{"id": n, "name": name(n)} for n, how in reached.items() if how == "assumed"]
+    tiers = [s["tier"] for s in steps]
+    tier = min(tiers, key=lambda t: TIERS[t]) if tiers else None
+    descriptive = any(s["type"] not in INFERENCE for s in steps)
+    if kind == "proof":
+        result = (
+            "A complete logical argument from start to end"
+            if not assumptions
+            else "An argument from start to end that also needs %d additional premise(s), listed below" % len(assumptions)
+        )
+        result += (
+            "; machine-verified steps, composition unverified."
+            if tiers and all(t == "verified" for t in tiers)
+            else "; literature supported, not machine verified." if tiers else "."
+        )
+    else:
+        result = "A conjecture: as strong as its weakest edge."
+        if descriptive:
+            result += " It uses descriptive relations (not inference steps), so it shows how the concepts are connected, not a derivation."
+    main_steps = [s for s in steps if s["main"]]
+    lines = ["%s from %s to %s" % (label, name(start), name(end)), ""]
+    for s in steps:
+        sources = " + ".join(
+            p["name"] + ("" if p["from"] == "start" else " [assumed]" if p["from"] == "assumed" else " [step %s]" % p["from"])
+            for p in s["premises"]
+        )
+        source = next((v.get("source") for v in s["evidence"] if isinstance(v, dict) and v.get("source")), None)
+        lines.append(
+            "%d. %s  --%s%s-->  %s   (tier: %s%s)"
+            % (
+                s["n"],
+                sources,
+                s["type"],
+                ", against its direction" if s["reversed"] else "",
+                s["conclusion"]["name"],
+                s["tier"],
+                "; source: " + str(source) if source else "",
+            )
+        )
+    if assumptions:
+        lines += ["", "Additional premises assumed, not derived from the start:"] + ["- " + a["name"] for a in assumptions]
+    lines += ["", "Length: %d step(s) on the route, %d in total. Overall tier: %s (the lowest tier of any step)." % (len(main_steps), len(steps), tier or "n/a"), result]
+    return {
+        "found": True,
+        "kind": kind,
+        "label": label,
+        "start": {"id": start, "name": name(start)},
+        "end": {"id": end, "name": name(end)},
+        "steps": steps,
+        "length": len(main_steps),
+        "total_steps": len(steps),
+        "tier": tier,
+        "assumptions": assumptions,
+        "complete": kind == "proof" and not assumptions,
+        "result": result,
+        "path_nodes": [start] + [s["conclusion"]["id"] for s in main_steps],
+        "path_edges": [s["edge_id"] for s in steps],
+        "text": "\n".join(lines),
+    }

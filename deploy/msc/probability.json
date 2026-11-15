@@ -1,0 +1,59 @@
+{
+  "island": "probability",
+  "name": "Probability",
+  "field": {"msc": "60", "name": "Probability theory and stochastic processes"},
+  "subfields": [
+    {"msc": "60A", "name": "Foundations of probability theory", "subtopics": [
+      {"msc": "60A05", "name": "Axioms; other general questions in probability"},
+      {"msc": "60A10", "name": "Probabilistic measure theory"},
+      {"msc": "60A99", "name": "Foundations: none of the above"}
+    ]},
+    {"msc": "60E", "name": "Distribution theory", "subtopics": [
+      {"msc": "60E05", "name": "Probability distributions: general theory"},
+      {"msc": "60E10", "name": "Characteristic functions; other transforms"},
+      {"msc": "60E15", "name": "Inequalities; stochastic orderings"}
+    ]},
+    {"msc": "60F", "name": "Limit theorems", "subtopics": [
+      {"msc": "60F05", "name": "Central limit and other weak theorems"},
+      {"msc": "60F15", "name": "Strong limit theorems"}
+    ]},
+    {"msc": "60G", "name": "Stochastic processes", "subtopics": [
+      {"msc": "60G05", "name": "Foundations of stochastic processes"},
+      {"msc": "60G40", "name": "Stopping times; optimal stopping problems; gambling theory"},
+      {"msc": "60G42", "name": "Martingales with discrete parameter"},
+      {"msc": "60G50", "name": "Sums of independent random variables; random walks"},
+      {"msc": "60G99", "name": "Stochastic processes: none of the above"}
+    ]},
+    {"msc": "60J", "name": "Markov processes", "subtopics": [
+      {"msc": "60J05", "name": "Discrete-time Markov processes on general state spaces"},
+      {"msc": "60J10", "name": "Markov chains (discrete-time Markov processes on discrete state spaces)"}
+    ]}
+  ],
+  "paths": [
+    ["Mathlib.Probability.Notation", "60A05"],
+    ["Mathlib.Probability.ProbabilityMassFunction", "60E05"],
+    ["Mathlib.Probability.Distributions", "60E05"],
+    ["Mathlib.Probability.Density", "60E05"],
+    ["Mathlib.Probability.IdentDistrib", "60E05"],
+    ["Mathlib.Probability.Variance", "60E05"],
+    ["Mathlib.Probability.Moments", "60E10"],
+    ["Mathlib.Probability.CDF", "60E05"],
+    ["Mathlib.Probability.Independence", "60A05"],
+    ["Mathlib.Probability.ConditionalProbability", "60A10"],
+    ["Mathlib.Probability.ConditionalExpectation", "60A10"],
+    ["Mathlib.Probability.CondVar", "60A10"],
+    ["Mathlib.Probability.Integration", "60A10"],
+    ["Mathlib.Probability.UniformOn", "60E05"],
+    ["Mathlib.Probability.StrongLaw", "60F15"],
+    ["Mathlib.Probability.BorelCantelli", "60F15"],
+    ["Mathlib.Probability.Martingale", "60G42"],
+    ["Mathlib.Probability.Process.Stopping", "60G40"],
+    ["Mathlib.Probability.Process", "60G05"],
+    ["Mathlib.Probability.Kernel", "60J05"],
+    ["Mathlib.Probability.Markov", "60J10"],
+    ["Mathlib.Probability", "60A99"]
+  ],
+  "default": "60A99",
+  "module_prefixes": ["Mathlib.Probability"],
+  "note": "MSC 2020 codes and abbreviated titles after msc2020.org; the path table is a script heuristic. The gods role may override any placement with a recorded reason."
+}
