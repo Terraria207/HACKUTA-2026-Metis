@@ -26,8 +26,8 @@ def main():
     args = parser.parse_args()
     if not re.fullmatch(r'.+@sha256:[a-f0-9]{64}', args.base_image):
         parser.error('Base image must be pinned by sha256 digest')
-    pins = json.loads((ROOT / 'deploy/lean/pins.json').read_text())
-    if (args.project / 'METIS_MATHLIB_VERSION').read_text().strip() != pins['mathlib']:
+    pins = json.loads((ROOT / 'deploy/lean/pins.json').read_text(encoding="utf-8"))
+    if (args.project / 'METIS_MATHLIB_VERSION').read_text(encoding="utf-8").strip() != pins['mathlib']:
         parser.error('Run setup_lean.py first')
     lean = Path(subprocess.check_output(['lake', 'env', 'which', 'lean'], cwd=args.project, text=True).strip()).resolve()
     version = subprocess.check_output([str(lean), '--version'], text=True)

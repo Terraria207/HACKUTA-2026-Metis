@@ -79,7 +79,7 @@ def main():
     table.update(source=SOURCE, sha256=hashlib.sha256(raw).hexdigest(), retrieved=time.strftime("%Y-%m-%d"),
                  licence="CC BY-NC-SA (Mathematical Reviews and zbMATH); see https://msc2020.org/")
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(table, ensure_ascii=False, indent=1))
+    args.output.write_text(json.dumps(table, ensure_ascii=False, indent=1), encoding="utf-8")
     print(json.dumps({k: len(table[k]) for k in ("fields", "subfields", "subtopics")} | {"output": str(args.output)}))
 
 

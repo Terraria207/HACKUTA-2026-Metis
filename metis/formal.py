@@ -57,7 +57,7 @@ def _verify(config, statement, proof, mathlib_version, alignment, definition):
     ):
         return dict(base, reason="Pinned Lean toolchain/mathlib manifest missing")
     marker = os.path.join(config.lean_project, "METIS_MATHLIB_VERSION")
-    if not os.path.isfile(marker) or open(marker).read().strip() != mathlib_version:
+    if not os.path.isfile(marker) or open(marker, encoding="utf-8").read().strip() != mathlib_version:
         return dict(
             base, reason="Journey mathlib version does not match controlled project"
         )
@@ -97,7 +97,7 @@ def _verify(config, statement, proof, mathlib_version, alignment, definition):
     )
     with tempfile.TemporaryDirectory(prefix="metis-lean-") as temp:
         path = os.path.join(temp, "Proof.lean")
-        open(path, "w").write(source)
+        open(path, "w", encoding="utf-8").write(source)
         os.chmod(temp, 0o755)
         os.chmod(path, 0o644)
         container_name = "metis-proof-" + uuid.uuid4().hex
@@ -184,7 +184,7 @@ def _verify(config, statement, proof, mathlib_version, alignment, definition):
         output=output,
         axioms=sorted(axioms),
         source_sha256=hashlib.sha256(source.encode()).hexdigest(),
-        toolchain=open(os.path.join(config.lean_project, "lean-toolchain"))
+        toolchain=open(os.path.join(config.lean_project, "lean-toolchain"), encoding="utf-8")
         .read()
         .strip(),
         mathlib_version=mathlib_version,

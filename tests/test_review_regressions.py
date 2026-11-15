@@ -167,9 +167,9 @@ def test_definition_typecheck_is_not_theorem_verification(tmp_path, monkeypatch)
     from metis.config import Config
     from metis.formal import verify_definition
 
-    (tmp_path / "lean-toolchain").write_text("pinned-toolchain")
-    (tmp_path / "lake-manifest.json").write_text("{}")
-    (tmp_path / "METIS_MATHLIB_VERSION").write_text("v")
+    (tmp_path / "lean-toolchain").write_text("pinned-toolchain", encoding="utf-8")
+    (tmp_path / "lake-manifest.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "METIS_MATHLIB_VERSION").write_text("v", encoding="utf-8")
     c = Config(lean_image="trusted@sha256:" + "a" * 64, lean_project=str(tmp_path))
     monkeypatch.setattr("metis.formal.shutil.which", lambda _: "docker")
 

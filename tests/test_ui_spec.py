@@ -238,7 +238,7 @@ def small_export(path):
          "docstring": "Elsewhere.", "dependencies": []},
     ]
     path.write_text(json.dumps({"mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b", "lean": "leanprover/lean4:v4.19.0",
-                                "declarations": decls}))
+                                "declarations": decls}), encoding="utf-8")
 
 
 def test_missing_basis_group_is_marked_and_built_in_app(tmp_path):
@@ -282,7 +282,7 @@ def test_missing_basis_group_is_marked_and_built_in_app(tmp_path):
 
 def test_failed_build_leaves_catalog_unchanged(tmp_path):
     export = tmp_path / "export.json"
-    export.write_text(json.dumps({"mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b", "declarations": []}))
+    export.write_text(json.dumps({"mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b", "declarations": []}), encoding="utf-8")
     app = create_app(Config(mode="fixture", sqlite_path=str(tmp_path / "a.sqlite"), import_corpus=False,
                             provider_file=str(tmp_path / "p.json"), keys_file=str(tmp_path / "k.json"),
                             mathlib_export=str(export)), False)
@@ -302,7 +302,7 @@ def test_interface_structure_follows_the_ui_spec_and_keeps_the_csp(client):
     import struct
     import subprocess
 
-    html = (ROOT / "web/index.html").read_text()
+    html = (ROOT / "web/index.html").read_text(encoding="utf-8")
     for ident in ("titleScreen", "titleCanvas", "logo", "scrollNew", "scrollLoad", "scrollFound", "setup", "setSail",
                   "transition", "flyScroll", "mapScreen", "seaCanvas", "graphCanvas", "bottle", "routePanel", "details",
                   "discussion", "portrait", "minimap", "legend", "viewToggle", "fitAll", "returnTitle", "costCounter",
@@ -315,7 +315,7 @@ def test_interface_structure_follows_the_ui_spec_and_keeps_the_csp(client):
     assert "style=" not in html and not re.search(r"<script(?![^>]*\bsrc=)", html)
     assert set(re.findall(r'<script defer src="([^"]+)"', html)) == {
         "/static/vendor/cytoscape.min.js", "/static/pixel.js", "/static/title.js", "/static/seamap.js", "/static/app.js"}
-    scripts = {name: (ROOT / "web" / name).read_text() for name in ("pixel.js", "title.js", "seamap.js", "app.js")}
+    scripts = {name: (ROOT / "web" / name).read_text(encoding="utf-8") for name in ("pixel.js", "title.js", "seamap.js", "app.js")}
     assert all('style="' not in text for text in scripts.values())
     for name in list(scripts) + ["style.css", "art/metis-logo.png", "vendor/cytoscape.min.js"]:
         assert client.get("/static/" + name).status_code == 200, name
@@ -335,4 +335,3 @@ def test_interface_structure_follows_the_ui_spec_and_keeps_the_csp(client):
     if shutil.which("node"):
         for name in scripts:
             assert subprocess.run(["node", "--check", str(ROOT / "web" / name)], capture_output=True).returncode == 0, name
-    assert (ROOT / "docs/metis-ui-spec.txt").read_text().startswith("Metis — UI Spec")

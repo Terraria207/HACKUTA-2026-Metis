@@ -30,15 +30,15 @@ def main():
     p.add_argument("--output", required=True)
     a = p.parse_args()
     bundle = build(
-        json.loads(Path(a.declarations).read_text()),
-        json.loads(Path(a.mapping).read_text()),
+        json.loads(Path(a.declarations).read_text(encoding="utf-8")),
+        json.loads(Path(a.mapping).read_text(encoding="utf-8")),
         a.id,
         a.version,
         a.mathlib_version,
         a.islands,
         a.source,
     )
-    Path(a.output).write_text(json.dumps(bundle, indent=2))
+    Path(a.output).write_text(json.dumps(bundle, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

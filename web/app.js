@@ -69,7 +69,7 @@ async function showTitle() {
   $("titleScreen").hidden = false;
   TitleScene.run(true);
   if (location.hash !== "#home") history.replaceState(null, "", "#home");
-  await Promise.all([loadJourneys(), loadDiscoveries()]);
+  await Promise.all([loadJourneys(), loadDiscoveries(), loadHarbour()]);
 }
 async function loadJourneys() {
   state.journeys = await api("/journeys");
@@ -182,6 +182,7 @@ async function openSetup() {
         : esc(f.build_note) + esc(size)}</span></div>`;
   }).join("");
   $("fieldFilter").value = "";
+  $("catalogInstall").hidden = !!ex || state.catalog.fields.every((f) => f.state === "ready");
   $("setupRoles").innerHTML = rolesSummary(state.settings);
   $("setupSettingsGrid").innerHTML = settingsGrid(DEFAULTS) +
     (state.catalog.fields.some((f) => f.buildable) && state.settings.keys_required
@@ -827,9 +828,12 @@ function saveBlob(blob, name) {
 }
 
 /* =========================== Settings, keys, costs =========================== */
-async function openSettings(journeySettings) {
-  $("settingsTitle").textContent = journeySettings ? "Journey settings" : "Settings · models, keys and costs";
+const TABS = { mode: "Mode", groups: "Basis groups", keys: "API keys", models: "Models", costs: "Costs" };
+const src = (entry, env) => entry.source === "env" ? `<span class="srcNote">set by the server environment (${esc(env)}); change it there</span>` : "";
+async function openSettings(journeySettings, tab) {
+  $("settingsTabs").hidden = !!journeySettings;
   if (journeySettings) {
+    $("settingsTitle").textContent = "Journey settings";
     $("settingsContent").innerHTML = `<form id="journeySettingsForm"><div class="settingsGrid">${settingsGrid({ ...DEFAULTS, ...state.journey_settings })}</div><div class="actions"><button class="pixelButton primary">Save journey settings</button></div></form>`;
     on("journeySettingsForm", "submit", async (e) => {
       e.preventDefault();
@@ -838,52 +842,205 @@ async function openSettings(journeySettings) {
       $("settingsDialog").close();
     });
   } else {
-    const [s, c] = await Promise.all([api("/settings"), api("/costs" + (state.journeyId ? "?journey_id=" + state.journeyId : ""))]);
-    state.settings = s;
-    const perRun = {};
-    c.calls.forEach((x) => (perRun[x.run_id] = (perRun[x.run_id] || 0) + x.max_cost_usd));
-    $("settingsContent").innerHTML =
-      `<p class="hint">${esc(s.credentials)}. ${s.keys_required ? "" : "Fixture mode needs no keys; what you enter here is used once the server runs in live mode."}</p>` +
-      `<h3>API keys</h3><p class="hint">Entered once and reused by every journey. Roles that share a provider share one key. Keys are masked after entry.</p>` +
-      Object.entries(s.keys).map(([env, k]) => `<form class="keyRow" data-key-form="${esc(env)}"><strong>${esc(k.label)}</strong>` +
-        `<span>${k.set ? `<span class="ok">✓ •••••••••••• (${k.source === "environment" ? "from the server environment" : "stored"})</span>` : '<span class="warn">⚠ missing</span>'}${k.test ? ` <span class="hint">last test ${k.test.ok ? "passed" : "failed: " + esc(k.test.detail)}</span>` : ""}` +
-        `<input type="password" name="value" autocomplete="off" placeholder="${k.set ? "Replace key" : "Enter key"}" aria-label="${esc(k.label)} API key"></span>` +
-        `<span class="actions"><button class="pixelButton small">Save</button>${k.source === "stored" ? `<button type="button" class="pixelButton small quiet" data-remove-key="${esc(env)}">Remove</button>` : ""}</span></form>`).join("") +
-      `<h3>Models per role</h3><p class="hint">Defaults come from the design doc's model roster. An ID marked unverified was not confirmed against the provider's documentation: check it with Test.</p>` +
-      `<form id="rolesForm">${Object.entries(s.roster).map(([role, r]) => `<div class="roleRow"><span class="mark ${r.ready ? "ok" : "warn"}">${r.ready ? "✓" : "⚠"}</span><span>${esc(r.label)}</span>` +
-        `<input name="${esc(role)}" value="${esc(r.model || r.default_model || "")}" placeholder="${esc(r.default_model_name)} — enter its API model ID" aria-label="Model for ${esc(r.label)}" list="models-${esc(r.provider)}">` +
-        `<span><button type="button" class="pixelButton small" data-test-role="${esc(role)}">Test</button> <span class="hint" id="test-${esc(role)}">${esc(r.key_label)}${r.model ? "" : r.default_model ? (r.default_verified ? " · default" : " · default, unverified") : " · no known ID"}</span></span></div>`).join("")}` +
-      [...new Set(Object.values(s.roster).map((r) => r.provider))].map((p) => `<datalist id="models-${esc(p)}">${[...new Set(Object.values(s.roster).filter((r) => r.provider === p && r.default_model).map((r) => r.default_model))].map((m) => `<option value="${esc(m)}">`).join("")}</datalist>`).join("") +
-      `<div class="actions"><button class="pixelButton primary">Save models</button></div></form>` +
-      `<details><summary>Advanced: prices and limits per role (JSON)</summary><p class="hint">Live calls need a positive max_cost_usd and known input and output prices per role.</p><form id="providersForm"><textarea name="roles" rows="12" aria-label="Role configuration JSON">${esc(JSON.stringify(s.roles, null, 2))}</textarea><button class="pixelButton small">Save role configuration</button></form></details>` +
-      `<h3>Usage and cost</h3><div class="settingsGrid"><div><span class="hint">${state.journeyId ? "This journey" : "All journeys"}, conservative charges</span><div class="metric">$${c.total_usd.toFixed(4)}</div></div><div><span class="hint">Server budget cap</span><div class="metric">$${s.global_budget_usd.toFixed(2)}</div></div></div>` +
-      `<p class="hint">${esc(c.accounting)} Live calls enabled: ${s.live_enabled}. The journey's budget cap pauses a run before it is exceeded.</p>` +
-      (Object.keys(perRun).length ? `<h3>Per run</h3>${Object.entries(perRun).map(([rid, v]) => `<p class="hint">${esc(rid)} — $${v.toFixed(4)}</p>`).join("")}` : "") +
-      `<details><summary>Usage ledger</summary><pre>${esc(JSON.stringify(c, null, 2))}</pre></details>`;
-    on("rolesForm", "submit", async (e) => {
-      e.preventDefault();
-      const f = new FormData(e.target), roles = {};
-      Object.entries(s.roster).forEach(([role, r]) => {
-        const model = String(f.get(role) || "").trim();
-        if (model) roles[role] = { provider: r.provider, key_env: r.key_env, max_cost_usd: 0, max_output_tokens: 4096, ...(s.roles[role] || {}), model };
-      });
-      await api("/settings/providers", { method: "PUT", body: JSON.stringify(roles) });
-      await openSettings(false);
-    });
-    on("providersForm", "submit", async (e) => {
-      e.preventDefault();
-      await api("/settings/providers", { method: "PUT", body: JSON.stringify(JSON.parse(new FormData(e.target).get("roles"))) });
-      await openSettings(false);
-    });
-    document.querySelectorAll("[data-key-form]").forEach((form) => form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const value = new FormData(form).get("value");
-      if (!value) return;
-      api("/settings/keys", { method: "PUT", body: JSON.stringify({ [form.dataset.keyForm]: value }) }).then(() => openSettings(false)).catch(error);
-    }));
+    state.settingsTab = tab || state.settingsTab || "mode";
+    $("settingsTitle").textContent = "Settings · " + TABS[state.settingsTab];
+    document.querySelectorAll("#settingsTabs button").forEach((b) => b.setAttribute("aria-selected", b.dataset.stab === state.settingsTab));
+    await ({ mode: renderMode, groups: renderGroups, keys: renderKeys, models: renderModels, costs: renderCosts })[state.settingsTab]();
   }
   if (!$("settingsDialog").open) $("settingsDialog").showModal();
-  if (!$("setup").hidden) { $("setupRoles").innerHTML = rolesSummary(state.settings); validateSetup(); }
+  if (!$("setup").hidden && state.settings) { $("setupRoles").innerHTML = rolesSummary(state.settings); validateSetup(); }
+}
+const settingsBox = () => $("settingsContent");
+
+/* ---- Mode: fixture or live, MongoDB, budget, restart ---- */
+async function renderMode() {
+  const [sv, s] = await Promise.all([api("/server"), api("/settings")]);
+  state.settings = s;
+  const saved = sv.saved, running = sv.running;
+  const live = saved.mode.value === "live";
+  const pinned = (k) => saved[k].source === "env";
+  const rolesReady = Object.values(s.roster).filter((r) => r.ready).length, rolesTotal = Object.values(s.roster).length;
+  const checks = [
+    [saved.mongo_uri.value, "A MongoDB connection string is saved", "Enter a MongoDB connection string below (Atlas free tier works)"],
+    [rolesReady === rolesTotal, `All ${rolesTotal} model roles have a key and a model`, `${rolesTotal - rolesReady} of ${rolesTotal} roles still need a key or a model (API keys and Models tabs)`],
+    [saved.live_budget.value > 0, `Spending cap set: $${Number(saved.live_budget.value).toFixed(2)}`, "Set a spending cap above 0: live runs cost money"],
+    [saved.allow_live.value, "Live calls are allowed", "Allow live calls below"],
+  ];
+  settingsBox().innerHTML =
+    (sv.startup_error ? `<p class="warn">The saved settings could not start last time, so the server is in fixture mode: ${esc(sv.startup_error)}</p>` : "") +
+    `<p class="hint">Running now: <strong>${esc(running.mode.value)}</strong> mode${running.mode.source === "fallback" ? " (fallback)" : ""}, storage ${esc(sv.store)}. Changes are saved to the server and take effect after a restart.</p>` +
+    `<form id="modeForm"><div class="cards">` +
+    `<label class="card modeChoice ${!live ? "selected" : ""}"><input type="radio" name="mode" value="fixture" ${!live ? "checked" : ""} ${pinned("mode") ? "disabled" : ""}><span><h3>Fixture mode</h3><p>Scripted agents, no keys, no cost. Everything works, but nothing it reports is a real discovery. Good for learning the map.</p></span></label>` +
+    `<label class="card modeChoice ${live ? "selected" : ""}"><input type="radio" name="mode" value="live" ${live ? "checked" : ""} ${pinned("mode") ? "disabled" : ""}><span><h3>Live mode</h3><p>Real models explore real papers, with results stored in MongoDB. Every call is charged against the caps you set.</p></span></label></div>` +
+    src(saved.mode, "METIS_MODE") +
+    `<fieldset><legend>MongoDB</legend><label>Connection string ${saved.mongo_uri.value ? '<span class="ok">✓ saved</span>' : '<span class="warn">⚠ none saved</span>'}<input type="password" name="mongo_uri" autocomplete="off" placeholder="${saved.mongo_uri.value ? "Leave blank to keep the saved one" : "mongodb+srv://user:password@cluster.example.net/"}" ${pinned("mongo_uri") ? "disabled" : ""}></label>${src(saved.mongo_uri, "MONGODB_URI")}` +
+    `<label>Database name<input name="mongo_db" value="${esc(saved.mongo_db.value)}" ${pinned("mongo_db") ? "disabled" : ""}></label>${src(saved.mongo_db, "MONGODB_DATABASE")}` +
+    `<div class="actions"><button type="button" id="testMongo" class="pixelButton small">Test connection</button><span id="mongoResult" class="hint" role="status"></span>${saved.mongo_uri.value && !pinned("mongo_uri") ? '<button type="button" id="forgetMongo" class="pixelButton small quiet">Forget the saved string</button>' : ""}</div>` +
+    `<p class="hint">A free Atlas cluster is enough to start. Add your computer's IP to the cluster's network access list, and copy the connection string from Atlas › Connect › Drivers. It is stored in a private server file and never shown again.</p></fieldset>` +
+    `<fieldset><legend>Spending</legend><label>Spending cap for this server, in USD<input name="live_budget" type="number" min="0" max="100000" step="0.5" value="${esc(saved.live_budget.value)}" ${pinned("live_budget") ? "disabled" : ""}></label>${src(saved.live_budget, "METIS_LIVE_BUDGET_USD")}` +
+    `<label class="check"><input type="checkbox" name="allow_live" ${saved.allow_live.value ? "checked" : ""} ${pinned("allow_live") ? "disabled" : ""}> Allow live calls to model providers</label>${src(saved.allow_live, "METIS_ALLOW_LIVE")}` +
+    `<p class="hint">Every call reserves its maximum charge against this cap, the journey's cap and the run's cap before it is made; a cap that would be exceeded pauses the run. This is the app's own accounting, not a provider-side limit.</p></fieldset>` +
+    `<h3>Ready for live mode?</h3><ul class="stepList">${checks.map(([ok, yes, no]) => `<li><span class="mark ${ok ? "ok" : "warn"}">${ok ? "✓" : "⚠"}</span><span>${esc(ok ? yes : no)}</span></li>`).join("")}</ul>` +
+    `<div class="actions"><button class="pixelButton primary">Save</button><span id="modeSaved" class="hint" role="status"></span></div></form>` +
+    `<div id="restartBox">${restartHtml(sv)}</div>`;
+  settingsBox().querySelectorAll('input[name="mode"]').forEach((r) => r.addEventListener("change", () => settingsBox().querySelectorAll(".modeChoice").forEach((c) => c.classList.toggle("selected", c.querySelector("input").checked))));
+  on("modeForm", "submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target), body = {};
+    if (!pinned("mode")) body.mode = f.get("mode");
+    if (!pinned("mongo_db")) body.mongo_db = f.get("mongo_db");
+    if (!pinned("live_budget")) body.live_budget = Number(f.get("live_budget"));
+    if (!pinned("allow_live")) body.allow_live = f.get("allow_live") === "on";
+    if (f.get("mongo_uri")) body.mongo_uri = f.get("mongo_uri");
+    const result = await api("/server", { method: "PUT", body: JSON.stringify(body) });
+    await renderMode();
+    $("modeSaved").textContent = result.restart_required.length ? "Saved. Restart to apply." : "Saved; nothing to restart.";
+  });
+  on("testMongo", "click", async () => {
+    $("mongoResult").textContent = "testing…";
+    const uri = settingsBox().querySelector('input[name="mongo_uri"]').value;
+    const r = await api("/server/test-mongo", { method: "POST", body: JSON.stringify(uri ? { mongo_uri: uri } : {}) });
+    $("mongoResult").textContent = (r.ok ? "✓ " : "⚠ ") + r.detail;
+    $("mongoResult").className = r.ok ? "ok" : "warn";
+  });
+  if ($("forgetMongo")) on("forgetMongo", "click", async () => { await api("/server", { method: "PUT", body: JSON.stringify({ mongo_uri: null, mode: "fixture" }) }); await renderMode(); });
+  if ($("restartNow")) on("restartNow", "click", restartServer);
+}
+function restartHtml(sv) {
+  if (!sv.restart_required.length) return "";
+  return `<div class="card"><h3>Restart to apply</h3><p>Changed: ${esc(sv.restart_required.join(", "))}. The new settings take effect when the server restarts.</p>` +
+    (sv.supervised ? '<div class="actions"><button id="restartNow" class="pixelButton primary">Restart now</button><span class="hint">Takes a few seconds; the page reloads by itself.</span></div>'
+      : '<p class="warn">This server was started without its supervisor, so it cannot restart itself. Stop it (Ctrl+C in its window) and start it again with run.bat / run.sh or <code>python -m metis</code>; the saved settings apply then.</p>') + "</div>";
+}
+async function restartServer() {
+  const r = await api("/server/restart", { method: "POST" });
+  if (!r.restarting) { $("restartBox").innerHTML = `<p class="warn">${esc(r.detail)}</p>`; return; }
+  document.querySelectorAll("dialog[open]").forEach((d) => d.close());
+  $("restartOverlay").hidden = false;
+  const started = Date.now();
+  await wait(1500);
+  while (Date.now() - started < 60000) {
+    try {
+      const st = await api("/status");
+      $("restartText").textContent = st.startup_error ? "The saved settings could not start: " + st.startup_error + " — running in fixture mode." : "Back up in " + st.mode + " mode.";
+      await wait(st.startup_error ? 4000 : 600);
+      location.reload();
+      return;
+    } catch { await wait(700); }
+  }
+  $("restartText").textContent = "The server has not come back yet. Check its window, then reload this page.";
+}
+
+/* ---- Basis groups: install from mathlib inside the app ---- */
+function installHtml(st) {
+  const job = st.job, running = st.running;
+  const tool = (key) => { const t = st.tools[key]; return `<li><span class="mark ${t.found ? "ok" : "warn"}">${t.found ? "✓" : "⚠"}</span><span><strong>${esc(t.label)}</strong> ${t.found ? `<span class="hint">${esc(t.path)}${t.managed ? " (installed by Metis)" : ""}</span>` : `<span class="warn">not found.</span> <span class="hint">${esc(t.hint)}</span>${t.auto && !running ? ` <button class="pixelButton small" data-install-tool="${key}">Install here</button>` : ""}`}</span></li>`; };
+  const steps = st.steps;
+  const total = st.groups.total, ready = st.groups.ready;
+  const stepIcon = (x) => ({ done: "✓", skipped: "✓", running: "…", failed: "✗", cancelled: "–" })[x.status] || "·";
+  return `<div class="cards"><div class="card"><h3>Tools</h3><ul class="stepList">${tool("git")}${tool("lake")}</ul><p class="hint">Both run only on this computer; nothing is installed outside the project folder.</p></div>` +
+    `<div class="card"><h3>On this computer</h3><ul class="stepList">` +
+    `<li><span class="mark ${steps.mathlib ? "ok" : ""}">${steps.mathlib ? "✓" : "·"}</span><span>Pinned mathlib ${esc(st.mathlib.slice(0, 8))} with its compiled cache</span></li>` +
+    `<li><span class="mark ${steps.export ? "ok" : ""}">${steps.export ? "✓" : "·"}</span><span>Declaration export${steps.export ? ` (${Number(steps.export_declarations).toLocaleString()} declarations)` : ""}</span></li>` +
+    `<li><span class="mark ${steps.msc ? "ok" : ""}">${steps.msc ? "✓" : "·"}</span><span>MSC 2020 table</span></li>` +
+    `<li><span class="mark ${steps.index ? "ok" : ""}">${steps.index ? "✓" : "·"}</span><span>Basis-group index${steps.index ? ` (${steps.index_groups} groups)` : ""}</span></li>` +
+    `<li><span class="mark ${total && ready === total ? "ok" : ""}">${total && ready === total ? "✓" : "·"}</span><span>Groups ready: ${total ? `${ready} of ${total}${st.groups.built < ready ? ` (${st.groups.built} built from mathlib, the rest from the reviewed corpus)` : ""}` : "none from mathlib yet"}</span></li></ul>` +
+    `<p class="hint">${st.disk_free_gb} GB free on this drive. Needs about ${st.estimate.disk_gb} GB of disk and ${st.estimate.memory_gb} GB of memory; downloads about ${st.estimate.download_gb} GB the first time; ${esc(st.estimate.minutes)}.</p></div></div>` +
+    (running ? `<div class="card"><h3>Installing… ${job.percent}%</h3><div class="progressBar"><i id="installBar"></i></div><ul class="stepList">${job.steps.map((x) => `<li><span class="mark">${stepIcon(x)}</span><span>${esc(x.name)} <span class="detail">${esc(x.detail || "")}</span></span></li>`).join("")}</ul><div class="logBox" id="installLog">${esc(job.log.map((l) => l.text).join("\n"))}</div><div class="actions"><button class="pixelButton small quiet" id="installCancel">Cancel</button><span class="hint">You can close this window; the installation continues on the server.</span></div></div>`
+      : `<div class="actions"><button class="pixelButton primary" id="installAll" ${st.tools.git.found && st.tools.lake.found ? "" : "disabled"}>${total && ready === total ? "Check again and rebuild what is missing" : "Install all basis groups"}</button><label class="check"><input type="checkbox" id="installPrebuild" checked> build every group now (otherwise each is built the first time a journey uses it)</label></div>` +
+        `<div class="card" id="installConfirm" hidden><h3>Ready to install?</h3><p>${steps.mathlib ? "mathlib is already on this computer, so this only runs the steps still missing above" : `This downloads about ${st.estimate.download_gb} GB (mathlib and its compiled cache) into the project's <code>.lean</code> folder and takes ${esc(st.estimate.minutes)}`}. It uses no model and no key, and you can cancel at any point; finished steps are kept.</p><div class="actions"><button class="pixelButton primary" id="installGo">Start installing</button><button class="pixelButton small quiet" id="installNo">Not now</button></div></div>` +
+        (!(st.tools.git.found && st.tools.lake.found) ? '<p class="hint">Install the missing tools above first; the button enables itself when both are found.</p>' : "") +
+        (job && job.status !== "running" ? `<details ${job.status === "failed" ? "open" : ""}><summary>Last installation: ${esc(job.status)}${job.error ? " — " + esc(job.error) : ""}</summary><ul class="stepList">${job.steps.map((x) => `<li><span class="mark">${stepIcon(x)}</span><span>${esc(x.name)} <span class="detail">${esc(x.detail || "")}</span></span></li>`).join("")}</ul><div class="logBox">${esc((job.log || []).map((l) => l.text).join("\n"))}</div></details>` : ""));
+}
+async function renderGroups(force) {
+  const st = await api("/install");
+  const sig = JSON.stringify(st);
+  const open = () => $("settingsDialog").open && state.settingsTab === "groups";
+  clearTimeout(state.installTimer);
+  if (!force && !st.running && sig === state.installSig && $("installAll")) {
+    // Nothing changed: leave the confirm card and focus alone, just look again later.
+    if (open()) state.installTimer = setTimeout(() => renderGroups().catch(error), 5000);
+    return;
+  }
+  state.installSig = sig;
+  settingsBox().innerHTML = `<p class="hint">Basis groups are the islands a journey can sail between: one per MSC 2020 field that holds mathlib declarations, 42 at the pinned mathlib. This downloads mathlib and builds them here; no model or key is involved.</p>` + installHtml(st);
+  if ($("installBar")) { $("installBar").style.width = st.job.percent + "%"; $("installLog").scrollTop = $("installLog").scrollHeight; }
+  if ($("installAll")) {
+    on("installAll", "click", () => { $("installConfirm").hidden = false; $("installGo").focus(); });
+    on("installNo", "click", () => { $("installConfirm").hidden = true; });
+    on("installGo", "click", async () => {
+      await api("/install", { method: "POST", body: JSON.stringify({ prebuild: $("installPrebuild").checked }) });
+      await renderGroups(true);
+    });
+  }
+  if ($("installCancel")) on("installCancel", "click", async () => { await api("/install/cancel", { method: "POST" }); await renderGroups(true); });
+  settingsBox().querySelectorAll("[data-install-tool]").forEach((b) => b.addEventListener("click", () => api("/install/tools", { method: "POST", body: JSON.stringify({ tool: b.dataset.installTool }) }).then(() => renderGroups(true)).catch(error)));
+  if (open()) state.installTimer = setTimeout(() => renderGroups().catch(error), st.running ? 2000 : 5000);
+  if (!st.running && state.installWasRunning) { state.installWasRunning = false; if (!$("titleScreen").hidden) loadHarbour().catch(() => {}); }
+  state.installWasRunning = st.running;
+}
+
+/* ---- Keys, models, costs ---- */
+async function renderKeys() {
+  const s = await api("/settings");
+  state.settings = s;
+  settingsBox().innerHTML = `<p class="hint">${esc(s.credentials)}. ${s.keys_required ? "" : "Fixture mode needs no keys; what you enter here is used once the server runs in live mode."} Entered once and reused by every journey. Roles that share a provider share one key.</p>` +
+    Object.entries(s.keys).map(([env, k]) => `<form class="keyRow" data-key-form="${esc(env)}"><strong>${esc(k.label)}</strong>` +
+      `<span>${k.set ? `<span class="ok">✓ •••••••••••• (${k.source === "environment" ? "from the server environment" : "stored"})</span>` : '<span class="warn">⚠ missing</span>'}${k.test ? ` <span class="hint">last test ${k.test.ok ? "passed" : "failed: " + esc(k.test.detail)}</span>` : ""}` +
+      `<input type="password" name="value" autocomplete="off" placeholder="${k.set ? "Replace key" : "Paste key"}" aria-label="${esc(k.label)} API key"></span>` +
+      `<span class="actions"><button class="pixelButton small">Save</button>${k.source === "stored" ? `<button type="button" class="pixelButton small quiet" data-remove-key="${esc(env)}">Remove</button>` : ""}</span></form>`).join("");
+  settingsBox().querySelectorAll("[data-key-form]").forEach((form) => form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const value = new FormData(form).get("value");
+    if (!value) return;
+    api("/settings/keys", { method: "PUT", body: JSON.stringify({ [form.dataset.keyForm]: value }) }).then(renderKeys).catch(error);
+  }));
+}
+async function renderModels() {
+  const s = await api("/settings");
+  state.settings = s;
+  settingsBox().innerHTML = `<p class="hint">Defaults come from the design doc's model roster. An ID marked unverified was not confirmed against the provider's documentation: check it with Test (live mode only).</p>` +
+    `<form id="rolesForm">${Object.entries(s.roster).map(([role, r]) => `<div class="roleRow"><span class="mark ${r.ready ? "ok" : "warn"}">${r.ready ? "✓" : "⚠"}</span><span>${esc(r.label)}</span>` +
+      `<input name="${esc(role)}" value="${esc(r.model || r.default_model || "")}" placeholder="${esc(r.default_model_name)} — enter its API model ID" aria-label="Model for ${esc(r.label)}" list="models-${esc(r.provider)}">` +
+      `<span><button type="button" class="pixelButton small" data-test-role="${esc(role)}">Test</button> <span class="hint" id="test-${esc(role)}">${esc(r.key_label)}${r.model ? "" : r.default_model ? (r.default_verified ? " · default" : " · default, unverified") : " · no known ID"}</span></span></div>`).join("")}` +
+    [...new Set(Object.values(s.roster).map((r) => r.provider))].map((p) => `<datalist id="models-${esc(p)}">${[...new Set(Object.values(s.roster).filter((r) => r.provider === p && r.default_model).map((r) => r.default_model))].map((m) => `<option value="${esc(m)}">`).join("")}</datalist>`).join("") +
+    `<div class="actions"><button class="pixelButton primary">Save models</button></div></form>` +
+    `<details><summary>Advanced: prices and limits per role (JSON)</summary><p class="hint">Live calls need a positive max_cost_usd and known input and output prices per role.</p><form id="providersForm"><textarea name="roles" rows="12" aria-label="Role configuration JSON">${esc(JSON.stringify(s.roles, null, 2))}</textarea><button class="pixelButton small">Save role configuration</button></form></details>`;
+  on("rolesForm", "submit", async (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target), roles = {};
+    Object.entries(s.roster).forEach(([role, r]) => {
+      const model = String(f.get(role) || "").trim();
+      if (model) roles[role] = { provider: r.provider, key_env: r.key_env, max_cost_usd: 0, max_output_tokens: 4096, ...(s.roles[role] || {}), model };
+    });
+    await api("/settings/providers", { method: "PUT", body: JSON.stringify(roles) });
+    await renderModels();
+  });
+  on("providersForm", "submit", async (e) => {
+    e.preventDefault();
+    await api("/settings/providers", { method: "PUT", body: JSON.stringify(JSON.parse(new FormData(e.target).get("roles"))) });
+    await renderModels();
+  });
+}
+async function renderCosts() {
+  const [s, c] = await Promise.all([api("/settings"), api("/costs" + (state.journeyId ? "?journey_id=" + state.journeyId : ""))]);
+  const perRun = {};
+  c.calls.forEach((x) => (perRun[x.run_id] = (perRun[x.run_id] || 0) + x.max_cost_usd));
+  settingsBox().innerHTML = `<div class="settingsGrid"><div><span class="hint">${state.journeyId ? "This journey" : "All journeys"}, conservative charges</span><div class="metric">$${c.total_usd.toFixed(4)}</div></div><div><span class="hint">Server spending cap</span><div class="metric">$${s.global_budget_usd.toFixed(2)}</div></div></div>` +
+    `<p class="hint">${esc(c.accounting)} Live calls enabled: ${s.live_enabled}. The journey's budget cap pauses a run before it is exceeded.</p>` +
+    (Object.keys(perRun).length ? `<h3>Per run</h3>${Object.entries(perRun).map(([rid, v]) => `<p class="hint">${esc(rid)} — $${v.toFixed(4)}</p>`).join("")}` : '<div class="empty">No charges yet.</div>') +
+    `<details><summary>Usage ledger</summary><pre>${esc(JSON.stringify(c, null, 2))}</pre></details>`;
+}
+
+/* ---- Harbour board on the title screen ---- */
+async function loadHarbour() {
+  const o = await api("/overview");
+  const board = (cls, text, button, tab) => `<div class="board ${cls}"><span>${text}</span>${button ? `<button class="pixelButton small" data-open-settings="${tab}">${esc(button)}</button>` : ""}</div>`;
+  $("harbour").innerHTML =
+    (o.startup_error ? board("warnBoard", `<strong>Fixture mode (fallback)</strong> — the saved live settings could not start`, "See why", "mode") : "") +
+    board("", `<strong>Basis groups</strong> ${o.groups_ready} of ${o.groups_total} ready${o.install_running ? " · installing…" : ""}`, o.install_running ? "Watch progress" : o.export_present ? "Manage" : "Install all 42", "groups") +
+    board("", `<strong>Mode</strong> ${o.mode === "live" ? "live — real models" : "fixture — scripted, free"}`, o.mode === "live" ? "Settings" : "Switch to live", "mode") +
+    board("", `<strong>API keys</strong> ${o.keys_set} of ${o.keys_total}`, o.keys_set < o.keys_total ? "Enter keys" : "Manage", "keys");
 }
 async function updateCosts() {
   const c = await api("/costs?journey_id=" + state.journeyId);
@@ -908,6 +1065,7 @@ async function refresh() {
   const sig = runs.map((r) => r.id + r.status + r.checkpoint).join("|") + "#" + papers.length;
   if (sig !== state.mapSig) { const first = !state.mapSig; state.mapSig = sig; if (!first && !state.before) await loadMap(true); }
   const active = runs.some((r) => ["queued", "running", "paused"].includes(r.status));
+  $("guide").hidden = !!(runs.length || localStorage.getItem("metisGuideDismissed")) || !$("details").hidden;
   $("runStatus").textContent = run ? run.status + (run.status === "running" || run.status === "queued" ? ` · step ${Math.min(7, run.checkpoint + 1)}/7` : "") : "No run yet";
   $("runStatus").className = "pill " + (run && run.status === "complete" ? "good" : run && run.status === "failed" ? "bad" : run && ["running", "queued"].includes(run.status) ? "gold" : "");
   $("runStatus").title = (run && run.error) || "";
@@ -1012,6 +1170,8 @@ document.addEventListener("click", (e) => {
   Promise.resolve((async () => {
     if (d.close) $(d.close).close();
     if (d.hide) $(d.hide).hidden = true;
+    if (d.stab) await openSettings(false, d.stab);
+    if (d.openSettings) await openSettings(false, d.openSettings);
     if (d.openSetup) await openSetup();
     if (d.row) {
       // Click a journey, then choose Open journey or Open review document.
@@ -1092,7 +1252,10 @@ function wire() {
   on("setupSettings", "click", () => openSettings(false));
   on("titleSettings", "click", () => openSettings(false));
   on("settingsButton", "click", () => openSettings(false));
-  on("costCounter", "click", () => openSettings(false));
+  on("costCounter", "click", () => openSettings(false, "costs"));
+  on("guideClose", "click", () => { localStorage.setItem("metisGuideDismissed", "1"); $("guide").hidden = true; });
+  $("error").addEventListener("click", () => ($("error").hidden = true));
+  $("settingsDialog").addEventListener("close", () => clearTimeout(state.installTimer));
   on("journeySettings", "click", () => openSettings(true));
   on("returnTitle", "click", showTitle); // everything is already saved on the server
   on("authButton", "click", () => {

@@ -15,7 +15,8 @@
   </head>
   <body>
     <div id="notice" role="status"></div>
-    <div id="error" role="alert" hidden></div>
+    <div id="error" role="alert" hidden title="Click to dismiss"></div>
+    <div id="restartOverlay" class="overlay" hidden><div class="parchmentDialog"><h2>Restarting</h2><p id="restartText">Applying the saved settings…</p><div class="progressBar"><i class="indeterminate"></i></div></div></div>
     <div id="tooltip" role="tooltip" hidden></div>
 
     <!-- Title screen: pixel-art beach, the METIS wordmark and the menu scrolls -->
@@ -54,8 +55,9 @@
             </div>
           </section>
         </div>
+        <section id="harbour" class="harbour" aria-label="Where this installation stands"></section>
         <div class="titleFoot">
-          <button id="titleSettings" class="pixelButton">Settings · models &amp; keys</button>
+          <button id="titleSettings" class="pixelButton">Settings</button>
           <button id="authButton" class="pixelButton quiet">API access token</button>
           <span id="mode" class="pill">Connecting…</span>
         </div>
@@ -77,6 +79,7 @@
               <legend>Basis groups (islands)</legend>
               <p class="hint">Each basis group is built once by the gods and saved; a saved group is linked at once, read-only. Bridge modules between the islands you pick are included automatically.</p>
               <p class="hint" id="catalogNote"></p>
+              <p id="catalogInstall" hidden><button type="button" class="pixelButton small" data-open-settings="groups">Install basis groups from mathlib…</button></p>
               <div class="actions"><input id="fieldFilter" type="search" placeholder="Filter basis groups by name or MSC code" aria-label="Filter basis groups" /><span id="chosenCount" class="pill" role="status"></span></div>
               <div id="fieldCatalog"></div>
             </fieldset>
@@ -248,6 +251,16 @@
         <div id="detailContent"></div>
       </aside>
 
+      <aside id="guide" class="hud guide" hidden aria-label="First voyage">
+        <button class="closeX" id="guideClose" aria-label="Dismiss the guide">×</button>
+        <h3>Your first voyage</h3>
+        <ol>
+          <li><button class="pixelButton small" data-panel="bottle">Open the bottle</button> and add a paper: in fixture mode, the scripted sample is enough.</li>
+          <li>Press <strong>▶ Start</strong>. The crew sets out and narrates each step.</li>
+          <li>When it finishes, open <button class="pixelButton small" data-panel="report">Report</button>, or press <strong>G</strong> for the plain graph.</li>
+        </ol>
+        <p class="hint">Fixture mode is scripted and free; nothing it reports is a real discovery. Live mode, with real models, is in Settings › Mode.</p>
+      </aside>
       <details id="legend" class="hud legend">
         <summary>Legend</summary>
         <div id="legendBody"></div>
@@ -321,6 +334,9 @@
     </dialog>
     <dialog id="settingsDialog" class="parchmentDialog wide">
       <div class="dialogHead"><h2 id="settingsTitle">Settings</h2><button class="pixelButton small quiet" data-close="settingsDialog">Close</button></div>
+      <nav class="settingsTabs" id="settingsTabs" aria-label="Settings sections">
+        <button data-stab="mode">Mode</button><button data-stab="groups">Basis groups</button><button data-stab="keys">API keys</button><button data-stab="models">Models</button><button data-stab="costs">Costs</button>
+      </nav>
       <div id="settingsContent"></div>
     </dialog>
   </body>

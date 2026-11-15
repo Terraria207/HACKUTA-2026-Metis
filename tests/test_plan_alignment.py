@@ -243,7 +243,7 @@ def test_script_mapping_builds_importable_mathlib_module():
     from metis.gods import build_bundle, script_mapping, select_foundational
     from scripts.prepare_module import validate
 
-    spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text())
+    spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text(encoding="utf-8"))
     selected = select_foundational(declarations(), 100, 1)
     names = {d["name"] for d in selected}
     assert "Matrix.undocumented" not in names, "undocumented with no dependents is not selected"
@@ -276,8 +276,8 @@ def test_bridge_module_carries_cross_island_dependency_edges():
     from metis.gods import bridge_bundle, build_bundle, script_mapping
     from scripts.prepare_module import validate
 
-    la_spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text())
-    gt_spec = json.loads((ROOT / "deploy/msc/graph-theory.json").read_text())
+    la_spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text(encoding="utf-8"))
+    gt_spec = json.loads((ROOT / "deploy/msc/graph-theory.json").read_text(encoding="utf-8"))
     la = [declarations()[0]]
     gt = [{"name": "SimpleGraph.det_adj", "kind": "theorem", "module": "Mathlib.Combinatorics.SimpleGraph.AdjMatrix",
            "line": 2, "type": "True", "docstring": "Determinant of an adjacency matrix.", "dependencies": ["Matrix.det"]}]
@@ -316,7 +316,7 @@ class FakeGods:
 def test_gods_curation_refines_script_mapping_and_holds_gap_fillers_for_review():
     from metis.gods import curate, select_foundational
 
-    spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text())
+    spec = json.loads((ROOT / "deploy/msc/linear-algebra.json").read_text(encoding="utf-8"))
     selected = select_foundational(declarations(), 100, 1)
     providers = FakeGods()
     mapping, pending = curate(providers, selected, spec, "la@1", {"id": "build_1", "kind": "module_build"}, batch=40)
@@ -395,7 +395,7 @@ def test_example_roster_covers_every_role_with_plan_provider_families():
     from metis.providers import ROLES
     from metis.api import RoleSpec
 
-    roster = json.loads((ROOT / "deploy/providers.example.json").read_text())
+    roster = json.loads((ROOT / "deploy/providers.example.json").read_text(encoding="utf-8"))
     roles = {k: v for k, v in roster.items() if not k.startswith("_")}
     assert set(roles) == set(ROLES)
     for role, spec in roles.items():
@@ -404,13 +404,13 @@ def test_example_roster_covers_every_role_with_plan_provider_families():
     assert roles["crew2"]["provider"] == "xai" and roles["crew3"]["provider"] == "nvidia"
     assert roles["tiresias"]["provider"] == "gemini" and roles["penelope"]["provider"] == "openai"
     assert roles["embeddings"]["model"] == "voyage-4"
-    index = json.loads((ROOT / "deploy/atlas-auto-embed-index.json").read_text())
+    index = json.loads((ROOT / "deploy/atlas-auto-embed-index.json").read_text(encoding="utf-8"))
     assert index["fields"][0] == {"type": "autoEmbed", "modality": "text", "path": "description", "model": "voyage-4"}
 
 
 def test_simplified_view_ships_cytoscape_same_origin_and_status_legend():
-    html = (ROOT / "web/index.html").read_text()
-    js = (ROOT / "web/app.js").read_text()
+    html = (ROOT / "web/index.html").read_text(encoding="utf-8")
+    js = (ROOT / "web/app.js").read_text(encoding="utf-8")
     assert '/static/vendor/cytoscape.min.js' in html and 'id="graphCanvas"' in html
     assert "Proven (machine verified)" in js and "Accepted" in js
     vendored = (ROOT / "web/vendor/cytoscape.min.js").read_bytes()

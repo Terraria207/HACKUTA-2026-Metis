@@ -35,7 +35,7 @@ def slug(title):
 
 def load_rules(path):
     rules = {}
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         for number, line in enumerate(f, 1):
             line = line.rstrip("\n")
             if not line.strip() or line.startswith("#"):
@@ -112,7 +112,7 @@ def build_index(lines, msc, rules, output, mathlib, lean=None, rules_sha256=None
         meta = island_meta(key, msc)
         declarations = sorted(islands[key], key=lambda d: d["name"])
         leaves = {d["msc"] for d in declarations}
-        with open(os.path.join(output, "islands", meta["id"] + ".json"), "w") as f:
+        with open(os.path.join(output, "islands", meta["id"] + ".json"), "w", encoding="utf-8") as f:
             json.dump({"island": meta, "mathlib": mathlib, "lean": lean, "tree": tree(key, msc), "declarations": declarations}, f, ensure_ascii=False)
         entries.append(dict(meta, declarations=len(declarations), documented=sum(1 for d in declarations if (d.get("docstring") or "").strip()),
                             populated_subtopics=len(leaves), file="islands/" + meta["id"] + ".json"))
@@ -128,7 +128,7 @@ def build_index(lines, msc, rules, output, mathlib, lean=None, rules_sha256=None
                    "unplaced": sum(unplaced.values()), "unplaced_by_area": dict(sorted(unplaced.items()))},
         "islands": entries,
     }
-    with open(os.path.join(output, "index.json"), "w") as f:
+    with open(os.path.join(output, "index.json"), "w", encoding="utf-8") as f:
         json.dump(index, f, ensure_ascii=False, indent=1)
     return index
 
@@ -146,7 +146,7 @@ def load_index(path):
     except OSError:
         return None
     if _cache.get(path, (None, None))[0] != stamp:
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             index = json.load(f)
         if index.get("format") != FORMAT:
             raise ValueError("Unrecognised export index format")
@@ -167,7 +167,7 @@ def load_island(path, island):
     file = os.path.normpath(os.path.join(path, entry["file"]))
     if not file.startswith(os.path.normpath(path) + os.sep):
         raise ValueError("Export index points outside its directory")
-    with open(file) as f:
+    with open(file, encoding="utf-8") as f:
         data = json.load(f)
     spec = dict(data["tree"], island=entry["id"], name=entry["name"], msc=entry["msc"])
     return spec, data["declarations"], data["mathlib"], data.get("lean")

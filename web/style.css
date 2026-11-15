@@ -223,3 +223,32 @@ button.pill { cursor: pointer; }
   .parchment, .progressBar > i { transition: none; }
   .formScroll, #transition.fly #flyScroll, #transition.fade { animation-duration: 0.01s; }
 }
+
+/* ---------- Harbour board, settings tabs, installer, guide ---------- */
+.harbour { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 2vh auto 0; max-width: 1100px; }
+.harbour .board { display: flex; align-items: center; gap: 10px; background: var(--parch); border: 3px solid var(--wood-dark); box-shadow: 3px 3px 0 var(--ink); padding: 6px 10px; font-size: 12px; }
+.harbour .board strong { text-transform: uppercase; letter-spacing: 0.5px; }
+.harbour .board.warnBoard { background: var(--gold); }
+.settingsTabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 3px solid var(--wood-dark); margin: 0 0 10px; }
+.settingsTabs button { font: 13px var(--mono); text-transform: uppercase; letter-spacing: 1px; background: transparent; border: 0; border-bottom: 4px solid transparent; padding: 6px 10px; cursor: pointer; color: var(--text); }
+.settingsTabs button[aria-selected="true"] { border-bottom-color: var(--gold); font-weight: bold; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin: 8px 0; }
+.card { border: 2px solid var(--wood); background: rgba(255, 255, 255, 0.35); padding: 10px 12px; }
+.card h3 { margin-top: 0; }
+.card.selected { outline: 3px solid var(--gold); }
+.modeChoice { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.modeChoice input { margin-top: 4px; }
+.stepList { list-style: none; padding: 0; margin: 6px 0; }
+.stepList li { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; border-bottom: 1px dotted var(--parch-dark); font-size: 13px; }
+.stepList .mark { width: 18px; text-align: center; flex: none; }
+.stepList .detail { color: #6e5b3a; font-size: 12px; }
+.logBox { background: #1f2a28; color: #d6e3dc; font: 11px/1.4 var(--mono); padding: 8px; max-height: 220px; overflow: auto; white-space: pre-wrap; word-break: break-word; border: 3px solid var(--wood-dark); }
+.progressBar > i.indeterminate { width: 40%; animation: slide 1.2s steps(6) infinite; }
+@keyframes slide { from { margin-left: -40%; } to { margin-left: 100%; } }
+.guide { right: 10px; top: 128px; width: min(360px, 92vw); background: var(--parch-light); border: 4px solid var(--wood-dark); box-shadow: 4px 4px 0 rgba(16, 28, 48, 0.5); padding: 8px 12px 10px; z-index: 6; }
+.guide ol { margin: 6px 0; padding-left: 20px; }
+.guide li { margin: 6px 0; }
+.srcNote { font-size: 11px; color: #6e5b3a; }
+#error { cursor: pointer; }
+.check { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 860px) { .guide { top: auto; bottom: 60px; left: 8px; right: 8px; width: auto; } .harbour .board { width: 100%; } }
