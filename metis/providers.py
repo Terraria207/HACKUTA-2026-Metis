@@ -19,6 +19,15 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
+def reasoning_payload(value):
+    """Keep mathematical context, not retrieval vectors, in model prompts."""
+    if isinstance(value, dict):
+        return {k: reasoning_payload(v) for k, v in value.items() if k != "embedding"}
+    if isinstance(value, list):
+        return [reasoning_payload(v) for v in value]
+    return value
+
+
 ROLES = [
     "decomposer",
     "crew0",
@@ -64,6 +73,8 @@ class Providers:
         }
 
     def call(self, role, payload, run, key, grounded=False):
+        if role != "embeddings":
+            payload = reasoning_payload(payload)
         if self.config.mode != "live" or not self.config.allow_live:
             raise ProviderUnavailable("Live providers disabled; no call made")
         spec = self.roles.get(role)
