@@ -16,7 +16,8 @@ class Config:
     provider_file: str = os.getenv("METIS_PROVIDERS_FILE", ".metis/providers.json")
     keys_file: str = os.getenv("METIS_KEYS_FILE", ".metis/keys.json")
     # Declaration export (scripts/extract_mathlib.py) used to build missing basis groups in-app.
-    mathlib_export: str = os.getenv("METIS_MATHLIB_EXPORT", "")
+    # Defaults to the index scripts/install_basis_groups.py writes; ignored when it does not exist.
+    mathlib_export: str = os.getenv("METIS_MATHLIB_EXPORT", os.path.join(".lean", "exports", "index"))
     lean_image: str = os.getenv("METIS_LEAN_IMAGE", "")
     lean_project: str = os.getenv("METIS_LEAN_PROJECT", "")
     allow_live: bool = os.getenv("METIS_ALLOW_LIVE", "false").lower() == "true"

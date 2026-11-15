@@ -1,3 +1,9 @@
+import os
+
+# Config defaults are read when metis.config is imported. Keep tests independent of whatever
+# export index exists in the working copy; tests that need one pass it explicitly.
+os.environ["METIS_MATHLIB_EXPORT"] = ""
+
 import pytest
 from fastapi.testclient import TestClient
 from metis.config import Config
