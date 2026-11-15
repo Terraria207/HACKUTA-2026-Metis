@@ -110,7 +110,15 @@ Live mode needs reviewed base modules before journeys can be created. The defaul
 
 **Which basis groups exist is decided by the data, not by a list in the code.** A basis group is an MSC 2020 field that holds mathlib declarations; at the pinned mathlib commit that is **42 groups** (206,558 declarations), from mathematical logic and category theory to general topology, measure and integration, functional analysis and game theory. Graph theory (05C) stays its own group, as in the design doc's demo islands, and Combinatorics covers the rest of 05. A group is built the first time a journey asks for it and saved; a journey may use up to twelve.
 
-The overview's base graph is built in two halves. **By script**, with no model:
+**Install them all with one command** (Windows, macOS or Linux; needs git, [elan](https://lean-lang.org/install), about 8 GB of disk and 8 GB of memory; no model or key):
+
+```bash
+python scripts/install_basis_groups.py        # Windows: .venv\Scripts\python scripts\install_basis_groups.py
+```
+
+It checks the tools, downloads the pinned mathlib and its compiled cache (about 5 GB, the slow part), exports every declaration (about six minutes), fetches the MSC table, splits the export into basis groups and builds all 42 into the app's database. Run it again after an interruption: finished steps are skipped. Then start the server as usual; it finds `.lean/exports/index` by itself and New Journey lists every group as Ready. A fresh clone of this branch ran it end to end in seven minutes with the mathlib cache already downloaded.
+
+The overview's base graph is built in two halves. **By script**, with no model (these are the steps the installer runs):
 
 ```bash
 # once: pinned toolchain + cached oleans (minutes, several GB)
