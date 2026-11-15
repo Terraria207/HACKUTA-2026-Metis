@@ -140,7 +140,11 @@ def import_module(store, bundle):
     """Import immutable reviewed modules. Raw dependency graphs can never become inference."""
     m = bundle["module"]
     mid = m["id"]
-    if store.get("modules", mid):
+    import hashlib
+    import json
+    fingerprint = hashlib.sha256(json.dumps(bundle, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+    old = store.get("modules", mid)
+    if old and (old.get("status") != "building" or old.get("bundle_sha256") != fingerprint):
         raise ValueError("Module version already exists; publish a new version")
     if not m.get("version") or not m.get("source") or not m.get("islands"):
         raise ValueError("Module requires version, source and islands")
@@ -162,7 +166,9 @@ def import_module(store, bundle):
         if n.get("layer") in {"module:" + r for r in required}
     }
     for name in ("groups", "concepts", "edges"):
-        if any(store.get(name, d["id"]) for d in bundle.get(name, [])):
+        if any(store.get(name, d["id"]) and not (
+            old and store.get(name, d["id"]).get("layer") == layer
+        ) for d in bundle.get(name, [])):
             raise ValueError("Imported identifiers must be globally unique")
     groups = {g["id"]: g for g in bundle.get("groups", [])}
     nodes = {n["id"]: n for n in bundle.get("concepts", [])}
@@ -230,7 +236,8 @@ def import_module(store, bundle):
         )
         edges.append(e)
     # Building modules are invisible; ready is written last.
-    store.put("modules", dict(m, status="building"))
+    if not old and not store.insert("modules", dict(m, status="building", bundle_sha256=fingerprint)):
+        raise ValueError("Concurrent module publication; retry preparation")
     for collection, docs in [
         ("groups", groups.values()),
         ("concepts", nodes.values()),
@@ -238,4 +245,4 @@ def import_module(store, bundle):
     ]:
         for d in docs:
             store.put(collection, dict(d, layer=layer))
-    return store.put("modules", dict(m, status="ready"))
+    return store.put("modules", dict(m, status="ready", bundle_sha256=fingerprint))

@@ -34,6 +34,7 @@ class Store:
             )[config.mongo_db]
             self.mongo.command("ping")
             for name in (
+                "operations",
                 "modules",
                 "journeys",
                 "groups",
@@ -98,8 +99,23 @@ class Store:
             ]
         return [d for d in docs if all(d.get(k) == v for k, v in where.items())]
 
+    def _check_published(self, collection, ident):
+        if collection not in ("modules", "concepts", "groups", "edges"):
+            return
+        existing = self.get(collection, ident)
+        if not existing:
+            return
+        module = existing if collection == "modules" else (
+            self.get("modules", existing.get("layer", "")[7:])
+            if existing.get("layer", "").startswith("module:") else None
+        )
+        if module and module.get("status") == "ready":
+            raise ValueError("Published module versions are immutable; publish a new version")
+
     def put(self, collection, doc):
         doc = copy.deepcopy(doc)
+        if "id" in doc:
+            self._check_published(collection, doc["id"])
         if "id" not in doc:
             doc["id"] = uid()
         if self.mongo is not None:
@@ -127,6 +143,7 @@ class Store:
             return False
 
     def patch(self, collection, ident, **updates):
+        self._check_published(collection, ident)
         if self.mongo is not None:
             return self.mongo[collection].find_one_and_update(
                 {"id": ident},
@@ -209,6 +226,7 @@ class Store:
             )
 
     def delete(self, collection, ident):
+        self._check_published(collection, ident)
         if self.mongo is not None:
             self.mongo[collection].delete_one({"id": ident})
         else:

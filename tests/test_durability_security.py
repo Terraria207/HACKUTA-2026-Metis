@@ -73,7 +73,7 @@ def test_provider_idempotency_and_ambiguous_charge(app, monkeypatch):
     assert p._request.call_count == 1
     assert app.state.store.get("budgets", "global")["spent"] == pytest.approx(0.2)
     p._request = Mock(side_effect=TimeoutError("ambiguous"))
-    with pytest.raises(TimeoutError):
+    with pytest.raises(ProviderUnavailable, match="TimeoutError"):
         p.call("penelope", {}, r, "b")
     with pytest.raises(ProviderUnavailable, match="Prior call"):
         p.call("penelope", {}, r, "b")

@@ -48,16 +48,16 @@ def test_vectorization_uses_budgeted_adapter_without_mutating_source():
     data = bundle()
     vectors, providers = Mock(), Mock()
     providers.public.return_value = {'embeddings': {'provider': 'test', 'model': 'offline'}}
-    vectors.embed.return_value = {'embeddings': [[1.0, 0.0]] * 6}
+    vectors.embed.return_value = {'embeddings': [[1.0, 0.0]] * (len(data['concepts']) + len(data['groups']))}
     run = {'id': 'existing-budgeted-run'}
     result = vectorize(data, vectors, providers, run, dimensions=2)
     vectors.embed.assert_called_once()
     args = vectors.embed.call_args.args
     assert args[1] is run and args[2] is providers
     assert args[3].startswith('base-module:' + data['module']['id'])
-    assert all(len(n['embedding']) == 2 for n in result['concepts'])
+    assert all(len(n['embedding']) == 2 for n in result['concepts'] + result['groups'])
     assert all('embedding' not in n for n in data['concepts'])
-    vectors.embed.return_value = {'embeddings': [[float('nan'), 0]] * 6}
+    vectors.embed.return_value = {'embeddings': [[float('nan'), 0]] * (len(data['concepts']) + len(data['groups']))}
     with pytest.raises(ValueError, match='Invalid embedding'):
         vectorize(data, vectors, providers, run, dimensions=2)
     vectors.embed.return_value = {'embeddings': []}

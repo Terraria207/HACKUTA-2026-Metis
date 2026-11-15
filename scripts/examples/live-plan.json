@@ -1,0 +1,20 @@
+{
+  "global_budget_usd": 100,
+  "setup_budget_usd": 1,
+  "run_budget_usd": 5,
+  "timeout_seconds": 600,
+  "setup_attempt": 0,
+  "providers_file": ".metis/providers.json",
+  "bundle": "corpus/number-theory.json",
+  "pdf": "/replace/with/parent/local/paper.pdf",
+  "home_group": "number-theory@2026-11-15.1:11B83",
+  "title": "Divergent trajectories in the 3x+1 problem and a S-units equation",
+  "name": "Bounded Collatz/S-units live acceptance",
+  "settings": {
+    "k": 2,
+    "p": 1,
+    "integration_depth": 0,
+    "proof_attempts": 0,
+    "formalize_definitions": false
+  }
+}

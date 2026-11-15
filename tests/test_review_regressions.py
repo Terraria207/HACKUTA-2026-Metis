@@ -9,6 +9,7 @@ from test_api import paper, run
 from test_durability_security import live_providers
 from metis.graph import graph, score, Settings
 from metis.store import Store
+from metis.providers import ProviderUnavailable
 
 
 def test_review_saved_before_edge_write_is_replayed(app, client, journey, monkeypatch):
@@ -51,7 +52,7 @@ def test_manual_retry_reuses_completed_calls_including_earlier_retry(app, monkey
     w.call("penelope", {}, dict(r, attempt=1), "success")
     assert p._request.call_count == 1
     p._request.side_effect = TimeoutError("ambiguous")
-    with pytest.raises(TimeoutError):
+    with pytest.raises(ProviderUnavailable, match="TimeoutError"):
         w.call("penelope", {}, r, "partial")
     p._request.side_effect = None
     w.call("penelope", {}, dict(r, attempt=1), "partial")

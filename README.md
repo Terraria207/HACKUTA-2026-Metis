@@ -226,3 +226,86 @@ remains for these fixture/browser/Lean checks. Live providers, Atlas/MongoDB,
 scientific coverage and distributed deployment remain outside this validation.
 The combined five-capture reviewed evidence packet is `evid-wja3x7vphb` (the three
 browser views, standalone real sandbox pass and final configured full-suite pass).
+
+### Bounded parent-side live acceptance
+
+`scripts.live_acceptance` makes **zero paid calls by default**. The private
+`.metis/live.env` stays on the parent machine. Neither this implementation nor
+its offline tests accessed it. Run from the repository root with the installed
+Python environment. Copy `scripts/examples/live-plan.json` to
+`.metis/live-plan.json`, set the local PDF path, and supply your own
+`.metis/providers.json`. Every role must have explicit provider, model, key env
+name, positive `max_cost_usd`, and known input/output prices per million tokens.
+Roles are `decomposer`, `crew0`–`crew3`, `penelope`, `hypothesis`, `hephaestus`,
+`tiresias`, `odysseus`, `alignment`, and `embeddings`. No model or price is guessed.
+An individual role record looks like this (replace the placeholders and nulls):
+
+```json
+{
+  "provider": "openai",
+  "model": "PARENT_SELECTED_MODEL",
+  "key_env": "OPENAI_API_KEY",
+  "max_cost_usd": null,
+  "max_output_tokens": 2048,
+  "input_usd_per_million": null,
+  "output_usd_per_million": null
+}
+```
+
+Use OpenAI or Voyage for `embeddings` (1024 dimensions). `tiresias` requires
+Gemini and an explicit `request_overhead_usd` bound for grounded search; include
+all search charges in that bound. Maximum charges must cover the conservative
+input/output estimate; failed or ambiguous requests retain their full charge.
+The same durable `global` ledger covers setup, exploration and existing live
+calls, capped at the configured amount and at $100. Use the same database for
+all acceptance attempts. The example setup cap is $1 and run/journey cap is $5.
+These are bounds, not projected costs or promises of completion.
+
+```bash
+python -m scripts.live_acceptance acceptance --config .metis/live-plan.json
+python -m scripts.live_acceptance preflight --config .metis/live-plan.json --env-file .metis/live.env --execute
+python -m scripts.live_acceptance acceptance --config .metis/live-plan.json --env-file .metis/live.env --execute
+```
+
+Offline validation reads the plan, explicit provider specifications and bundle;
+it does not load the private env, connect to Atlas or call a provider. Executed
+preflight connects to Atlas, checks credential presence and verifies both
+`concepts` and `groups` indexes are queryable with 1024-dimensional cosine vectors
+and a `layer` filter. It does not call model APIs. Index names can be overridden
+with `METIS_ATLAS_CONCEPTS_INDEX` and `METIS_ATLAS_GROUPS_INDEX`.
+
+Executed acceptance checks the local PDF, prepares the module, creates an actual
+journey, imports the PDF through the application's upload endpoint, starts an
+actual exploration run (not ingest-only), and drives the durable seven-stage
+worker. JSON lines print module/journey/paper/run IDs, checkpoint, status, report
+classification lists and the global ledger. Keep those IDs for UI inspection or
+manual resume. Exit codes: 0 completed/preflight/offline-valid, 1 sanitized error,
+2 paused/failed/incomplete. A new invocation creates a new journey and run; it
+does not automatically resume a previous acceptance run. Deadline checks pause
+between calls; an in-flight provider request has a 60-second HTTP timeout and a
+stage is not forcibly killed. Financial caps apply before every request.
+Stages without eligible edges can complete without proof or literature calls;
+empty/rejected proposals are never reported as discoveries. Formal attempts are
+zero in the example; configure bounded proof attempts and the pinned Lean
+sandbox to exercise real formal compilation.
+
+First-module setup uses a durable `operations` record of kind `module_setup`
+and a `setup:<operation-id>` account, with no fake exploration journey/run.
+Concepts **and groups** are embedded together. Successful embedding responses
+are reused on retry, partial publication remains invisible until ready, and
+published module documents cannot be edited or deleted through the store. An
+identical ready module is reused; changed content needs a new module version.
+After an ambiguous embedding failure, identical retries stop without rebilling.
+Only explicitly incrementing `setup_attempt` (0–10) authorizes a new embedding
+attempt under the same setup account; completed earlier attempts are reused.
+Standalone preparation also accepts `--setup-budget` and `--setup-attempt`:
+
+```bash
+python -m scripts.private_env .metis/live.env python -m scripts.prepare_module corpus/number-theory.json --execute --setup-budget 1
+```
+
+The env loader parses literal `KEY=value` / `export KEY=value` lines with optional
+whole-value quotes. It performs no shell expansion, substitution or shell
+execution; it never prints values. Its command wrapper launches an argv directly.
+The CLI suppresses exception bodies; provider failures store only exception
+classes, never keys, Mongo URI, request headers or raw HTTP error responses.

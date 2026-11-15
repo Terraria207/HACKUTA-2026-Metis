@@ -330,6 +330,11 @@ class Pipeline:
 
     def ensure_active(self, run):
         current = self.store.get("runs", run["id"])
+        if current and current.get("deadline_at") and now() >= current["deadline_at"]:
+            self.store.transition_run(run["id"], ("queued", "running"),
+                                      status="paused", pause_reason="acceptance_deadline")
+            self.store.patch("journeys", current["journey_id"], status="paused")
+            raise Interrupted("Acceptance deadline reached")
         if current and current["status"] in ("paused", "cancelled"):
             raise Interrupted("Run stopped")
         job = run.get("_job")
@@ -1358,7 +1363,9 @@ class Pipeline:
             if run["fixture"]
             else "Potentially new means no prior statement found in the recorded searches. Machine verification and literature support are separate."
         )
-        if not run["fixture"] and not run.get("ingest_only"):
+        if not run["fixture"] and not ranked:
+            summary = "No accepted exploration findings in this run. Empty or rejected proposals are not discoveries."
+        if not run["fixture"] and not run.get("ingest_only") and ranked:
             result = self.call(
                 "odysseus",
                 {

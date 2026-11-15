@@ -117,12 +117,20 @@ class Providers:
             raise ProviderUnavailable(
                 "Prior call incomplete or failed; explicit retry with a new attempt required; reservation retained"
             )
-        journey = self.store.get("journeys", run["journey_id"])
-        accounts = [
-            ("global", self.config.live_budget),
-            ("journey:" + journey["id"], journey["settings"]["budget_usd"]),
-            ("run:" + run["id"], run["budget_usd"]),
-        ]
+        if run.get("kind") == "module_setup":
+            durable = self.store.get("operations", run["id"])
+            if not durable or durable != run or role != "embeddings":
+                raise ProviderUnavailable("Invalid durable module setup operation")
+            journey = None
+            accounts = [("global", min(100, self.config.live_budget)),
+                        ("setup:" + run["id"], run["budget_usd"])]
+        else:
+            journey = self.store.get("journeys", run["journey_id"])
+            accounts = [
+                ("global", min(100, self.config.live_budget)),
+                ("journey:" + journey["id"], journey["settings"]["budget_usd"]),
+                ("run:" + run["id"], run["budget_usd"]),
+            ]
         reserved = []
         for account, cap in accounts:
             if not self.store.reserve(account, cap, cost):
@@ -139,7 +147,8 @@ class Providers:
             "call_key": call_id,
             "role": role,
             "run_id": run["id"],
-            "journey_id": journey["id"],
+            "journey_id": journey["id"] if journey else None,
+            "operation_kind": run.get("kind", "exploration"),
             "status": "reserved",
             "max_cost_usd": cost,
             "time": now(),
@@ -153,13 +162,23 @@ class Providers:
             raise ProviderUnavailable("Concurrent duplicate provider call blocked")
         try:
             result = self._request(spec, secret, payload, grounded)
+            if role == "embeddings":
+                vectors = result.get("embeddings", [])
+                if len(vectors) != len(payload.get("texts", [])) or any(
+                    not isinstance(v, list) or len(v) != 1024 or not any(v)
+                    or any(isinstance(x, bool) or not isinstance(x, (int, float))
+                           or not math.isfinite(x) for x in v)
+                    for v in vectors
+                ):
+                    raise ValueError("Invalid 1024-dimensional embedding response")
             self.store.patch("calls", call_id, status="complete", result=result)
             return result
         except Exception as exc:
             self.store.patch(
                 "calls", call_id, status="failed", error=type(exc).__name__
             )
-            raise
+            # Do not expose request URLs, response bodies or credential-bearing headers.
+            raise ProviderUnavailable("Provider request failed (" + type(exc).__name__ + "); reservation retained") from None
         finally:
             for a in reserved:
                 self.store.settle(a, cost, cost)
@@ -174,6 +193,17 @@ class Providers:
         with httpx.Client(
             timeout=60, follow_redirects=False, trust_env=False
         ) as client:
+            if "texts" in payload and provider == "openai":
+                r = client.post(
+                    "https://api.openai.com/v1/embeddings",
+                    headers={"Authorization": "Bearer " + secret},
+                    json={"model": model, "input": payload["texts"],
+                          "dimensions": payload.get("dimensions", 1024)},
+                )
+                r.raise_for_status()
+                data = r.json()
+                return {"embeddings": [v["embedding"] for v in sorted(data["data"], key=lambda v: v["index"])],
+                        "usage": data.get("usage")}
             if provider == "voyage":
                 if grounded:
                     raise ProviderUnavailable(
@@ -186,6 +216,7 @@ class Providers:
                         "model": model,
                         "input": payload["texts"],
                         "input_type": payload.get("input_type", "document"),
+                        "output_dimension": payload.get("dimensions", 1024),
                     },
                 )
                 r.raise_for_status()
