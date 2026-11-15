@@ -1,29 +1,29 @@
 {
-  "_comment": "Provider families follow the overview's roster (Role -> Model). Replace every SET_ACTUAL_AVAILABLE_MODEL_ID with a model ID your account can actually call; the roster names (gods: Claude Fable 5.2, decomposer/Tiresias: Gemini 3.5 Flash, Penelope: GPT-6.1 Sol, Hephaestus: Leanstral 1.5, Odysseus: Claude Opus 5.5, crew: Claude Haiku 5.5 / Gemini 3.5 Flash-Lite / Grok 4.3 / NVIDIA Nemotron 3 Ultra, embeddings: voyage-4) are the plan's intent, not verified availability. Keys stay in server environment variables. max_cost_usd 0 blocks calls until you set conservative prices.",
+  "_comment": "Provider families and default models follow the design doc's roster and the UI spec's models table. Model IDs are filled in only where the provider's own documentation confirms them (Anthropic, Google, Voyage); replace every SET_ACTUAL_AVAILABLE_MODEL_ID with an ID your account can call (roster names: Polites Grok 4.3, Perimedes NVIDIA Nemotron 3 Ultra, Penelope GPT-6.1 Sol, Hephaestus Leanstral 1.5) and confirm each with the Settings screen's Test button. Keys come from server environment variables or the Settings screen's private key file, never from this file. max_cost_usd 0 blocks calls until you set conservative prices.",
   "gods": {
     "provider": "anthropic",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "claude-fable-5-2",
     "key_env": "ANTHROPIC_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 8192
   },
   "decomposer": {
     "provider": "gemini",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "gemini-3.5-flash",
     "key_env": "GEMINI_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 8192
   },
   "crew0": {
     "provider": "anthropic",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "claude-haiku-5-5",
     "key_env": "ANTHROPIC_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
   "crew1": {
     "provider": "gemini",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "gemini-3.5-flash-lite",
     "key_env": "GEMINI_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
@@ -51,7 +51,7 @@
   },
   "hypothesis": {
     "provider": "anthropic",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "claude-opus-5-5",
     "key_env": "ANTHROPIC_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
@@ -63,6 +63,20 @@
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
+  "tiresias": {
+    "provider": "gemini",
+    "model": "gemini-3.5-flash",
+    "key_env": "GEMINI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "odysseus": {
+    "provider": "anthropic",
+    "model": "claude-opus-5-5",
+    "key_env": "ANTHROPIC_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 8192
+  },
   "alignment": {
     "provider": "openai",
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
@@ -70,19 +84,12 @@
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
-  "tiresias": {
-    "provider": "gemini",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
-    "key_env": "GEMINI_API_KEY",
-    "max_cost_usd": 0,
-    "max_output_tokens": 4096
-  },
-  "odysseus": {
+  "narrator": {
     "provider": "anthropic",
-    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "model": "claude-haiku-5-5",
     "key_env": "ANTHROPIC_API_KEY",
     "max_cost_usd": 0,
-    "max_output_tokens": 8192
+    "max_output_tokens": 1024
   },
   "embeddings": {
     "provider": "voyage",

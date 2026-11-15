@@ -41,17 +41,132 @@ ROLES = [
     "tiresias",
     "odysseus",
     "alignment",
+    "narrator",
     "embeddings",
 ]
+
+# Defaults from the design doc's model roster and the UI spec's models table. `model` is an API
+# model ID where one is known; `verified` says whether that ID comes from the provider's own
+# documentation. Unverified or missing IDs must be confirmed by the operator (Settings: Test).
+ROSTER = {
+    "gods": {"label": "The gods (build basis groups)", "provider": "anthropic", "model_name": "Claude Fable 5.2", "model": "claude-fable-5-2", "verified": True},
+    "decomposer": {"label": "Decomposer", "provider": "gemini", "model_name": "Gemini 3.5 Flash", "model": "gemini-3.5-flash", "verified": True},
+    "crew0": {"label": "Eurylochus (crew)", "provider": "anthropic", "model_name": "Claude Haiku 5.5", "model": "claude-haiku-5-5", "verified": True},
+    "crew1": {"label": "Elpenor (crew)", "provider": "gemini", "model_name": "Gemini 3.5 Flash-Lite", "model": "gemini-3.5-flash-lite", "verified": True},
+    "crew2": {"label": "Polites (crew)", "provider": "xai", "model_name": "Grok 4.3", "model": "grok-4-3", "verified": False},
+    "crew3": {"label": "Perimedes (crew)", "provider": "nvidia", "model_name": "NVIDIA Nemotron 3 Ultra", "model": None, "verified": False},
+    "penelope": {"label": "Penelope", "provider": "openai", "model_name": "GPT-6.1 Sol", "model": "gpt-6.1-sol", "verified": False},
+    "hypothesis": {"label": "Independent hypothesis check (review decision)", "provider": "anthropic", "model_name": "Claude Opus 5.5", "model": "claude-opus-5-5", "verified": True, "extra": True},
+    "hephaestus": {"label": "Hephaestus", "provider": "mistral", "model_name": "Leanstral 1.5", "model": None, "verified": False},
+    "alignment": {"label": "Lean statement alignment (review decision)", "provider": "openai", "model_name": "GPT-6.1 Sol", "model": "gpt-6.1-sol", "verified": False, "extra": True},
+    "tiresias": {"label": "Tiresias", "provider": "gemini", "model_name": "Gemini 3.5 Flash with Google Search grounding", "model": "gemini-3.5-flash", "verified": True},
+    "odysseus": {"label": "Odysseus", "provider": "anthropic", "model_name": "Claude Opus 5.5", "model": "claude-opus-5-5", "verified": True},
+    "narrator": {"label": "Narrator (Odyssey discussion)", "provider": "anthropic", "model_name": "Claude Haiku 5.5", "model": "claude-haiku-5-5", "verified": True},
+    "embeddings": {"label": "Embeddings", "provider": "voyage", "model_name": "Voyage AI voyage-4 via MongoDB Atlas", "model": "voyage-4", "verified": True},
+}
+PROVIDER_KEYS = {
+    "anthropic": ("ANTHROPIC_API_KEY", "Anthropic"),
+    "gemini": ("GEMINI_API_KEY", "Google"),
+    "xai": ("XAI_API_KEY", "xAI"),
+    "nvidia": ("NVIDIA_API_KEY", "NVIDIA"),
+    "openai": ("OPENAI_API_KEY", "OpenAI"),
+    "mistral": ("MISTRAL_API_KEY", "Mistral"),
+    "voyage": ("VOYAGE_API_KEY", "MongoDB Atlas"),
+}
+PLACEHOLDER_MODEL = "SET_ACTUAL_AVAILABLE_MODEL_ID"
+
+
+class KeyStore:
+    """API keys entered in Settings: a private 0600 server file, never returned by any API.
+    A server environment variable of the same name always wins over a stored key."""
+
+    def __init__(self, path):
+        self.path = path
+        self.data = {}
+        if path and os.path.isfile(path):
+            try:
+                with open(path) as f:
+                    loaded = json.load(f)
+                self.data = loaded if isinstance(loaded, dict) else {}
+            except (OSError, ValueError):
+                self.data = {}
+
+    def get(self, name):
+        return os.getenv(name) or (self.data.get(name) or {}).get("value") or None
+
+    def status(self, name):
+        entry = self.data.get(name) or {}
+        return {
+            "set": bool(self.get(name)),
+            "source": "environment" if os.getenv(name) else "stored" if entry.get("value") else None,
+            "test": entry.get("test"),
+        }
+
+    def _write(self):
+        if not self.path:
+            raise ValueError("No key file configured (METIS_KEYS_FILE)")
+        os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
+        temp = self.path + ".tmp"
+        fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
+            json.dump(self.data, f)
+        os.replace(temp, self.path)
+
+    def set(self, name, value):
+        import re
+
+        if not re.fullmatch(r"[A-Z][A-Z0-9_]{0,100}", name or ""):
+            raise ValueError("Invalid key name")
+        if value in (None, ""):
+            self.data.pop(name, None)
+        else:
+            if not isinstance(value, str) or not 8 <= len(value) <= 500 or not value.isprintable() or " " in value:
+                raise ValueError("A key is 8 to 500 printable characters without spaces")
+            self.data[name] = {"value": value, "saved": now()}
+        self._write()
+
+    def mark(self, name, ok, detail):
+        entry = self.data.setdefault(name, {})
+        entry["test"] = {"ok": bool(ok), "time": now(), "detail": str(detail)[:300]}
+        self._write()
 
 
 class Providers:
     def __init__(self, store, config):
         self.store, self.config = store, config
         self.roles = {}
-        if config.provider_file:
+        if config.provider_file and os.path.isfile(config.provider_file):
             with open(config.provider_file) as f:
-                self.roles = json.load(f)
+                self.roles = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
+        self.keys = KeyStore(getattr(config, "keys_file", ""))
+
+    def roster(self):
+        """Roles with roster defaults, current configuration and key status; never a key value."""
+        result = {}
+        for role in ROLES:
+            default = ROSTER[role]
+            spec = self.roles.get(role) or {}
+            provider = spec.get("provider") or default["provider"]
+            key_env = spec.get("key_env") or PROVIDER_KEYS[provider][0]
+            model = spec.get("model")
+            configured = bool(model) and model != PLACEHOLDER_MODEL
+            status = self.keys.status(key_env)
+            result[role] = {
+                "label": default["label"],
+                "extra": bool(default.get("extra")),
+                "provider": provider,
+                "key_env": key_env,
+                "key_label": PROVIDER_KEYS.get(provider, (None, provider))[1],
+                "default_model_name": default["model_name"],
+                "default_model": default["model"],
+                "default_verified": default["verified"],
+                "model": model if configured else None,
+                "configured": configured,
+                "key": status,
+                # A role is ready when it has a model, a key, and no failed key test on record.
+                "ready": configured and status["set"] and (status["test"] or {}).get("ok") is not False,
+            }
+        return result
 
     def public(self):
         return {
@@ -81,7 +196,7 @@ class Providers:
         spec = self.roles.get(role)
         if not spec:
             raise ProviderUnavailable("No configured provider for " + role)
-        secret = os.getenv(spec.get("key_env", ""))
+        secret = self.keys.get(spec.get("key_env", "")) if hasattr(self, "keys") else os.getenv(spec.get("key_env", ""))
         if not secret:
             raise ProviderUnavailable("Missing server credential for " + role)
         cost = float(spec.get("max_cost_usd", 0))
@@ -129,11 +244,13 @@ class Providers:
             raise ProviderUnavailable(
                 "Prior call incomplete or failed; explicit retry with a new attempt required; reservation retained"
             )
-        if run.get("kind") in ("module_setup", "module_build"):
+        if run.get("kind") in ("module_setup", "module_build", "key_test"):
             # Module operations are durable, budgeted and limited to the roles the plan assigns them:
             # embeddings for setup; the gods (curation judgment) plus embeddings for a build.
+            # A key test is one small call for exactly the role being tested.
             durable = self.store.get("operations", run["id"])
-            allowed = {"module_setup": {"embeddings"}, "module_build": {"gods", "embeddings"}}
+            allowed = {"module_setup": {"embeddings"}, "module_build": {"gods", "embeddings"},
+                       "key_test": {run.get("role")}}
             if not durable or durable != run or role not in allowed[run["kind"]]:
                 raise ProviderUnavailable("Invalid durable module operation")
             journey = None

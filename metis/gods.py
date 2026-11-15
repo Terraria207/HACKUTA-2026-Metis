@@ -415,3 +415,100 @@ def bridge_bundle(bundles, exports, module_id, version, mathlib_version, source)
         "concepts": [],
         "edges": edges,
     }
+
+
+# ---- In-app basis-group builds (UI spec: "Needs building", progress on the scroll) ----
+
+BUILD_STAGES = [
+    "Reading the pinned mathlib export",
+    "Choosing foundational results",
+    "Placing concepts in their MSC groups",
+    "Writing the dependency links",
+    "Embedding descriptions",
+    "Inking the island onto the map",
+]
+
+
+def vectorize(bundle, providers, operation, batch=96, dimensions=1024):
+    """Live builds embed concept and group descriptions once, when the module is built."""
+    items = bundle["concepts"] + bundle["groups"]
+    for i in range(0, len(items), batch):
+        chunk = items[i : i + batch]
+        texts = [n["name"] + "\n" + n.get("statement", n.get("description", n["name"])) for n in chunk]
+        vectors = providers.call("embeddings", {"texts": texts}, operation, "build-vectors:" + str(i // batch))["embeddings"]
+        if len(vectors) != len(chunk) or any(len(v) != dimensions for v in vectors):
+            raise ValueError("Invalid embedding response during module build")
+        for node, vector in zip(chunk, vectors):
+            node["embedding"] = vector
+    bundle["module"]["embedding"] = {"dimensions": dimensions, "provider": providers.public().get("embeddings")}
+    return bundle
+
+
+def run_build(store, config, providers, job, spec_dir, limit=800):
+    """Build one island module from the configured export. Fixture mode (and live mode without a
+    configured gods role) builds the script-mapped module at zero cost and says so; live mode with
+    the gods role curates within the job's budget and embeds descriptions. Updates the durable
+    job record after every stage; any failure leaves the catalog unchanged."""
+    from pathlib import Path
+    from metis.base import import_module
+
+    def progress(stage, **extra):
+        store.patch("builds", job["id"], stage=BUILD_STAGES[stage], stage_index=stage,
+                    percent=int(100 * stage / len(BUILD_STAGES)), **extra)
+
+    try:
+        island = job["island"]
+        progress(0, status="building")
+        spec = json.loads((Path(spec_dir) / (island + ".json")).read_text())
+        export = json.loads(Path(config.mathlib_export).read_text())
+        prefixes = tuple(spec["module_prefixes"])
+        declarations = [
+            d for d in export["declarations"]
+            if any(d["module"] == p or d["module"].startswith(p + ".") for p in prefixes)
+        ]
+        if not declarations:
+            raise ValueError("The export holds no declarations for " + island)
+        progress(1)
+        selected = select_foundational(declarations, limit)
+        live = config.mode == "live" and config.allow_live
+        curated = live and "gods" in providers.roles and job.get("budget_usd", 0) > 0
+        digest = hashlib.sha256(json.dumps([export["mathlib"], island, limit, curated], sort_keys=True).encode()).hexdigest()
+        module_id = "%s-mathlib@%s-%s" % (island, export["mathlib"][:8], "gods" if curated else "script")
+        existing = store.get("modules", module_id)
+        if existing and existing.get("status") == "ready":
+            store.patch("builds", job["id"], status="ready", percent=100, module_id=module_id, stage="Already built")
+            return
+        operation = build_operation(store, config, digest, island, job["budget_usd"]) if live and job.get("budget_usd", 0) > 0 else None
+        progress(2)
+        pending = []
+        if curated:
+            mapping, pending = curate(providers, selected, spec, module_id, operation)
+        else:
+            mapping = script_mapping(selected, spec, module_id)
+        progress(3)
+        source = {
+            "url": "https://github.com/leanprover-community/mathlib4/tree/" + export["mathlib"],
+            "mathlib": export["mathlib"],
+            "lean": export.get("lean"),
+            "selection": {"criteria": "declarations other exported results depend on, or documented by mathlib; top %d by dependents" % limit,
+                          "candidates": len(declarations), "selected": len(selected)},
+            "built_in_app": True,
+        }
+        bundle = build_bundle(selected, mapping, module_id, export["mathlib"][:8] + ("-gods" if curated else "-script"),
+                              export["mathlib"], [island], source, pending)
+        progress(4)
+        if live:
+            if not operation:
+                raise ValueError("A live build needs a positive budget for the embeddings (and the gods)")
+            vectorize(bundle, providers, operation)
+        progress(5)
+        pending_review = bundle.pop("pending_review", [])
+        if store.mongo is None:
+            with store.transaction():
+                import_module(store, bundle)
+        else:
+            import_module(store, bundle)
+        store.patch("builds", job["id"], status="ready", percent=100, module_id=module_id,
+                    method=mapping["method"], pending_review=pending_review, stage="Ready")
+    except Exception as exc:
+        store.patch("builds", job["id"], status="failed", error=type(exc).__name__ + ": " + str(exc)[:300])

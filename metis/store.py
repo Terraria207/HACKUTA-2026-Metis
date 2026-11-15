@@ -50,6 +50,8 @@ class Store:
                 "memory",
                 "calls",
                 "budgets",
+                "discussion",
+                "builds",
                 "support",
                 "events",
                 "reports",
@@ -65,6 +67,7 @@ class Store:
             self.mongo.jobs.create_index([("status", 1), ("lease_until", 1)])
             self.mongo.calls.create_index("call_key", unique=True)
             self.mongo.trace.create_index([("run_id", 1), ("time", 1)])
+            self.mongo.discussion.create_index([("journey_id", 1), ("time", 1)])
             self.mongo.extractions.create_index("cache_key", unique=True)
             # Live view polls only events newer than the client's cursor.
             self.mongo.events.create_index([("journey_id", 1), ("time", 1)])

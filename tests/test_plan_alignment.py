@@ -408,11 +408,11 @@ def test_example_roster_covers_every_role_with_plan_provider_families():
     assert index["fields"][0] == {"type": "autoEmbed", "modality": "text", "path": "description", "model": "voyage-4"}
 
 
-def test_graph_tab_ships_cytoscape_same_origin_and_status_legend():
+def test_simplified_view_ships_cytoscape_same_origin_and_status_legend():
     html = (ROOT / "web/index.html").read_text()
     js = (ROOT / "web/app.js").read_text()
-    assert '/static/vendor/cytoscape.min.js' in html and 'id="graphCanvas"' in html and 'id="graphList"' in html
-    assert "Proven (machine verified)" in html and "Accepted" in html
+    assert '/static/vendor/cytoscape.min.js' in html and 'id="graphCanvas"' in html
+    assert "Proven (machine verified)" in js and "Accepted" in js
     vendored = (ROOT / "web/vendor/cytoscape.min.js").read_bytes()
     assert hashlib.sha256(vendored).hexdigest() == "71fa9ebec21a7ca2c40cff6aacc30d1f6464e363662ad4b2c197e1adc770cd94"
     assert "cytoscape({" in js and 'Proven: "#2e7d4f"' in js and "junction:" in js

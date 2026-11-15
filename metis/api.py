@@ -1,4 +1,5 @@
 import asyncio
+import threading
 import hmac
 import hashlib
 import io
@@ -16,6 +17,7 @@ from metis.config import Config
 from metis.store import Store, uid, now
 from metis.base import seed, import_module, import_corpus, ISLANDS, catalog, validate_selection
 from metis.graph import (
+    route as find_route,
     Settings,
     graph,
     proof_closure,
@@ -24,11 +26,12 @@ from metis.graph import (
 )
 from metis.pipeline import Pipeline, STAGES
 from metis.ingestion import fetch, arxiv_url, extract_text, content_hash, MAX_BYTES
-from metis.providers import AtlasVectors, ProviderUnavailable, BudgetExceeded
+from metis.providers import AtlasVectors, ProviderUnavailable, BudgetExceeded, ROLES
 
 
 class JourneyInput(BaseModel):
-    name: str = Field(min_length=1, max_length=100)
+    # Blank is allowed: an unnamed journey is listed by its creation date (UI spec).
+    name: str = Field(default="", max_length=100)
     islands: list[str] = Field(min_length=1, max_length=4)
     modules: list[str] = Field(default_factory=list)
     settings: Settings = Field(default_factory=Settings)
@@ -90,6 +93,7 @@ def create_app(config=None, start_worker=True):
     app = FastAPI(title="Metis", version="1.0.0", lifespan=lifespan)
     app.state.store = store
     app.state.worker = worker
+    app.state.build_threads = []
 
     @app.middleware("http")
     async def security(request, call_next):
@@ -231,9 +235,53 @@ def create_app(config=None, start_worker=True):
             else "Live adapters fail closed. Literature search cannot establish novelty.",
         }
 
+    spec_dir = Path(__file__).resolve().parent.parent / "deploy" / "msc"
+
     @app.get("/api/catalog")
     def field_catalog():
-        return catalog(store, config.mode == "live")
+        """Basis groups for the New Journey picker: Ready (saved) or Needs building."""
+        c = catalog(store, config.mode == "live")
+        export_ready = bool(config.mathlib_export) and os.path.isfile(config.mathlib_export)
+        for field in c["fields"]:
+            roots = [m for m in field["modules"] if m["available"] and m["islands"] == [field["id"]] and not m.get("additive")]
+            # Prefer the mathlib-built group, then the largest sourced one, then fixtures.
+            roots.sort(key=lambda m: (bool(m.get("mathlib_version")), not m.get("fixture"), m["counts"]["concepts"]), reverse=True)
+            field["recommended"] = roots[0]["id"] if roots else None
+            field["state"] = "ready" if roots else "needs_building"
+            field["buildable"] = export_ready and (spec_dir / (field["id"] + ".json")).is_file()
+            field["build_note"] = None if roots else (
+                "The gods will build this group from the pinned mathlib export before the journey starts."
+                if field["buildable"] else
+                "Cannot be built here: set METIS_MATHLIB_EXPORT to a declaration export (scripts/extract_mathlib.py)."
+            )
+        return c
+
+    @app.post("/api/modules/build", status_code=202)
+    def build_module(data: dict):
+        from metis.gods import run_build
+
+        island = data.get("island")
+        if island not in ISLANDS or not (spec_dir / (str(island) + ".json")).is_file():
+            raise ValueError("Unknown basis group")
+        if not config.mathlib_export or not os.path.isfile(config.mathlib_export):
+            raise ValueError("No mathlib export configured (METIS_MATHLIB_EXPORT)")
+        budget = float(data.get("budget_usd", 0) or 0)
+        if not math.isfinite(budget) or budget < 0:
+            raise ValueError("Invalid build budget")
+        running = [b for b in store.all("builds", island=island) if b["status"] in ("queued", "building")]
+        if running:
+            return running[0]
+        job = {"id": uid("build_"), "island": island, "status": "queued", "percent": 0,
+               "stage": "Waiting for the gods", "budget_usd": budget, "created": now()}
+        store.put("builds", job)
+        thread = threading.Thread(target=run_build, args=(store, config, worker.providers, job, spec_dir), daemon=True)
+        thread.start()
+        app.state.build_threads.append(thread)
+        return job
+
+    @app.get("/api/modules/builds/{bid}")
+    def build_status(bid: str):
+        return require("builds", bid)
 
     @app.get("/api/modules")
     def modules():
@@ -247,13 +295,22 @@ def create_app(config=None, start_worker=True):
     def journeys():
         result = []
         for j in store.all("journeys"):
+            runs_ = store.all("runs", journey_id=j["id"])
+            active = next((r for r in runs_ if r["status"] in ("queued", "running", "paused", "failed")), None)
             result.append(
                 dict(
                     j,
                     paper_count=len(store.all("papers", journey_id=j["id"])),
-                    run_count=len(store.all("runs", journey_id=j["id"])),
+                    run_count=len(runs_),
+                    papers_run=len({r["paper_id"] for r in runs_ if r["checkpoint"] > 0}),
+                    new_connections=sum(
+                        len(r.get("potentially_new", [])) for r in store.all("reports", journey_id=j["id"])
+                    ),
+                    review_documents=sum(1 for r in runs_ if r["checkpoint"] >= 7),
+                    active_run={"id": active["id"], "status": active["status"]} if active else None,
                 )
             )
+        # Newest activity first (UI spec, Load Journey).
         return sorted(result, key=lambda j: j["last_activity"], reverse=True)
 
     @app.post("/api/journeys", status_code=201)
@@ -680,6 +737,78 @@ def create_app(config=None, start_worker=True):
             key=lambda t: t["time"],
         )
 
+    @app.get("/api/journeys/{jid}/discussion")
+    def discussion(jid: str, run_id: str | None = None, after: float = 0):
+        """Odyssey discussion log: narrated trace entries, oldest first."""
+        journey(jid)
+        return sorted(
+            [
+                d for d in store.all("discussion", journey_id=jid)
+                if (not run_id or d["run_id"] == run_id) and d["time"] > after
+            ],
+            key=lambda d: (d["time"], d["id"]),
+        )
+
+    @app.post("/api/journeys/{jid}/route")
+    def route_finder(jid: str, data: dict):
+        g = graph(store, journey(jid))
+        return find_route(
+            {n["id"]: n for n in g["concepts"]},
+            g["edges"],
+            str(data.get("start", "")),
+            str(data.get("end", "")),
+            str(data.get("kind", "proof")),
+        )
+
+    @app.get("/api/journeys/{jid}/map")
+    def sea_map(jid: str, run_id: str | None = None, before: bool = False):
+        """Slim graph for the sea map and the simplified view: every node and edge with only the
+        fields the map draws. Rejected, invalidated and proposed items are included and flagged;
+        the client applies the shared filters in both views. before=true gives the graph as it
+        stood before run_id (before-and-after view)."""
+        j = journey(jid)
+        g = get_graph(jid, tier=None, existing=None, island=None, run_id=run_id if before else None,
+                      new_only=False, before=before, q=None, include_rejected=True,
+                      include_proposed=True, layer=None)
+        runs_ = sorted(store.all("runs", journey_id=jid), key=lambda r: r["created"])
+        source = lambda d, key: (d.get(key) or {}) if isinstance(d.get(key), dict) else {}
+        return {
+            "journey": {"id": j["id"], "name": j["name"], "islands": j["islands"], "modules": j["modules"],
+                        "status": j["status"], "created": j["created"], "fixture": j["fixture"]},
+            "before": bool(before and run_id),
+            "latest_run": runs_[-1]["id"] if runs_ else None,
+            "runs": [{k: r.get(k) for k in ("id", "created", "status", "paper_id", "checkpoint", "error", "ingest_only")} for r in runs_],
+            "groups": [{k: gg.get(k) for k in ("id", "name", "msc", "depth", "parent", "island", "layer", "description", "run_id")} for gg in g["groups"]],
+            "concepts": [
+                {
+                    "id": n["id"], "name": n.get("name") or n["statement"][:60], "kind": n.get("kind"),
+                    "status": n["status"], "island": n["island"], "home_group": n["home_group"],
+                    "layer": n["layer"], "integrated": n.get("integrated", True), "run_id": n.get("run_id"),
+                    "invalidated": bool(n.get("invalidated")),
+                    "agent": source(n, "source").get("agent"),
+                    "paper_id": source(n, "source").get("paper_id"),
+                }
+                for n in g["concepts"]
+            ],
+            "edges": [
+                {
+                    "id": e["id"], "premises": e["premises"], "conclusion": e["conclusion"],
+                    "directed": e["directed"], "type": e["type"], "tier": e["tier"],
+                    "existing": e.get("existing"), "layer": e["layer"], "run_id": e.get("run_id"),
+                    "review_status": e.get("review_status"), "invalidated": bool(e.get("invalidated")),
+                    "agent": source(e, "provenance").get("agent"),
+                    "kind": source(e, "provenance").get("kind"),
+                    "bridge": source(e, "bridge_score").get("value"),
+                }
+                for e in g["edges"]
+            ],
+            "papers": [
+                {k: p.get(k) for k in ("id", "title", "home_group", "msc", "concept_ids", "integration_ids", "created", "year")}
+                for p in store.all("papers", journey_id=jid)
+            ],
+            "inventory": g["inventory"],
+        }
+
     @app.get("/api/journeys/{jid}/events")
     async def events(jid: str, request: Request, after: float = 0):
         journey(jid)
@@ -1061,13 +1190,65 @@ def create_app(config=None, start_worker=True):
 
     @app.get("/api/settings")
     def settings():
+        roster = worker.providers.roster()
         return {
             "roles": worker.providers.public(),
-            "credentials": "Server environment only; keys are never returned",
+            "roster": roster,
+            "keys": {
+                env: dict(worker.providers.keys.status(env), label=label)
+                for env, label in sorted({(r["key_env"], r["key_label"]) for r in roster.values()})
+            },
+            # Fixture mode needs no keys at all; live mode needs every role ready (UI spec: Start
+            # is disabled until every role the journey uses has a working key).
+            "keys_required": config.mode == "live",
+            "ready": config.mode != "live" or all(r["ready"] for r in roster.values()),
+            "credentials": "Keys are stored in a private server file or read from server environment variables; they are never returned",
             "live_enabled": config.allow_live,
             "global_budget_usd": config.live_budget,
             "lean_image": config.lean_image or None,
         }
+
+    def key_writes_allowed(request):
+        # Keys travel in the request body: accept them only from this machine, or from a
+        # deployment that already authenticates every API call with METIS_API_TOKEN.
+        host = request.client.host if request.client else ""
+        return bool(config.api_token) or host in ("127.0.0.1", "::1", "localhost")
+
+    @app.put("/api/settings/keys")
+    def update_keys(data: dict[str, str | None], request: Request):
+        if not key_writes_allowed(request):
+            raise HTTPException(403, "Keys can be entered only from this machine or with METIS_API_TOKEN configured")
+        known = {r["key_env"] for r in worker.providers.roster().values()}
+        if not data or not set(data).issubset(known):
+            raise ValueError("Unknown key name")
+        for name, value in data.items():
+            worker.providers.keys.set(name, value)
+        return {env: worker.providers.keys.status(env) for env in sorted(known)}
+
+    @app.post("/api/settings/keys/test")
+    def test_key(data: dict):
+        """One small call to confirm a role's key and model work (UI spec: Test button)."""
+        role = data.get("role")
+        if role not in ROLES:
+            raise ValueError("Unknown role")
+        if config.mode != "live" or not config.allow_live:
+            return {"ok": False, "status": "unavailable",
+                    "detail": "No provider call is made in fixture mode. Keys are tested in live mode with METIS_ALLOW_LIVE=true."}
+        spec = worker.providers.roles.get(role)
+        if not spec:
+            return {"ok": False, "status": "unconfigured", "detail": "Choose a model for this role first."}
+        operation = {"id": uid("keytest_"), "kind": "key_test", "role": role,
+                     "budget_usd": float(spec.get("max_cost_usd", 0) or 0), "fixture": False}
+        store.insert("operations", operation)
+        payload = ({"texts": ["metis key test"]} if role == "embeddings"
+                   else {"task": 'Connection test. Return the JSON object {"ok": true}.'})
+        try:
+            worker.providers.call(role, payload, operation, "test")
+            ok, detail = True, "Key and model answered."
+        except (ProviderUnavailable, BudgetExceeded) as exc:
+            ok, detail = False, str(exc)
+        worker.providers.keys.mark(spec["key_env"], ok, detail)
+        return {"ok": ok, "status": "tested", "detail": detail}
 
     @app.put("/api/settings/providers")
     def update_providers(data: dict[str, RoleSpec]):
@@ -1075,6 +1256,7 @@ def create_app(config=None, start_worker=True):
             raise ValueError(
                 "Set METIS_PROVIDERS_FILE to a writable server configuration path"
             )
+        os.makedirs(os.path.dirname(config.provider_file) or ".", exist_ok=True)
         allowed = set(worker.providers.public()) | {"embeddings"}
         if not set(data).issubset(allowed):
             raise ValueError("Unknown role")

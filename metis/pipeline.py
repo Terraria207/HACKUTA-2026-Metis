@@ -18,7 +18,7 @@ from metis.graph import (
     invalidate_dependents,
 )
 from metis.providers import Providers, ProviderUnavailable, BudgetExceeded, AtlasVectors
-from metis import formal
+from metis import formal, narrator
 
 STAGES = [
     "Decompose & integrate",
@@ -146,6 +146,8 @@ class Pipeline:
         }
         if self.store.insert("trace", entry):
             self.store.event(run["journey_id"], "trace", entry)
+            narrator.discuss(self, run, entry)
+        return ident
 
     def enqueue(self, run):
         jid = (
@@ -1084,20 +1086,23 @@ class Pipeline:
                         ]
                         if e["conclusion"] == c["key"]:
                             e["conclusion"] = ident
+            folded, folded_edges, malformed = [], [], 0
             for j, raw in enumerate(proposals):
                 try:
                     e = EdgeInput.model_validate(raw).model_dump()
                     if not all(n in nodes for n in e["premises"] + [e["conclusion"]]):
                         raise ValueError("Crew proposal references an unavailable node")
                 except (ValueError, KeyError, TypeError):
-                    self.trace(run, 2, target["crew"], "Malformed crew proposal rejected",
-                               proposal_index=j, target_index=i,
-                               reason="Invalid edge fields or unavailable node")
+                    folded.append(self.trace(run, 2, target["crew"], "Malformed crew proposal rejected",
+                                             proposal_index=j, target_index=i,
+                                             reason="Invalid edge fields or unavailable node"))
+                    malformed += 1
                     continue
                 saved = self.save_edge(
                     run, e, target["crew"], target, "crew:" + str(i) + ":" + str(j)
                 )
-                self.trace(
+                folded_edges.append(saved["id"])
+                folded.append(self.trace(
                     run,
                     2,
                     target["crew"],
@@ -1106,7 +1111,9 @@ class Pipeline:
                     argument=e["argument"],
                     perspective=target["perspective"],
                     band=target["band"],
-                )
+                ))
+            # One crew mate's proposals for one comparison arrive together: one exchange, not N pop-ups.
+            narrator.discuss_fold(self, run, target, folded, folded_edges, malformed)
 
     def citation_context(self, run, e):
         from metis.ingestion import fetch, extract_text, content_hash

@@ -13,6 +13,8 @@ def app(tmp_path):
             live_budget=0,
             allow_live=False,
             import_corpus=False,  # tests import bundles explicitly; see test_base_exploration
+            provider_file=str(tmp_path / "providers.json"),
+            keys_file=str(tmp_path / "keys.json"),
         ),
         False,
     )
