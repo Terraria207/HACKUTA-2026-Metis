@@ -6,3 +6,6 @@ __pycache__/
 *.sqlite*
 node_modules/
 .lean/
+
+media-export/
+metis-media.zip
