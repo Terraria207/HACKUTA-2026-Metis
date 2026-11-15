@@ -1,0 +1,86 @@
+{
+  "decomposer": {
+    "provider": "gemini",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "GEMINI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "crew0": {
+    "provider": "anthropic",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "ANTHROPIC_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "crew1": {
+    "provider": "gemini",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "GEMINI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "crew2": {
+    "provider": "openai",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "OPENAI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "crew3": {
+    "provider": "openai",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "OPENAI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "penelope": {
+    "provider": "openai",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "OPENAI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "hypothesis": {
+    "provider": "anthropic",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "ANTHROPIC_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "hephaestus": {
+    "provider": "openai",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "OPENAI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "alignment": {
+    "provider": "openai",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "OPENAI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "tiresias": {
+    "provider": "gemini",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "GEMINI_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "odysseus": {
+    "provider": "anthropic",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "ANTHROPIC_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  },
+  "embeddings": {
+    "provider": "voyage",
+    "model": "voyage-4",
+    "key_env": "VOYAGE_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 4096
+  }
+}
