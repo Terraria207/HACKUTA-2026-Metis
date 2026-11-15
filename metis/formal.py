@@ -113,7 +113,7 @@ def _verify(config, statement, proof, mathlib_version, alignment, definition):
             "--cap-drop=ALL",
             "--security-opt=no-new-privileges",
             "--pids-limit=64",
-            "--memory=768m",
+            "--memory=2g",
             "--cpus=1",
             "--user=65534:65534",
             "--tmpfs=/tmp:rw,noexec,nosuid,size=64m",

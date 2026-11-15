@@ -25,7 +25,7 @@ uv pip install --python .venv/bin/python -r requirements.lock
 
 Open **http://127.0.0.1:8000**. Create a journey, choose islands, add a named **Fixture sample**, confirm its MSC group, and start a run. The report's scripted associations remain **Unchecked**; fixture mode never marks them potentially new or machine verified. Explore the graph, evidence, before/after snapshots, history, wrong-feedback re-review and all three exports. SQLite data survives restarts in `.metis/fixture.sqlite`; use `METIS_SQLITE_PATH` to change it.
 
-In Aether, start the long-running command through an Aether managed terminal, following `aether-internal skill terminal`. Do not use shell backgrounding. The terminal scheduler was unavailable during this build; see verification below.
+In Aether, start the long-running command through an Aether managed terminal, following `aether-internal skill terminal`. Do not use shell backgrounding. The initial build hit a scheduler failure; a separate validation session subsequently started managed terminals successfully (see verification below).
 
 Optional container startup (does not create a hosted Site):
 
@@ -51,7 +51,7 @@ An optional actual MongoDB integration test uses a randomly named temporary data
 METIS_TEST_MONGODB_URI='mongodb://127.0.0.1:27017' .venv/bin/python -m pytest -q -m mongo
 ```
 
-No MongoDB URI, Atlas credentials, provider credentials/budget or pinned Lean project was available for this build. These tests are **not** a claim of real Atlas, provider or Lean validation. Managed terminal launch returned `scheduler: invalid session shell tab`; parent reproduced it. Consequently there was **no browser interaction or visual QA**, server process smoke test, container build, live database, Atlas vector/change-stream, provider API or actual compiler test. In-process ASGI tests exercise the actual backend routes and durable worker against SQLite fixtures. Mocked HTTP/formal tests exercise trust boundaries only.
+Initial build validation had no managed terminal/browser or compiler access. A separate Aether validation session on 2026-11-15 successfully started the app in a managed terminal, exercised the fixture browser journey, and prepared the pinned Lean project. See the independent browser/sandbox validation notes below for exact results. MongoDB, Atlas and paid provider integrations remain untested; no credentials or paid APIs were used.
 
 ## Live MongoDB and providers
 
@@ -115,9 +115,9 @@ No compiler installed/configured means **verification unavailable**. A cited arg
 
 To opt in, provision an immutable Docker image with Lean/lake and a trusted, prebuilt, pinned mathlib project. Set `METIS_LEAN_IMAGE` to an `image@sha256:<64 hex digest>` and `METIS_LEAN_PROJECT` to its absolute host path. The project must contain `lean-toolchain`, `lake-manifest.json` and `METIS_MATHLIB_VERSION`; that marker must exactly match the version shared by the journey's modules. Build/download tools yourself outside Metis; the runner never pulls an image or accesses the network.
 
-The prover submits only statement/proof expressions. An independent model must approve exact statement alignment, including every hypothesis. The runner rejects placeholders, added axioms, unsafe code, metaprogramming, command syntax and comments, and generates one controlled declaration. Docker runs as UID 65534 with no network, no capabilities, read-only mounts/root, no privilege escalation, 768 MiB RAM, one CPU, 64 PIDs and a 35-second timeout. It audits `#print axioms metis_result`; only `propext`, `Classical.choice` and `Quot.sound` are allowed. The compiled source hash, image digest, toolchain, mathlib version, alignment review and axiom output are retained. Any unavailable sandbox, timeout, failed compilation or unapproved axiom leaves the edge unverified.
+The prover submits only statement/proof expressions. An independent model must approve exact statement alignment, including every hypothesis. The runner rejects placeholders, added axioms, unsafe code, metaprogramming, command syntax and comments, and generates one controlled declaration. Docker runs as UID 65534 with no network, no capabilities, read-only mounts/root, no privilege escalation, 2 GiB RAM, one CPU, 64 PIDs and a 35-second timeout. It audits `#print axioms metis_result`; only `propext`, `Classical.choice` and `Quot.sound` are allowed. The compiled source hash, image digest, toolchain, mathlib version, alignment review and axiom output are retained. Any unavailable sandbox, timeout, failed compilation or unapproved axiom leaves the edge unverified.
 
-Do not mount the host Docker socket into the web container. For this prototype, optional compilation is available when running the backend on a controlled trusted host with Docker access. A production deployment should isolate the proof worker on a separate host/service. The application container deliberately does not enable that infrastructure by default. Actual sandbox/compiler validation remains unperformed here.
+Do not mount the host Docker socket into the web container. For this prototype, optional compilation is available when running the backend on a controlled trusted host with Docker access. A production deployment should isolate the proof worker on a separate host/service. The application container deliberately does not enable that infrastructure by default. See the independent browser/sandbox validation notes below for the actual controlled Docker test result.
 
 ## Durable workflow and inputs
 
@@ -131,7 +131,7 @@ URLs only allow public HTTP(S), ports 80/443, no userinfo, and public IPs for ev
 
 ## Current limitations / remaining work
 
-This is an independently reviewable implementation, **not a fully validated scientific discovery system**. In addition to the unperformed live/browser/compiler tests above:
+This is an independently reviewable implementation, **not a fully validated scientific discovery system**. In addition to the unperformed live MongoDB/Atlas/provider tests:
 
 - No bundled, licensed, scientifically curated full mathlib/MSC/textbook corpus. The module converter needs an external declaration export and reviewed namespace/MSC mapping. Bridge bundles can refer to concepts in explicit pinned `module.requires` versions; journeys reject mismatched prerequisites.
 - No automatic Atlas index/embedding provisioning or change-stream consumer. Durable polling/SSE and explicit Voyage vectors are the implemented alternatives. Atlas real matching must be acceptance-tested with a populated, correctly indexed corpus.
@@ -147,3 +147,82 @@ Review live adapters against provider account/model contracts before setting any
 ## Independent repair verification
 
 The follow-up review added regression coverage for completed-call reuse across manual retries (including successful earlier retries), review-save/graph-write crash recovery, lock ownership during startup, reservations across separate SQLite connections, invalidated endpoints in reports/exports/discoveries, candidate-excluded integration scoring, preservation of audited formal tiers during citation promotion, conservative concept acceptance, bounded corpus MSC import, slow-download deadlines, definition type-check labels, module-tree ancestry validation, and chunked request limits. The repair suite passes **74 tests** with **1 Mongo integration test skipped**; JavaScript syntax and Python compilation checks pass. These are deterministic fixture/mock tests; they do not validate external MSC discovery, providers, Atlas or a real Lean compiler. No paid calls or cloud resources were used.
+
+## Independent browser and Docker validation (2026-11-15)
+
+Aether session `run-0yp2mh405b` successfully launched managed terminals and the
+managed Chromium browser. The fixture journey `Browser validation` imported a
+named fixture paper, started a run, paused after the first durable checkpoint,
+resumed and completed all seven checkpoints. Report showed zero potentially new
+connections, zero rediscoveries and two **Unchecked** scripted associations.
+Graph displayed eight concepts and three relations; node inspection exposed the
+fixture statement/provenance. History showed the completed run and 7/7 checkpoints.
+JSON, Markdown and PDF export buttons were exercised. Independent HTTP reads saved
+all three exports in `.metis/validation/` and verified 200 responses, valid JSON,
+readable Markdown and a readable one-page PDF; the JSON export was 41,066 bytes,
+Markdown 964 bytes and PDF 22,347 bytes. These files are session-local evidence,
+not committed scientific records.
+
+Three reviewed 1440×1000 viewport screenshots (report, graph, history) are retained
+in Aether evidence packet `evid-hhq83ndrsg`: `a89c6790441acde74ec036380bb69b82`,
+`a2e46bf43aaf4375e966c08c02efbb0e`, `ed72acb0204e0912116f384d6ab5a183`.
+They show the fixture labels and rendered workspace, with lower page content
+outside the viewport. Initial console inspection found only a missing favicon;
+a local SVG icon fixes that request. After reload, the console had no new errors
+and the managed browser's failed-network log was empty. Broker rate limiting
+required pacing browser calls; this was a tool limitation, not an app failure.
+
+The suite after the banner-parser regression test passes **79 tests, 2 skipped**
+(the unconfigured MongoDB and opt-in Docker checks), with one upstream
+Starlette/httpx deprecation warning. JavaScript syntax and Python compilation
+checks also pass. The real Docker test is run separately with explicit settings.
+
+`scripts/setup_lean.py /workspace/.metis/mathlib` exited 0 in a managed terminal,
+checking the exact pinned Lean 4.19.0/mathlib commit and manifest, downloading
+upstream caches and compiling all three small acceptance theorems. This direct
+compiler result alone does not validate the sandbox. Docker 29.1.3 ran an offline
+Ubuntu container. The image builder initially rejected Lean's actual comma-ended
+version banner; the parser now accepts that banner while rejecting other versions.
+The initial real sandbox test failed closed because the image lacked Git: Lake
+interpreted a failed dependency URL lookup as a changed URL and attempted a
+read-only dependency replacement. The image now includes Git and marks the
+operator-provided read-only project repositories safe for its unprivileged UID.
+Only the trusted project and generated input are mounted; no host Git config or
+credentials are mounted. No paid APIs, provider credentials, Atlas or MongoDB were
+used. The six-node cited number-theory module has no edges and remains a modest
+source-backed seed, not a comprehensive scientific corpus.
+
+The repaired real sandbox acceptance test **passed (1 test, 41.97 seconds total)**.
+It compiled and axiom-audited `∀ n : ℕ, n + 0 = n`, failed `1 = (2 : ℕ)`, rejected
+`by sorry`, and refused a mismatched mathlib version. It also asserted the exact
+image/toolchain/mathlib metadata, source hash and allowed axioms. The former
+768 MiB cap made a separate diagnostic import take 103 seconds with over 79,000
+cgroup memory-limit events and no OOM kill. A bounded **2 GiB** cap allows the
+real test to pass while retaining the 35-second per-invocation timeout and all
+other isolation constraints. No compiler-direct result is substituted for this
+test of `metis.formal.verify` and its actual Docker command.
+
+Validated runtime reference (local to this session's Docker daemon):
+
+```
+METIS_TEST_LEAN_IMAGE=localhost:5000/metis-lean@sha256:18a528254da03131cf82609091c533a8f483259b0ca05937e32f230e560983f4
+METIS_TEST_LEAN_PROJECT=/workspace/.metis/mathlib
+```
+
+The image was built from
+`ubuntu@sha256:2198e4c65076e9cb0b3d695219df667c0e3b0072da64ca3c2648aca17dcecaf5`
+and pushed only to a local registry bound to `127.0.0.1:5000`, with no registry
+credentials or public publication. The immutable image must be rebuilt/preloaded
+or transferred for another daemon; the session-local reference is not a public
+deployment artifact. The Lean project/cache is about several GiB and intentionally
+ignored by Git. Test logs are in `.metis/validation/lean-acceptance-memory-fixed.log`.
+
+Final configured full-suite verification (same immutable image/project): **80
+passed, 1 skipped, 1 warning in 19.05 seconds**. Only MongoDB integration skipped.
+`node --check web/app.js`, `python -m compileall -q metis scripts` and
+`git diff --check` passed. The real sandbox pass screenshot is retained in
+`evid-q8dwjny960` (`5ce782d5cc8b08049e944fa1dbaf77d6`). No environment blocker
+remains for these fixture/browser/Lean checks. Live providers, Atlas/MongoDB,
+scientific coverage and distributed deployment remain outside this validation.
+The combined five-capture reviewed evidence packet is `evid-wja3x7vphb` (the three
+browser views, standalone real sandbox pass and final configured full-suite pass).

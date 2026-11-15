@@ -14,6 +14,10 @@ import tempfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def is_pinned_lean_version(version):
+    return bool(re.search(r'\bversion 4\.19\.0(?:\s|,|\))', version))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base-image', required=True)
@@ -27,7 +31,7 @@ def main():
         parser.error('Run setup_lean.py first')
     lean = Path(subprocess.check_output(['lake', 'env', 'which', 'lean'], cwd=args.project, text=True).strip()).resolve()
     version = subprocess.check_output([str(lean), '--version'], text=True)
-    if 'version 4.19.0 ' not in version:
+    if not is_pinned_lean_version(version):
         parser.error('Unexpected Lean toolchain')
     with tempfile.TemporaryDirectory(prefix='metis-image-') as directory:
         context = Path(directory)

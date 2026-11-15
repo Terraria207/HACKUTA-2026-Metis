@@ -15,6 +15,12 @@ def test_real_compiler_acceptance():
     version = 'c44e0c8ee63ca166450922a373c7409c5d26b00b'
     good = verify(config, '∀ n : ℕ, n + 0 = n', 'by intro n; simp', version, True)
     assert good['status'] == 'verified', good
+    assert good['machine_verified'] is True
+    assert good['image'] == config.lean_image
+    assert good['mathlib_version'] == version
+    assert good['toolchain'] == 'leanprover/lean4:v4.19.0'
+    assert len(good['source_sha256']) == 64
+    assert set(good['axioms']) <= {'propext', 'Classical.choice', 'Quot.sound'}
     bad = verify(config, '1 = (2 : ℕ)', 'by rfl', version, True)
     assert bad['status'] == 'failed', bad
     placeholder = verify(config, 'False', 'by sorry', version, True)
