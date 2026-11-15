@@ -205,12 +205,15 @@ class Providers:
                 return {"embeddings": [v["embedding"] for v in sorted(data["data"], key=lambda v: v["index"])],
                         "usage": data.get("usage")}
             if provider == "voyage":
+                host = os.getenv("METIS_VOYAGE_API_HOST", "ai.mongodb.com")
+                if host not in ("ai.mongodb.com", "api.voyageai.com"):
+                    raise ProviderUnavailable("Unsupported embedding API host")
                 if grounded:
                     raise ProviderUnavailable(
                         "Voyage does not provide literature search"
                     )
                 r = client.post(
-                    "https://api.voyageai.com/v1/embeddings",
+                    "https://" + host + "/v1/embeddings",
                     headers={"Authorization": "Bearer " + secret},
                     json={
                         "model": model,

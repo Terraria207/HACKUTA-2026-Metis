@@ -309,3 +309,11 @@ whole-value quotes. It performs no shell expansion, substitution or shell
 execution; it never prints values. Its command wrapper launches an argv directly.
 The CLI suppresses exception bodies; provider failures store only exception
 classes, never keys, Mongo URI, request headers or raw HTTP error responses.
+
+### Atlas embedding key routing
+
+Voyage requests default to `https://ai.mongodb.com/v1/embeddings`, matching keys
+created in Atlas. For a direct Voyage account, set
+`METIS_VOYAGE_API_HOST=api.voyageai.com`. Only those two fixed hosts are accepted;
+arbitrary endpoint overrides are rejected. Geography-scoped keys require an
+explicit future adapter extension. See MongoDB's [embedding API documentation](https://www.mongodb.com/docs/api/doc/atlas-embedding-and-reranking-api/).
