@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def bundle():
-    return json.loads((ROOT / 'corpus/number-theory.json').read_text())
+    return json.loads((ROOT / 'corpus/number-theory.json').read_text(encoding="utf-8"))
 
 
 def test_source_backed_module_and_journey(client, app):
@@ -66,7 +66,7 @@ def test_vectorization_uses_budgeted_adapter_without_mutating_source():
 
 
 def test_lean_dependency_pins():
-    pins = json.loads((ROOT / 'deploy/lean/pins.json').read_text())
+    pins = json.loads((ROOT / 'deploy/lean/pins.json').read_text(encoding="utf-8"))
     manifest = (ROOT / 'deploy/lean/mathlib-manifest.json').read_bytes()
     assert hashlib.sha256(manifest).hexdigest() == pins['manifest_sha256']
     assert pins['lean'] == 'leanprover/lean4:v4.19.0'

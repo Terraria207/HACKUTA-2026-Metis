@@ -147,9 +147,9 @@ def test_formal_fails_closed_without_alignment_or_sandbox():
     ],
 )
 def test_formal_rejects_untrusted_syntax(tmp_path, monkeypatch, proof):
-    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.19.0")
-    (tmp_path / "lake-manifest.json").write_text("{}")
-    (tmp_path / "METIS_MATHLIB_VERSION").write_text("pinned")
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.19.0", encoding="utf-8")
+    (tmp_path / "lake-manifest.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "METIS_MATHLIB_VERSION").write_text("pinned", encoding="utf-8")
     c = Config(lean_image="test@sha256:" + "a" * 64, lean_project=str(tmp_path))
     monkeypatch.setattr("metis.formal.shutil.which", lambda s: "/usr/bin/docker")
     result = verify(c, "True", proof, "pinned", True)
@@ -426,9 +426,9 @@ def test_mocked_lean_audit_and_sandbox_arguments(
 ):
     from types import SimpleNamespace
 
-    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.19.0")
-    (tmp_path / "lake-manifest.json").write_text("{}")
-    (tmp_path / "METIS_MATHLIB_VERSION").write_text("pinned")
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.19.0", encoding="utf-8")
+    (tmp_path / "lake-manifest.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "METIS_MATHLIB_VERSION").write_text("pinned", encoding="utf-8")
     config = Config(lean_image="trusted@sha256:" + "a" * 64, lean_project=str(tmp_path))
     monkeypatch.setattr("metis.formal.shutil.which", lambda _: "docker")
     commands = []

@@ -20,7 +20,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PINS = json.loads((ROOT / "deploy/lean/pins.json").read_text())
+PINS = json.loads((ROOT / "deploy/lean/pins.json").read_text(encoding="utf-8"))
 # The mathematical areas of mathlib. Tactic, Util, Lean, Std, Mathport, Testing, Init and
 # Deprecated are tooling or legacy, not mathematics, and are never exported.
 MATH_AREAS = [
@@ -46,9 +46,9 @@ def main():
     args = parser.parse_args()
     project = args.project.resolve()
     marker = project / "METIS_MATHLIB_VERSION"
-    if not marker.is_file() or marker.read_text().strip() != PINS["mathlib"]:
+    if not marker.is_file() or marker.read_text(encoding="utf-8").strip() != PINS["mathlib"]:
         raise SystemExit("Prepared pinned mathlib project required (run scripts/setup_lean.py)")
-    toolchain = (project / "lean-toolchain").read_text().strip()
+    toolchain = (project / "lean-toolchain").read_text(encoding="utf-8").strip()
     output = args.output.resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
     jsonl = output if output.suffix == ".jsonl" else output.with_suffix(".jsonl")
@@ -59,12 +59,12 @@ def main():
     meta = {"mathlib": PINS["mathlib"], "lean": toolchain, "prefixes": args.prefixes,
             "note": "Declaration/dependency export from the pinned mathlib; not a proof audit."}
     if output.suffix == ".jsonl":
-        with open(jsonl) as f:
+        with open(jsonl, encoding="utf-8") as f:
             count = sum(1 for line in f if line.strip())
-        Path(str(jsonl) + ".meta.json").write_text(json.dumps(dict(meta, declarations=count), indent=1))
+        Path(str(jsonl) + ".meta.json").write_text(json.dumps(dict(meta, declarations=count), indent=1), encoding="utf-8")
     else:
         declarations = []
-        with open(jsonl) as f:
+        with open(jsonl, encoding="utf-8") as f:
             for line in f:
                 if line.strip():
                     d = json.loads(line)
@@ -72,7 +72,7 @@ def main():
                     declarations.append(d)
         declarations.sort(key=lambda d: d["name"])
         count = len(declarations)
-        output.write_text(json.dumps(dict(meta, declarations=declarations), ensure_ascii=False))
+        output.write_text(json.dumps(dict(meta, declarations=declarations), ensure_ascii=False), encoding="utf-8")
     print(json.dumps({"declarations": count, "output": str(output)}))
 
 

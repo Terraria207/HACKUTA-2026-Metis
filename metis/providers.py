@@ -85,7 +85,7 @@ class KeyStore:
         self.data = {}
         if path and os.path.isfile(path):
             try:
-                with open(path) as f:
+                with open(path, encoding="utf-8") as f:
                     loaded = json.load(f)
                 self.data = loaded if isinstance(loaded, dict) else {}
             except (OSError, ValueError):
@@ -108,7 +108,7 @@ class KeyStore:
         os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
         temp = self.path + ".tmp"
         fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(fd, "w") as f:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(self.data, f)
         os.replace(temp, self.path)
 
@@ -136,7 +136,7 @@ class Providers:
         self.store, self.config = store, config
         self.roles = {}
         if config.provider_file and os.path.isfile(config.provider_file):
-            with open(config.provider_file) as f:
+            with open(config.provider_file, encoding="utf-8") as f:
                 self.roles = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
         self.keys = KeyStore(getattr(config, "keys_file", ""))
 

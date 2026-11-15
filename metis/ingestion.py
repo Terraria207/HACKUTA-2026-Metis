@@ -7,12 +7,16 @@ import hashlib
 import http.client
 import io
 import multiprocessing
-import resource
 import ipaddress
 import re
 import socket
 import ssl
 import time
+
+try:  # POSIX only; on Windows the parser child keeps its 12-second wall-clock limit and page/text caps
+    import resource
+except ImportError:
+    resource = None
 import urllib.parse
 from pypdf import PdfReader
 
@@ -125,8 +129,9 @@ def arxiv_url(identifier):
 
 def _pdf_child(raw, channel):
     try:
-        resource.setrlimit(resource.RLIMIT_CPU, (8, 8))
-        resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+        if resource is not None:
+            resource.setrlimit(resource.RLIMIT_CPU, (8, 8))
+            resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
         reader = PdfReader(io.BytesIO(raw), strict=False)
         if reader.is_encrypted:
             raise ValueError("Encrypted PDFs are unsupported")

@@ -309,7 +309,7 @@ def import_corpus(store, directory=None, log=None):
     bundles = []
     for path in sorted(directory.glob("*.json")):
         try:
-            bundle = json.loads(path.read_text())
+            bundle = json.loads(path.read_text(encoding="utf-8"))
         except ValueError:
             continue
         if isinstance(bundle, dict) and isinstance(bundle.get("module"), dict) and bundle["module"].get("id"):

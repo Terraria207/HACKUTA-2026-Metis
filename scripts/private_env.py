@@ -9,7 +9,7 @@ import subprocess
 def load_private_env(path, environ=None):
     target = os.environ if environ is None else environ
     values = {}
-    for number, line in enumerate(Path(path).read_text().splitlines(), 1):
+    for number, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), 1):
         line = line.strip()
         if not line or line.startswith('#'):
             continue
