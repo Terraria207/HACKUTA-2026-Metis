@@ -29,6 +29,7 @@ def reasoning_payload(value):
 
 
 ROLES = [
+    "gods",
     "decomposer",
     "crew0",
     "crew1",
@@ -128,10 +129,13 @@ class Providers:
             raise ProviderUnavailable(
                 "Prior call incomplete or failed; explicit retry with a new attempt required; reservation retained"
             )
-        if run.get("kind") == "module_setup":
+        if run.get("kind") in ("module_setup", "module_build"):
+            # Module operations are durable, budgeted and limited to the roles the plan assigns them:
+            # embeddings for setup; the gods (curation judgment) plus embeddings for a build.
             durable = self.store.get("operations", run["id"])
-            if not durable or durable != run or role != "embeddings":
-                raise ProviderUnavailable("Invalid durable module setup operation")
+            allowed = {"module_setup": {"embeddings"}, "module_build": {"gods", "embeddings"}}
+            if not durable or durable != run or role not in allowed[run["kind"]]:
+                raise ProviderUnavailable("Invalid durable module operation")
             journey = None
             accounts = [("global", min(100, self.config.live_budget)),
                         ("setup:" + run["id"], run["budget_usd"])]
@@ -338,10 +342,57 @@ class Providers:
 
 
 class AtlasVectors:
-    """Real Atlas vector query and Voyage vector generation; never falls back to fixture vectors."""
+    """Real Atlas vector query and Voyage vector generation; never falls back to fixture vectors.
+
+    Two index modes. Default: the application embeds descriptions through the budgeted
+    embeddings role and the index holds those stored vectors. Opt-in METIS_ATLAS_AUTO_EMBED:
+    an Atlas Automated Embedding (autoEmbed) index embeds the description field inside the
+    database on write, and searches take raw text, so no embedding call is spent on queries.
+    Pairwise bridge-score similarity still needs explicit vectors from the same Voyage model,
+    exactly as the overview's Storage section specifies.
+    """
 
     def __init__(self, store):
         self.store = store
+        self.auto_embed = os.getenv("METIS_ATLAS_AUTO_EMBED", "false").lower() == "true"
+        self.auto_model = os.getenv("METIS_ATLAS_AUTO_EMBED_MODEL", "voyage-4")
+
+    def search_text(self, collection, text, layers, limit=20):
+        """Automated-embedding query: Atlas embeds the query text with the index's model."""
+        if self.store.mongo is None:
+            raise ProviderUnavailable("Atlas unavailable in fixture mode")
+        if not self.auto_embed:
+            raise ProviderUnavailable("Automated embedding index not enabled")
+        if not isinstance(text, str) or not text.strip() or len(text) > 20000:
+            raise ValueError("Query text must be a non-empty bounded string")
+        index = os.getenv(
+            "METIS_ATLAS_" + collection.upper() + "_INDEX", "metis_" + collection + "_auto"
+        )
+        return list(
+            self.store.mongo[collection].aggregate(
+                [
+                    {
+                        "$vectorSearch": {
+                            "index": index,
+                            "path": "description",
+                            "query": text,
+                            "model": self.auto_model,
+                            "numCandidates": max(100, limit * 10),
+                            "limit": limit,
+                            "filter": {"layer": {"$in": list(layers)}},
+                        }
+                    },
+                    {
+                        "$project": {
+                            "_id": 0,
+                            "id": 1,
+                            "statement": 1,
+                            "score": {"$meta": "vectorSearchScore"},
+                        }
+                    },
+                ]
+            )
+        )
 
     def search(self, collection, vector, layers, limit=20):
         if self.store.mongo is None:

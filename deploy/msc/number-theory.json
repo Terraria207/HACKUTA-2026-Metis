@@ -1,0 +1,395 @@
+{
+  "island": "number-theory",
+  "name": "Number theory",
+  "field": {
+    "msc": "11",
+    "name": "Number theory"
+  },
+  "subfields": [
+    {
+      "msc": "11A",
+      "name": "Elementary number theory",
+      "subtopics": [
+        {
+          "msc": "11A05",
+          "name": "Multiplicative structure; Euclidean algorithm; greatest common divisors"
+        },
+        {
+          "msc": "11A07",
+          "name": "Congruences; primitive roots; residue systems"
+        },
+        {
+          "msc": "11A15",
+          "name": "Power residues, reciprocity"
+        },
+        {
+          "msc": "11A25",
+          "name": "Arithmetic functions; related numbers; inversion formulas"
+        },
+        {
+          "msc": "11A41",
+          "name": "Primes"
+        },
+        {
+          "msc": "11A51",
+          "name": "Factorization; primality"
+        },
+        {
+          "msc": "11A55",
+          "name": "Continued fractions"
+        },
+        {
+          "msc": "11A63",
+          "name": "Radix representation; digital problems"
+        },
+        {
+          "msc": "11A99",
+          "name": "Elementary number theory: none of the above"
+        }
+      ]
+    },
+    {
+      "msc": "11B",
+      "name": "Sequences and sets",
+      "subtopics": [
+        {
+          "msc": "11B39",
+          "name": "Fibonacci and Lucas numbers and polynomials and generalizations"
+        },
+        {
+          "msc": "11B65",
+          "name": "Binomial coefficients; factorials; q-identities"
+        },
+        {
+          "msc": "11B68",
+          "name": "Bernoulli and Euler numbers and polynomials"
+        },
+        {
+          "msc": "11B83",
+          "name": "Special sequences and polynomials"
+        }
+      ]
+    },
+    {
+      "msc": "11D",
+      "name": "Diophantine equations",
+      "subtopics": [
+        {
+          "msc": "11D04",
+          "name": "Linear Diophantine equations"
+        },
+        {
+          "msc": "11D07",
+          "name": "The Frobenius problem"
+        },
+        {
+          "msc": "11D09",
+          "name": "Quadratic and bilinear Diophantine equations"
+        },
+        {
+          "msc": "11D41",
+          "name": "Higher degree equations; Fermat's equation"
+        },
+        {
+          "msc": "11D61",
+          "name": "Exponential Diophantine equations"
+        },
+        {
+          "msc": "11D88",
+          "name": "p-adic and power series fields"
+        },
+        {
+          "msc": "11D99",
+          "name": "Diophantine equations: none of the above"
+        }
+      ]
+    },
+    {
+      "msc": "11J",
+      "name": "Diophantine approximation, transcendental number theory",
+      "subtopics": [
+        {
+          "msc": "11J68",
+          "name": "Approximation to algebraic numbers"
+        },
+        {
+          "msc": "11J81",
+          "name": "Transcendence (general theory)"
+        }
+      ]
+    },
+    {
+      "msc": "11M",
+      "name": "Zeta and L-functions: analytic theory",
+      "subtopics": [
+        {
+          "msc": "11M06",
+          "name": "Riemann zeta function and Dirichlet L-functions"
+        }
+      ]
+    },
+    {
+      "msc": "11N",
+      "name": "Multiplicative number theory",
+      "subtopics": [
+        {
+          "msc": "11N05",
+          "name": "Distribution of primes"
+        },
+        {
+          "msc": "11N37",
+          "name": "Asymptotic results on arithmetic functions"
+        }
+      ]
+    },
+    {
+      "msc": "11R",
+      "name": "Algebraic number theory: global fields",
+      "subtopics": [
+        {
+          "msc": "11R04",
+          "name": "Algebraic numbers; rings of algebraic integers"
+        },
+        {
+          "msc": "11R11",
+          "name": "Quadratic extensions"
+        },
+        {
+          "msc": "11R18",
+          "name": "Cyclotomic extensions"
+        },
+        {
+          "msc": "11R27",
+          "name": "Units and factorization"
+        },
+        {
+          "msc": "11R99",
+          "name": "Global fields: none of the above"
+        }
+      ]
+    },
+    {
+      "msc": "11S",
+      "name": "Algebraic number theory: local fields",
+      "subtopics": [
+        {
+          "msc": "11S80",
+          "name": "Other analytic theory (p-adic integration and analysis)"
+        }
+      ]
+    },
+    {
+      "msc": "11F",
+      "name": "Discontinuous groups and automorphic forms",
+      "subtopics": [
+        {
+          "msc": "11F11",
+          "name": "Holomorphic modular forms of integral weight"
+        }
+      ]
+    }
+  ],
+  "paths": [
+    [
+      "Mathlib.NumberTheory.Divisors",
+      "11A05"
+    ],
+    [
+      "Mathlib.NumberTheory.Padics",
+      "11S80"
+    ],
+    [
+      "Mathlib.NumberTheory.ArithmeticFunction",
+      "11A25"
+    ],
+    [
+      "Mathlib.NumberTheory.LegendreSymbol",
+      "11A15"
+    ],
+    [
+      "Mathlib.NumberTheory.MulChar",
+      "11A15"
+    ],
+    [
+      "Mathlib.NumberTheory.GaussSum",
+      "11A15"
+    ],
+    [
+      "Mathlib.NumberTheory.Wilson",
+      "11A07"
+    ],
+    [
+      "Mathlib.NumberTheory.Primorial",
+      "11N05"
+    ],
+    [
+      "Mathlib.NumberTheory.PrimeCounting",
+      "11N05"
+    ],
+    [
+      "Mathlib.NumberTheory.Bertrand",
+      "11N05"
+    ],
+    [
+      "Mathlib.NumberTheory.SmoothNumbers",
+      "11N05"
+    ],
+    [
+      "Mathlib.NumberTheory.PrimesCongruentOne",
+      "11N05"
+    ],
+    [
+      "Mathlib.NumberTheory.LucasLehmer",
+      "11A51"
+    ],
+    [
+      "Mathlib.NumberTheory.LucasPrimality",
+      "11A51"
+    ],
+    [
+      "Mathlib.NumberTheory.Fermat",
+      "11A51"
+    ],
+    [
+      "Mathlib.NumberTheory.Multiplicity",
+      "11A05"
+    ],
+    [
+      "Mathlib.NumberTheory.Basic",
+      "11A99"
+    ],
+    [
+      "Mathlib.NumberTheory.PythagoreanTriples",
+      "11D09"
+    ],
+    [
+      "Mathlib.NumberTheory.Pell",
+      "11D09"
+    ],
+    [
+      "Mathlib.NumberTheory.SumTwoSquares",
+      "11D09"
+    ],
+    [
+      "Mathlib.NumberTheory.SumFourSquares",
+      "11D09"
+    ],
+    [
+      "Mathlib.NumberTheory.FLT",
+      "11D41"
+    ],
+    [
+      "Mathlib.NumberTheory.Fermat",
+      "11D41"
+    ],
+    [
+      "Mathlib.NumberTheory.FrobeniusNumber",
+      "11D07"
+    ],
+    [
+      "Mathlib.NumberTheory.Dioph",
+      "11D99"
+    ],
+    [
+      "Mathlib.NumberTheory.Bernoulli",
+      "11B68"
+    ],
+    [
+      "Mathlib.NumberTheory.Harmonic",
+      "11B83"
+    ],
+    [
+      "Mathlib.NumberTheory.DiophantineApproximation",
+      "11J68"
+    ],
+    [
+      "Mathlib.NumberTheory.Liouville",
+      "11J81"
+    ],
+    [
+      "Mathlib.NumberTheory.Transcendental",
+      "11J81"
+    ],
+    [
+      "Mathlib.NumberTheory.Real",
+      "11J81"
+    ],
+    [
+      "Mathlib.NumberTheory.ZetaFunction",
+      "11M06"
+    ],
+    [
+      "Mathlib.NumberTheory.LSeries",
+      "11M06"
+    ],
+    [
+      "Mathlib.NumberTheory.ZetaValues",
+      "11M06"
+    ],
+    [
+      "Mathlib.NumberTheory.EulerProduct",
+      "11M06"
+    ],
+    [
+      "Mathlib.NumberTheory.DirichletCharacter",
+      "11M06"
+    ],
+    [
+      "Mathlib.NumberTheory.VonMangoldt",
+      "11N37"
+    ],
+    [
+      "Mathlib.NumberTheory.AbelSummation",
+      "11N37"
+    ],
+    [
+      "Mathlib.NumberTheory.NumberField",
+      "11R04"
+    ],
+    [
+      "Mathlib.NumberTheory.KummerDedekind",
+      "11R04"
+    ],
+    [
+      "Mathlib.NumberTheory.RamificationInertia",
+      "11R04"
+    ],
+    [
+      "Mathlib.NumberTheory.Zsqrtd",
+      "11R11"
+    ],
+    [
+      "Mathlib.NumberTheory.Cyclotomic",
+      "11R18"
+    ],
+    [
+      "Mathlib.NumberTheory.ClassNumber",
+      "11R27"
+    ],
+    [
+      "Mathlib.NumberTheory.ModularForms",
+      "11F11"
+    ],
+    [
+      "Mathlib.NumberTheory.Modular",
+      "11F11"
+    ],
+    [
+      "Mathlib.NumberTheory.EisensteinSeries",
+      "11F11"
+    ],
+    [
+      "Mathlib.NumberTheory.FunctionField",
+      "11R99"
+    ],
+    [
+      "Mathlib.NumberTheory",
+      "11A99"
+    ]
+  ],
+  "default": "11A99",
+  "module_prefixes": [
+    "Mathlib.NumberTheory"
+  ],
+  "note": "MSC 2020 codes and abbreviated titles after msc2020.org; the path table is a script heuristic. The gods role may override any placement with a recorded reason."
+}

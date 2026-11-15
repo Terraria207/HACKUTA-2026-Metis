@@ -12,6 +12,7 @@ def app(tmp_path):
             sqlite_path=str(tmp_path / "test.sqlite"),
             live_budget=0,
             allow_live=False,
+            import_corpus=False,  # tests import bundles explicitly; see test_base_exploration
         ),
         False,
     )

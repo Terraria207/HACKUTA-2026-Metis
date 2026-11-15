@@ -1,6 +1,6 @@
 # Metis
 
-A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from `docs/metis-overview.txt` with the accepted corrections in `docs/implementation-review.md`. The review and acceptance documents are parent-owned and unchanged.
+A server-backed mathematical connection explorer with isolated journeys, versioned modules, durable jobs and a responsive browser workspace. Implemented from `docs/metis-overview.txt` with the accepted corrections in `docs/implementation-review.md`. The review and acceptance documents are parent-owned and unchanged. See **Plan alignment (2026-11-15)** below for the corrections made after comparing the repository against the overview.
 
 **The default is a clearly labeled, zero-cost fixture simulation. It is not real mathematical discovery.** Live mode uses MongoDB, actual provider HTTP adapters, and Atlas Vector Search. Missing credentials, unknown prices, zero budgets, or unavailable proof infrastructure stop the relevant operation; none silently falls back to a simulated success.
 
@@ -43,7 +43,7 @@ node --check web/app.js
 .venv/bin/python -m compileall -q metis scripts
 ```
 
-The tests cover hyperedge AND versus alternative OR routes, direction/equivalence, cycles, quarantine, typed proof semantics, distance/scoring, full fixture API journeys, paper uploads, exports, restart recovery, checkpoint replay, isolation, blinded payloads, wrong-feedback jobs, atomic reservations, expired leases, cancellation, no-call defaults, URL/DNS safety and conservative Lean failure paths.
+The tests cover hyperedge AND versus alternative OR routes, direction/equivalence, cycles, quarantine, typed proof semantics, distance/scoring, full fixture API journeys, paper uploads, exports, restart recovery, checkpoint replay, isolation, blinded payloads, wrong-feedback jobs, atomic reservations, expired leases, cancellation, no-call defaults, URL/DNS safety, conservative Lean failure paths, and (`tests/test_plan_alignment.py`) the integration loop, Proven conjectures, ranking order, the key-discoveries feed, the gods curation path, bridge modules, automated-embedding routing and the vendored graph library.
 
 An optional actual MongoDB integration test uses a randomly named temporary database and deletes only that database:
 
@@ -85,6 +85,37 @@ Live API calls were not made during this build, and no paid resource was created
 
 Live mode needs reviewed base modules before journeys can be created. The default three islands are linear algebra (15/15A/15A03), graph theory (05/05C/05C50) and probability (60/60B/60B20). Fixture MSC paths are deliberately a tiny illustrative subset, not the full MSC taxonomy or a curated mathematical corpus.
 
+### Base modules from mathlib (the gods)
+
+The overview's base graph is built in two halves. **By script**: `deploy/msc/<island>.json` holds the MSC 2020 group tree for each island (field, subfields, subtopics; titles abbreviated after msc2020.org) plus a documented module-path → MSC placement table; `deploy/lean/Extract.lean` exports declarations from the pinned mathlib (name, kind, module, source line, pretty-printed type with every hypothesis, docstring, and the constants the proof uses); `scripts/build_module.py` selects, places and bundles them, and `bridge` mode keeps cross-island dependencies in a bridge module that requires both island modules. **By judgment**: with `--execute`, the `gods` provider role (Claude in the roster) decides which declarations count as foundational, places each in exactly one depth-3 group, merges duplicates, writes group and concept descriptions, and proposes textbook gap-fillers. Gap-fillers land in the bundle's `pending_review` list with `reviewed: false`; a human must check each source before anything cited is imported, because a model's citation claim is not a reviewed citation. Everything the gods do runs as a durable, budgeted `module_build` operation that admits only the gods and embeddings roles.
+
+```bash
+# once: pinned toolchain + cached oleans (minutes, several GB; no model calls)
+python scripts/setup_lean.py /abs/path/mathlib
+# export one island's declarations (imports all of Mathlib; several GB of RAM)
+python scripts/extract_mathlib.py --project /abs/path/mathlib --prefixes Mathlib.LinearAlgebra --output .lean/exports/linear-algebra.json
+# offline, deterministic bundle (script placement, docstring descriptions)
+python -m scripts.build_module island .lean/exports/linear-algebra.json --spec deploy/msc/linear-algebra.json \
+    --id linear-algebra-mathlib@<version> --version <version> --limit 600 --output corpus/linear-algebra-mathlib.json
+# gods-curated bundle (live mode, explicit budget)
+python -m scripts.build_module island ... --execute --budget 5
+# cross-island bridge from the same exports
+python -m scripts.build_module bridge --bundles corpus/A.json corpus/B.json --exports .lean/exports/a.json .lean/exports/b.json --id A-B-bridge@<version> --version <version> --output corpus/A-B-bridge.json
+```
+
+Selection without the gods is a recorded heuristic: declarations that other exported results depend on, or that mathlib documents, ranked by how many results depend on them and capped by `--limit` (many central theorems, `Matrix.det_mul` for one, have no docstring, so documentation alone is not the test). Descriptions are the first docstring sentence or, when there is none, the declaration name with its formal statement; nothing is invented. Each declaration's proof dependencies form one `dependency` hyperedge into it (at most 20 premises, the most specific first; the full count is recorded). Dependency edges are compiler metadata, never inference, and import can never mint `verified` edges; see the trust model below. The shipped `corpus/*-mathlib*.json` bundles were built this way from an export of 18,467 declarations under `Mathlib.LinearAlgebra`, `Mathlib.Combinatorics.SimpleGraph`/`Digraph`, `Mathlib.Probability` and `Mathlib.NumberTheory` at mathlib `c44e0c8ee63ca166450922a373c7409c5d26b00b` (Lean 4.19.0), run in this repository's pinned project on 2026-11-15. They record the selection criteria, mathlib commit and a per-declaration GitHub source URL in `module.source`; they are script-mapped, not gods-curated, and carry no vectors (live deployments add them through `scripts/prepare_module.py --execute`). Island pairs whose exported declarations share no dependency produced no bridge and ship none.
+
+| Module | Islands | Concepts | Dependency hyperedges | Selection / prerequisites |
+|---|---|---|---|---|
+| `graph-theory-mathlib@2026-11-15.1` | graph-theory | 800 | 787 | declarations with >= 1 exported dependents, or documented by mathlib; top 800 ranked by dependents (documented first on ties) |
+| `linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1` | graph-theory, linear-algebra | 0 | 6 | requires linear-algebra-mathlib@2026-11-15.1, graph-theory-mathlib@2026-11-15.1 |
+| `linear-algebra-mathlib@2026-11-15.1` | linear-algebra | 800 | 675 | declarations with >= 1 exported dependents, or documented by mathlib; top 800 ranked by dependents (documented first on ties) |
+| `linear-algebra-number-theory-mathlib-bridge@2026-11-15.1` | linear-algebra, number-theory | 0 | 69 | requires linear-algebra-mathlib@2026-11-15.1, number-theory-mathlib@2026-11-15.1 |
+| `number-theory-mathlib@2026-11-15.1` | number-theory | 800 | 680 | declarations with >= 1 exported dependents, or documented by mathlib; top 800 ranked by dependents (documented first on ties) |
+| `probability-mathlib@2026-11-15.1` | probability | 800 | 752 | declarations with >= 1 exported dependents, or documented by mathlib; top 800 ranked by dependents (documented first on ties) |
+
+In fixture mode the server imports every bundle in `corpus/` at startup (`METIS_IMPORT_CORPUS=false` disables this), so these modules are selectable locally; their concepts report similarity as unavailable rather than inventing vectors.
+
 Import an immutable module bundle with `POST /api/modules/import` or:
 
 ```bash
@@ -95,7 +126,7 @@ Bundle schema: `module:{id,name,version,islands,mathlib_version,source,fixture:f
 
 Import never mints `verified` inference edges. A cited inference needs an explicitly reviewed source and location. Compiler dependencies are stored as **dependency metadata**, not inference. `scripts/import_mathlib.py --help` converts a supplied declaration/dependency JSON export plus reviewed MSC mapping into such a bundle. It retains the complete formal type, including hypotheses, and only creates dependency relations. It is not a bundled mathlib extractor or a claim that the declarations have been locally recompiled/axiom-audited. Curating real module mappings, citations and declaration exports is required before scientific use.
 
-For real matching, configure the Voyage embedding role and Atlas Vector Search indexes named `metis_concepts` and `metis_groups` (names can be overridden by `METIS_ATLAS_CONCEPTS_INDEX`, `METIS_ATLAS_GROUPS_INDEX`). `deploy/atlas-vector-index.json` is an explicit-vector index definition with a layer filter; choose the dimension matching your configured embedding model. Base concepts/groups must already carry vectors generated with the **same** model. New paper concept vectors are generated through the budgeted Voyage adapter. This implementation uses explicit Voyage embeddings rather than provisioning Atlas Automated Embedding. Failed/missing vector services fail the live stage; lexical fixture search is labeled separately.
+For real matching, configure the Voyage embedding role and Atlas Vector Search indexes named `metis_concepts` and `metis_groups` (names can be overridden by `METIS_ATLAS_CONCEPTS_INDEX`, `METIS_ATLAS_GROUPS_INDEX`). Two index modes exist. **Explicit vectors (default)**: `deploy/atlas-vector-index.json` indexes vectors the application generated through the budgeted Voyage adapter; base concepts/groups must already carry vectors from the **same** model. **Atlas Automated Embedding (opt-in, `METIS_ATLAS_AUTO_EMBED=true`)**: `deploy/atlas-auto-embed-index.json` defines an `autoEmbed` index on `description` with the same Voyage model, so Atlas embeds descriptions on write and query text at search time; duplicate matching and semantic search then spend no embedding call. In both modes the pairwise similarity in bridge scores still uses explicit vectors from the embeddings role, exactly as the overview's Storage section specifies, so the embeddings role stays required. Automated Embedding was a Preview feature when this was written and has not been exercised against a live cluster here; the default mode is the one validated so far. Failed/missing vector services fail the live stage; lexical fixture search is labeled separately.
 
 ## Mathematical trust model
 
@@ -107,6 +138,8 @@ For real matching, configure the Voyage embedding role and Atlas Vector Search i
 - `Not found` means **potentially new in the recorded completed searches**, never proven novelty. Grounded queries, sources, timestamps and failures are stored. Incomplete/failed/ungrounded search remains `Unchecked`. Cited edges are Existing only after source review; a literature hit still needs a separate cited review before tier promotion.
 - The reachability inspector gives a proof DAG of accepted edges from explicit assumptions, with its supporting edge IDs. Even a DAG of individually verified steps is labeled **composition unverified**; it is not silently promoted to a compiled Lean theorem. Definitions are never marked Proven.
 - Rejected counterexamples survive as structured invalidation signals. Wrong feedback immediately removes a claim from valid reasoning and queues independent re-review. Declared dependent proof edges are recursively invalidated; restoring the original claim does not automatically restore its dependents. Journey overlays invalidate shared base claims without mutating base documents.
+- Odysseus ranks accepted findings by tier, then bridge score, then literature status (`Not found` above `Unchecked` above `Existing`), then independent agreement, and never ranks his own proposed nodes. New paper concepts go through an enforced integration loop before the crew starts: level by level, up to `integration_depth`, the decomposer states what each still-unconnected concept rests on or leads to, links attach to matched existing nodes, and standard concepts the graph lacks become Established integration nodes with the paper's reference as source; whatever is still unconnected is flagged unintegrated and scored with tree distance alone. Fixture mode records the skipped loop instead of inventing links.
+- An accepted Odysseus **conjecture** can be attempted by Hephaestus (in the run that accepts it and, within the remaining per-run proof budget, in later runs). The node becomes **Proven** only when an independently aligned statement compiles in the pinned sandbox and clears the axiom audit; a failed or unavailable attempt leaves it Accepted and is never evidence against it. Definitions stop at Accepted. The Home feed lists machine-verified potentially new results, Proven concepts, potentially new connections and accepted conjectures, in that order.
 - Odysseus records recurrent cross-run island-pair patterns. A pattern threshold can trigger a quarantined definition/conjecture proposal, strict review, grounded concept search, and fresh blinded crew tests. Acceptance needs independently reviewed edges from the configured number of distinct crew mates and no counterexample. Found concepts become sourced rediscoveries. These nodes/edges are kept out of Odysseus's ranking. Optional definition formalization is available with journey setting `formalize_definitions=true`. After blind testing, the prover submits a type and value, a separate alignment reviewer checks the definition, and the controlled Lean sandbox type-checks it. Unavailable/failed checks keep the concept quarantined. A type-checked definition is never labeled machine verified or Proven.
 
 ## Controlled Lean runner
@@ -133,8 +166,8 @@ URLs only allow public HTTP(S), ports 80/443, no userinfo, and public IPs for ev
 
 This is an independently reviewable implementation, **not a fully validated scientific discovery system**. In addition to the unperformed live MongoDB/Atlas/provider tests:
 
-- No bundled, licensed, scientifically curated full mathlib/MSC/textbook corpus. The module converter needs an external declaration export and reviewed namespace/MSC mapping. Bridge bundles can refer to concepts in explicit pinned `module.requires` versions; journeys reject mismatched prerequisites.
-- No automatic Atlas index/embedding provisioning or change-stream consumer. Durable polling/SSE and explicit Voyage vectors are the implemented alternatives. Atlas real matching must be acceptance-tested with a populated, correctly indexed corpus.
+- The mathlib-derived modules are selected by a recorded heuristic unless the gods role has run; their descriptions are mathlib docstrings and their placement follows the path table in `deploy/msc/`. Gap-fillers proposed by the gods are never imported without human source review. Bridge bundles can refer to concepts in explicit pinned `module.requires` versions; journeys reject mismatched prerequisites.
+- No automatic Atlas index provisioning or change-stream consumer. Durable cursor-indexed events feed SSE. Atlas real matching, in either index mode, must be acceptance-tested with a populated, correctly indexed corpus.
 - Graph search supports lexical search and explicit budgeted meaning search through Voyage/Atlas; fixture meaning search is explicitly lexical. Suggested next papers are corpus papers near the latest bridge groups, rather than external recommendations. MSC-category bulk import scans the stored corpus only (at most 20 unique papers), preserves matching MSC placement in the selected modules, and reports unsupported placements. External MSC discovery is not implemented; bounded arXiv-ID import retrieves external papers.
 - No automatic OCR, deep citation bibliography resolver, exact formal proof composition, or automatic external MSC harvesting. Human review of statement alignment and source quality is still required for scientific trust, even when model reviews pass.
 - Pattern triggers group edges by island pair across different runs, which is a heuristic; recognizing a genuinely shared missing idea still depends on the proposer/reviewer. Blind concept acceptance exists but has not been exercised against live models.
@@ -143,6 +176,22 @@ This is an independently reviewable implementation, **not a fully validated scie
 
 Review live adapters against provider account/model contracts before setting any nonzero budget. Fixture success must never be used to assert real integration success.
 
+
+## Plan alignment (2026-11-15)
+
+An evaluation of this repository against the overview found the reasoning substrate faithful (bridge score, distances, hyperedge semantics, blinding, isolation, durable jobs, budgets, Lean sandbox) and the documented deviations deliberate, but listed gaps. The following were corrected in this branch:
+
+- **Base graph and the gods**: `deploy/lean/Extract.lean`, `scripts/extract_mathlib.py`, `deploy/msc/*.json`, `metis/gods.py` and `scripts/build_module.py` implement the overview's two-half base-module build (script extraction + model curation) and bridge modules; the `gods` provider role exists and is admitted only inside durable budgeted `module_build` operations.
+- **Integration loop**: the decomposer's "repeat until the chain reaches existing nodes, up to integration_depth" is now an enforced loop (`Pipeline.integrate`), not a prompt parameter.
+- **Proven node status** and **Hephaestus attempts on accepted conjectures** are implemented (`metis/concepts.py`); Proven means machine verified only.
+- **Ranking** uses tier, bridge score, literature status and agreement, in that order (`pipeline.ranking_key`).
+- **Key discoveries** feed includes Proven concepts and accepted conjectures as well as potentially new connections.
+- **Automated Embedding** is available as an opt-in index mode alongside explicit vectors; the default is unchanged and the choice is documented above.
+- **Graph tab** renders with vendored Cytoscape.js (same-origin, CSP intact) with island compound nodes, hyperedge junctions, status colours (Established/Accepted/Proven/Proposed), layer shapes, unintegrated outlines, pan/zoom, and a keyboard-accessible list beside the canvas.
+- **SSE** reads only events newer than the client's cursor through an indexed query instead of rescanning the events collection each second; the unused `adjacency` collection index is gone (distance is computed in code, as the overview allows at demo scale).
+- `deploy/providers.example.json` follows the roster's provider families (xAI, NVIDIA, Mistral, Gemini, OpenAI, Anthropic, Voyage); model IDs remain placeholders until verified against your accounts.
+
+Still outstanding and not claimable from this environment: a live cross-field discovery run (needs provider credentials and budget) and a gods-curated module (needs the `gods` role configured); the shipped mathlib modules are script-mapped and say so.
 
 ## Independent repair verification
 

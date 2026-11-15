@@ -15,6 +15,9 @@ class Config:
     lean_image: str = os.getenv("METIS_LEAN_IMAGE", "")
     lean_project: str = os.getenv("METIS_LEAN_PROJECT", "")
     allow_live: bool = os.getenv("METIS_ALLOW_LIVE", "false").lower() == "true"
+    # Fixture mode imports the reviewed bundles in corpus/ at startup (without vectors) so the
+    # catalog offers real sourced modules locally. Live mode imports through budgeted preparation.
+    import_corpus: bool = os.getenv("METIS_IMPORT_CORPUS", "true").lower() == "true"
 
     def validate(self):
         if self.mode not in ("fixture", "live"):

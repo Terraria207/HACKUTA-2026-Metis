@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ConfigDict
 from metis.config import Config
 from metis.store import Store, uid, now
-from metis.base import seed, import_module, ISLANDS, catalog, validate_selection
+from metis.base import seed, import_module, import_corpus, ISLANDS, catalog, validate_selection
 from metis.graph import (
     Settings,
     graph,
@@ -76,6 +76,8 @@ def create_app(config=None, start_worker=True):
     store = Store(config)
     if config.mode == "fixture":
         seed(store)
+        if config.import_corpus:
+            import_corpus(store)
     worker = Pipeline(store, config)
 
     @asynccontextmanager
@@ -129,7 +131,10 @@ def create_app(config=None, start_worker=True):
             {
                 "X-Content-Type-Options": "nosniff",
                 "Referrer-Policy": "no-referrer",
-                "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'",
+                # style-src admits exactly one inline style attribute: the user-select/tap-highlight
+                # string the vendored Cytoscape 3.35.0 canvas renderer sets on its container
+                # (hash reported by Chromium; tests pin the vendored file's checksum alongside it).
+                "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-hashes' 'sha256-pgvDUBa4IjFA2yuSJ2cqcyxmNYJMborsd0ORcRv9vw8='; img-src 'self' data:; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'",
             }
         )
         return response
@@ -683,14 +688,9 @@ def create_app(config=None, start_worker=True):
             cursor = max(after, float(request.headers.get("last-event-id", "0")))
             seen = set()
             while not await request.is_disconnected():
-                items = sorted(
-                    [
-                        e
-                        for e in store.all("events", journey_id=jid)
-                        if e["time"] >= cursor and e["id"] not in seen
-                    ],
-                    key=lambda e: (e["time"], e["id"]),
-                )
+                items = [
+                    e for e in store.events_since(jid, cursor) if e["id"] not in seen
+                ]
                 for e in items:
                     cursor = e["time"]
                     seen.add(e["id"])
@@ -795,6 +795,14 @@ def create_app(config=None, start_worker=True):
             cap = float(data.get("budget_usd", 0))
             if not math.isfinite(cap) or cap < 0:
                 raise ValueError("Negative search budget")
+            vectors = AtlasVectors(store)
+            if vectors.auto_embed:
+                # Automated embedding: Atlas embeds the query inside the database; no paid call.
+                return {
+                    "fixture": False,
+                    "automated_embedding": True,
+                    "results": vectors.search_text("concepts", query, visible_layers(j)),
+                }
             search_run = {
                 "id": "search_"
                 + content_hash(jid + request.headers.get("Idempotency-Key", uid())),
@@ -1008,6 +1016,8 @@ def create_app(config=None, start_worker=True):
 
     @app.get("/api/discoveries")
     def discoveries():
+        """Key discoveries across journeys (overview, Home): machine-verified potentially new
+        results, top potentially new connections, Proven concepts and accepted conjectures."""
         results = []
         for r in store.all("reports"):
             j = journey(r["journey_id"])
@@ -1017,11 +1027,37 @@ def create_app(config=None, start_worker=True):
                         "journey_id": j["id"],
                         "journey_name": j["name"],
                         "run_id": r["id"],
+                        "kind": "machine-verified potentially new result"
+                        if e["tier"] == "verified"
+                        else "potentially new connection",
                         "edge": e,
                         "fixture": r["fixture"],
                     }
                 )
-        return results
+        for j in store.all("journeys"):
+            for n in store.all("concepts", layer="journey:" + j["id"]):
+                if (
+                    n.get("source", {}).get("agent") == "Odysseus"
+                    and n.get("status") in ("Proven", "Accepted")
+                    and not n.get("invalidated")
+                ):
+                    results.append(
+                        {
+                            "journey_id": j["id"],
+                            "journey_name": j["name"],
+                            "run_id": n.get("run_id"),
+                            "kind": "proven concept"
+                            if n["status"] == "Proven"
+                            else "accepted conjecture"
+                            if n.get("kind") == "conjecture"
+                            else "accepted concept",
+                            "concept": n,
+                            "fixture": n.get("fixture", False),
+                        }
+                    )
+        order = {"machine-verified potentially new result": 0, "proven concept": 1,
+                 "potentially new connection": 2, "accepted conjecture": 3, "accepted concept": 4}
+        return sorted(results, key=lambda d: order[d["kind"]])
 
     @app.get("/api/settings")
     def settings():

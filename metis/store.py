@@ -50,7 +50,6 @@ class Store:
                 "memory",
                 "calls",
                 "budgets",
-                "adjacency",
                 "support",
                 "events",
                 "reports",
@@ -67,6 +66,8 @@ class Store:
             self.mongo.calls.create_index("call_key", unique=True)
             self.mongo.trace.create_index([("run_id", 1), ("time", 1)])
             self.mongo.extractions.create_index("cache_key", unique=True)
+            # Live view polls only events newer than the client's cursor.
+            self.mongo.events.create_index([("journey_id", 1), ("time", 1)])
         else:
             os.makedirs(os.path.dirname(config.sqlite_path) or ".", exist_ok=True)
             self.sql = sqlite3.connect(
@@ -75,6 +76,9 @@ class Store:
             self.sql.execute("PRAGMA journal_mode=WAL")
             self.sql.execute(
                 "CREATE TABLE IF NOT EXISTS docs (collection TEXT, id TEXT, body TEXT, PRIMARY KEY(collection,id))"
+            )
+            self.sql.execute(
+                "CREATE INDEX IF NOT EXISTS docs_events_cursor ON docs(collection, json_extract(body,'$.journey_id'), json_extract(body,'$.time'))"
             )
 
     def get(self, collection, ident):
@@ -98,6 +102,21 @@ class Store:
                 )
             ]
         return [d for d in docs if all(d.get(k) == v for k, v in where.items())]
+
+    def events_since(self, journey_id, since):
+        """Events at or after a time cursor, in cursor order; never a full-collection scan."""
+        if self.mongo is not None:
+            return list(
+                self.mongo.events.find(
+                    {"journey_id": journey_id, "time": {"$gte": since}}, {"_id": 0}
+                ).sort([("time", 1), ("id", 1)])
+            )
+        with self.lock:
+            rows = self.sql.execute(
+                "SELECT body FROM docs WHERE collection='events' AND json_extract(body,'$.journey_id')=? AND json_extract(body,'$.time')>=?",
+                (journey_id, since),
+            ).fetchall()
+        return sorted((json.loads(r[0]) for r in rows), key=lambda e: (e["time"], e["id"]))
 
     def _check_published(self, collection, ident):
         if collection not in ("modules", "concepts", "groups", "edges"):

@@ -5,3 +5,4 @@ __pycache__/
 .metis/
 *.sqlite*
 node_modules/
+.lean/

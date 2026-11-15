@@ -1,90 +1,21 @@
 #!/usr/bin/env python3
-"""Convert a declaration/dependency JSON export + reviewed MSC mapping to a module.
-This importer never promotes compiler dependencies into natural-language implications.
-Export schema: [{name, type, dependencies:[name], source_url}].
+"""Convert a declaration/dependency export + reviewed MSC mapping to a module bundle.
+Thin wrapper over metis.gods.build_bundle (the "by script" half of the base graph); see
+scripts/build_module.py for the complete island/bridge build with selection and curation.
+Export schema: [{name, kind, module, line, type, docstring, dependencies:[name], source_url}].
 MSC map schema: {groups:[...], declarations:{name:{home_group,description,kind,name}}}.
-All hypotheses stay in exact formal type text. Pin export/mathlib commit separately.
+This importer never promotes compiler dependencies into natural-language implications.
 """
 
 import argparse
-import hashlib
 import json
 from pathlib import Path
 
+from metis.gods import build_bundle
+
 
 def build(declarations, mapping, module_id, version, mathlib_version, islands, source):
-    groups = mapping["groups"]
-    home = {g["id"]: g for g in groups}
-    concepts = []
-    ids = {}
-    for d in declarations:
-        m = mapping["declarations"].get(d["name"])
-        if not m:
-            continue
-        if m["home_group"] not in home:
-            raise ValueError("Unmapped home group")
-        ident = module_id + ":" + hashlib.sha256(d["name"].encode()).hexdigest()[:20]
-        ids[d["name"]] = ident
-        concepts.append(
-            {
-                "id": ident,
-                "name": m.get("name", d["name"]),
-                "statement": d["type"],
-                "formal_statement": d["type"],
-                "description": m["description"],
-                "kind": m.get("kind", "theorem"),
-                "home_group": m["home_group"],
-                "island": home[m["home_group"]]["island"],
-                "status": "Established",
-                "integrated": True,
-                "source": {
-                    "declaration": d["name"],
-                    "url": d.get("source_url", source),
-                    "mathlib_version": mathlib_version,
-                    "note": "Exact exported declaration. Import is NOT a local compiler or axiom audit.",
-                },
-            }
-        )
-    edges = []
-    for d in declarations:
-        if d["name"] not in ids:
-            continue
-        deps = sorted(
-            ids[n] for n in d.get("dependencies", []) if n in ids and n != d["name"]
-        )
-        if deps:
-            edges.append(
-                {
-                    "id": ids[d["name"]] + ":deps",
-                    "premises": deps,
-                    "conclusion": ids[d["name"]],
-                    "directed": True,
-                    "type": "dependency",
-                    "tier": "intuitive",
-                    "argument": "Compiler dependency metadata only; no implication claimed. Dependencies may be partial. Exact formal statement retains all hypotheses.",
-                    "evidence": [
-                        {
-                            "source": source,
-                            "location": d["name"],
-                            "mathlib_version": mathlib_version,
-                        }
-                    ],
-                }
-            )
-    return {
-        "module": {
-            "id": module_id,
-            "version": version,
-            "mathlib_version": mathlib_version,
-            "islands": islands,
-            "name": module_id,
-            "source": source,
-            "fixture": False,
-        },
-        "groups": groups,
-        "concepts": concepts,
-        "edges": edges,
-    }
+    return build_bundle(declarations, mapping, module_id, version, mathlib_version, islands, source)
 
 
 def main():

@@ -278,3 +278,47 @@ def validate_selection(store, chosen, islands, live=False):
             raise ValueError("Select exactly one root version per field; use an additive extension or a new journey")
     if set(islands) != {i for m in modules for i in m["islands"]}:
         raise ValueError("Modules must cover exactly the selected fields")
+
+
+def import_corpus(store, directory=None, log=None):
+    """Fixture-mode startup import of the reviewed bundles shipped in corpus/, in prerequisite
+    order, skipping versions already published. Vectors are not fabricated: fixture similarity
+    is reported unavailable for these concepts. Live deployments use scripts/prepare_module.py.
+    Returns the module IDs imported now."""
+    import json
+    from pathlib import Path
+
+    directory = Path(directory or Path(__file__).resolve().parent.parent / "corpus")
+    bundles = []
+    for path in sorted(directory.glob("*.json")):
+        try:
+            bundle = json.loads(path.read_text())
+        except ValueError:
+            continue
+        if isinstance(bundle, dict) and isinstance(bundle.get("module"), dict) and bundle["module"].get("id"):
+            bundles.append(bundle)
+    imported, pending = [], list(bundles)
+    for _ in range(len(bundles) + 1):
+        remaining = []
+        for bundle in pending:
+            mid = bundle["module"]["id"]
+            existing = store.get("modules", mid)
+            if existing and existing.get("status") == "ready":
+                continue
+            requires = bundle["module"].get("requires", [])
+            if any((store.get("modules", r) or {}).get("status") != "ready" for r in requires):
+                remaining.append(bundle)
+                continue
+            try:
+                # One SQLite write transaction per bundle: thousands of autocommitted inserts
+                # would otherwise fsync one by one at every fixture startup.
+                with store.transaction():
+                    import_module(store, bundle)
+                imported.append(mid)
+            except ValueError as exc:
+                if log:
+                    log("corpus import skipped %s: %s" % (mid, exc))
+        if not remaining:
+            break
+        pending = remaining
+    return imported

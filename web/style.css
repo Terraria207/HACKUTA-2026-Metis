@@ -786,3 +786,48 @@ footer button {
 #fieldCatalog { min-width: 0; }
 #fieldCatalog section { min-width: 0; overflow-wrap: anywhere; }
 #fieldCatalog .check { overflow-wrap: anywhere; }
+
+/* Graph tab: Cytoscape canvas, status legend, accessible list */
+#graphCanvas {
+  position: relative; /* Cytoscape needs a positioned container */
+  width: 100%;
+  height: 580px;
+  min-height: 350px;
+  background: #f7f9f6;
+  border: 1px solid #d7e0d3;
+  border-radius: 10px;
+}
+#graphCanvas:focus-visible {
+  outline: 3px solid var(--teal);
+}
+.lg {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #c9d2ca;
+  vertical-align: -1px;
+  margin-right: 2px;
+}
+.lg-established { background: #397c70; }
+.lg-accepted { background: #b07a2a; }
+.lg-proven { background: #2e7d4f; }
+.lg-proposed { background: #fff; box-shadow: 0 0 0 2px #397c70; }
+.graphListWrap {
+  margin-top: 0.6rem;
+}
+.graphList {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+  max-height: 260px;
+  overflow: auto;
+  display: grid;
+  gap: 0.25rem;
+}
+.graphList button {
+  width: 100%;
+  text-align: left;
+  font: 13px system-ui;
+}

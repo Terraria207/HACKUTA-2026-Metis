@@ -1,0 +1,229 @@
+{
+ "module": {
+  "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1",
+  "version": "2026-11-15.1",
+  "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+  "islands": [
+   "graph-theory",
+   "linear-algebra"
+  ],
+  "requires": [
+   "linear-algebra-mathlib@2026-11-15.1",
+   "graph-theory-mathlib@2026-11-15.1"
+  ],
+  "name": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1",
+  "source": {
+   "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+   "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+   "requires": [
+    "linear-algebra-mathlib@2026-11-15.1",
+    "graph-theory-mathlib@2026-11-15.1"
+   ]
+  },
+  "fixture": false,
+  "coverage": "Cross-field dependency metadata between the required island modules; no inference edges"
+ },
+ "groups": [],
+ "concepts": [],
+ "edges": [
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:987054bec5214b98aa62",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:083de63cd8580a15d0f0",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "graph-theory-mathlib@2026-11-15.1:81d32857fb4d6d2ada5b",
+    "linear-algebra-mathlib@2026-11-15.1:75e0e1da430ea438bfa8",
+    "graph-theory-mathlib@2026-11-15.1:ed312864a211b8e4bbfb",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:987054bec5214b98aa62",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.lapMatrix_ker_basis_aux",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 7,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:a4bb4d31ae783ccfac56",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:cf074bf18fd6ae4e367d",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "linear-algebra-mathlib@2026-11-15.1:39314d980ca6c741f0d1",
+    "linear-algebra-mathlib@2026-11-15.1:75e0e1da430ea438bfa8",
+    "graph-theory-mathlib@2026-11-15.1:f820e861d0f392d68450",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:a4bb4d31ae783ccfac56",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.lapMatrix_toLin'_apply_eq_zero_iff_forall_reachable",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 7,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:f949cd60023069c02f30",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:c819ba56a1d636f0e02d",
+    "graph-theory-mathlib@2026-11-15.1:ba77ec8a2266b60d16c2",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "graph-theory-mathlib@2026-11-15.1:db15d175139fad0a59a5",
+    "linear-algebra-mathlib@2026-11-15.1:39314d980ca6c741f0d1",
+    "graph-theory-mathlib@2026-11-15.1:f8a93184ccff167accdf",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:f949cd60023069c02f30",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.lapMatrix_toLinearMap₂'",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 8,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:5213e19e3fe70cd58bb4",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:f949cd60023069c02f30",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "linear-algebra-mathlib@2026-11-15.1:39314d980ca6c741f0d1",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:5213e19e3fe70cd58bb4",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.lapMatrix_toLinearMap₂'_apply'_eq_zero_iff_forall_adj",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 5,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:083de63cd8580a15d0f0",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:a4bb4d31ae783ccfac56",
+    "graph-theory-mathlib@2026-11-15.1:0923680e9283d50135c0",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "graph-theory-mathlib@2026-11-15.1:81d32857fb4d6d2ada5b",
+    "linear-algebra-mathlib@2026-11-15.1:75e0e1da430ea438bfa8",
+    "graph-theory-mathlib@2026-11-15.1:ed312864a211b8e4bbfb",
+    "graph-theory-mathlib@2026-11-15.1:f820e861d0f392d68450",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:083de63cd8580a15d0f0",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.mem_ker_toLin'_lapMatrix_of_connectedComponent",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 9,
+     "truncated": false
+    }
+   ]
+  },
+  {
+   "id": "linear-algebra-graph-theory-mathlib-bridge@2026-11-15.1:cf074bf18fd6ae4e367d",
+   "premises": [
+    "graph-theory-mathlib@2026-11-15.1:f949cd60023069c02f30",
+    "graph-theory-mathlib@2026-11-15.1:a284758aa6a3835b9d04",
+    "linear-algebra-mathlib@2026-11-15.1:39314d980ca6c741f0d1",
+    "linear-algebra-mathlib@2026-11-15.1:4dc347e781d46618e329",
+    "linear-algebra-mathlib@2026-11-15.1:c81ccf7b9e39964a1e5e",
+    "graph-theory-mathlib@2026-11-15.1:9f21c0d4fc57802932b0",
+    "graph-theory-mathlib@2026-11-15.1:7d478e141a4f6419f566"
+   ],
+   "conclusion": "graph-theory-mathlib@2026-11-15.1:cf074bf18fd6ae4e367d",
+   "directed": true,
+   "type": "dependency",
+   "tier": "intuitive",
+   "argument": "Cross-field compiler dependency metadata only; no implication claimed.",
+   "evidence": [
+    {
+     "source": {
+      "url": "https://github.com/leanprover-community/mathlib4/tree/c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "mathlib": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+      "requires": [
+       "linear-algebra-mathlib@2026-11-15.1",
+       "graph-theory-mathlib@2026-11-15.1"
+      ]
+     },
+     "location": "SimpleGraph.posSemidef_lapMatrix",
+     "mathlib_version": "c44e0c8ee63ca166450922a373c7409c5d26b00b",
+     "dependencies_total": 7,
+     "truncated": false
+    }
+   ]
+  }
+ ]
+}

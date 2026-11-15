@@ -7,6 +7,7 @@
     <title>Metis — Mathematical Connection Explorer</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/static/style.css" />
+    <script defer src="/static/vendor/cytoscape.min.js"></script>
     <script defer src="/static/app.js"></script>
   </head>
   <body>
@@ -220,21 +221,28 @@
         </div>
         <div class="graphLayout">
           <div class="panel graphPanel">
-            <div class="legend">
-              <span>● Established</span><span>◇ Proposed</span
+            <div class="legend" aria-label="Graph legend">
+              <span><i class="lg lg-established"></i> Established</span
+              ><span><i class="lg lg-accepted"></i> Accepted</span
+              ><span><i class="lg lg-proven"></i> Proven (machine verified)</span
+              ><span><i class="lg lg-proposed"></i> Proposed (quarantined)</span
+              ><span>○ base · □ journey · ┄ outline = unintegrated</span
               ><span>━━ Verified</span><span>┄ Cited</span
               ><span>··· Intuitive</span><span>● Junction = AND premises</span>
             </div>
             <label class="check"><input id="graphRejected" type="checkbox"> Inspect rejected / invalidated (NON-EVIDENCE)</label>
 <label class="check"><input id="graphProposed" type="checkbox"> Inspect proposed (NON-EVIDENCE)</label>
 <label>Layer <select id="graphLayer"><option value="">Base + journey</option><option value="module">Base only</option><option value="journey">Journey only</option></select></label>
-<svg
-              id="graphSvg"
-              viewBox="0 0 1000 650"
+<div
+              id="graphCanvas"
               role="img"
-              aria-label="Concept graph with island clusters"
-            ></svg>
+              aria-label="Concept graph with island clusters; use the list below for keyboard access"
+            ></div>
             <div id="graphEmpty" class="muted"></div>
+            <details class="graphListWrap">
+              <summary>Keyboard-accessible list of visible concepts and relations</summary>
+              <ul id="graphList" class="graphList"></ul>
+            </details>
           </div>
           <aside class="panel" id="graphDetails">
             <h3>Inspect a connection</h3>

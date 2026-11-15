@@ -106,10 +106,12 @@ async function home() {
     ? discoveries
         .map(
           (d) =>
-            `<div class="finding"><h3>${esc(d.edge.argument)}</h3>${pill(d.edge.tier)} <button data-journey="${esc(d.journey_id)}">${esc(d.journey_name)} ↗</button></div>`,
+            d.edge
+              ? `<div class="finding"><h3>${esc(d.edge.argument)}</h3>${pill(d.kind)} ${pill(d.edge.tier)} ${pill(d.edge.existing)} <button data-journey="${esc(d.journey_id)}">${esc(d.journey_name)} ↗</button></div>`
+              : `<div class="finding"><h3>${esc(d.concept.name)}</h3><p>${esc(d.concept.statement)}</p>${pill(d.kind)} ${pill(d.concept.status)} <button data-journey="${esc(d.journey_id)}">${esc(d.journey_name)} ↗</button></div>`,
         )
         .join("")
-    : '<div class="empty">No potentially new findings yet. Fixture mode never represents scripted associations as discoveries.</div>';
+    : '<div class="empty">No key discoveries yet: machine-verified or potentially new connections, Proven concepts and accepted conjectures appear here. Fixture mode never represents scripted associations as discoveries.</div>';
 }
 async function openJourney(id) {
   if (state.stream) state.stream.abort();
@@ -347,60 +349,107 @@ async function loadGraph() {
     .map((n) => `<option value="${esc(n.id)}">${esc(n.name)}</option>`)
     .join("");
 }
+let cy = null;
+const STATUS_COLOR = { Established: "#397c70", Accepted: "#b07a2a", Proven: "#2e7d4f", Proposed: "#ffffff" };
+const GRAPH_STYLE = [
+  { selector: "node.island", style: { shape: "round-rectangle", "background-color": "#edf1e9", "background-opacity": 0.75, "border-color": "#d7e0d3", "border-width": 1, label: "data(label)", "text-valign": "top", "text-halign": "center", color: "#698076", "font-size": 12, "font-family": "system-ui", padding: "28px", "text-margin-y": -6 } },
+  { selector: "node[kind = 'concept']", style: { "background-color": "data(color)", label: "data(label)", "font-size": 11, "font-family": "system-ui", color: "#1b2a2a", "text-valign": "bottom", "text-margin-y": 5, width: 24, height: 24, "border-width": 3, "border-color": "#ffffff", "text-wrap": "ellipsis", "text-max-width": "110px" } },
+  { selector: "node.base", style: { shape: "ellipse" } },
+  { selector: "node.journey", style: { shape: "rectangle" } },
+  { selector: "node.unintegrated", style: { "border-color": "#c58a1f", "border-style": "dashed" } },
+  { selector: "node.proposed", style: { "background-color": "#ffffff", "border-color": "#397c70" } },
+  { selector: "node.junction", style: { width: 10, height: 10, "background-color": "#577c77", label: "", "border-width": 0 } },
+  { selector: "edge", style: { width: 2, "line-color": "#9ba6a9", "curve-style": "straight", "target-arrow-shape": "none", "arrow-scale": 1.1 } },
+  { selector: "edge.arrow", style: { "target-arrow-shape": "triangle", "target-arrow-color": "#8b999d" } },
+  { selector: "edge.cited", style: { "line-style": "dashed", "line-dash-pattern": [8, 5] } },
+  { selector: "edge.intuitive", style: { "line-style": "dotted" } },
+  { selector: "edge.nonEvidence", style: { "line-color": "#bc3e45", "target-arrow-color": "#bc3e45", "line-style": "dotted" } },
+  { selector: "node:selected", style: { "border-color": "#1f5f58", "border-width": 4 } },
+  { selector: "edge:selected", style: { width: 4, "line-color": "#1f5f58" } },
+];
+function clusterLayout(g, islands) {
+  // Deterministic preset layout: one cluster per island, a grid inside, clusters wrapped two per row.
+  // Positions scale with node count so a few thousand nodes remain readable with pan and zoom.
+  const pos = {};
+  const clusters = islands
+    .map((island) => {
+      const ns = g.concepts.filter((n) => n.island === island);
+      const cols = Math.max(1, Math.ceil(Math.sqrt(ns.length * 1.5)));
+      return { ns, cols, w: cols * 110 + 80, h: Math.ceil(ns.length / cols) * 70 + 90 };
+    })
+    .filter((c) => c.ns.length);
+  const perRow = clusters.length <= 2 ? Math.max(1, clusters.length) : 2;
+  let x = 0, y = 0, rowH = 0;
+  clusters.forEach((c, i) => {
+    if (i && i % perRow === 0) { x = 0; y += rowH + 120; rowH = 0; }
+    c.ns.forEach((n, j) => {
+      pos[n.id] = { x: x + 95 + (j % c.cols) * 110, y: y + 95 + Math.floor(j / c.cols) * 70 };
+    });
+    x += c.w + 160;
+    rowH = Math.max(rowH, c.h);
+  });
+  return pos;
+}
 function drawGraph(g) {
   const islands = state.journey.islands;
-  const pos = {};
-  let svg =
-    '<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8b999d"/></marker></defs>';
-  const maxRows = Math.max(1, ...islands.map(i => Math.ceil(g.concepts.filter(n => n.island === i).length/3)));
-  const clusterHeight = Math.max(290, maxRows * 55 + 85);
-  const height = islands.length < 3 ? clusterHeight + 60 : 2 * clusterHeight + 90;
-  $("graphSvg").setAttribute("viewBox", `0 0 1000 ${height}`);
-  const centers = islands.map((_, i) => islands.length === 1 ? [500, height/2] :
-    islands.length === 2 ? [260 + i * 480, height/2] : [250 + (i % 2) * 500, 30 + clusterHeight/2 + Math.floor(i / 2) * (clusterHeight + 30)]);
-  islands.forEach((island, i) => {
-    const [cx, cy] = centers[i];
-    svg += `<ellipse class="cluster" cx="${cx}" cy="${cy}" rx="215" ry="${(clusterHeight-15)/2}"/><text class="clusterTitle" x="${cx}" y="${cy - clusterHeight/2 + 25}" text-anchor="middle">${esc(island.toUpperCase())}</text>`;
-    const ns = g.concepts.filter((n) => n.island === island);
-    ns.forEach((n, j) => {
-      const cols = Math.min(3, ns.length);
-      const rows = Math.ceil(ns.length / cols);
-      pos[n.id] = [cx + (j % cols - (cols-1)/2) * 138, cy + (Math.floor(j/cols) - (rows-1)/2) * 55];
-    });
-  });
-  g.edges.forEach((e) => {
-    const end = pos[e.conclusion];
-    if (!end) return;
-    const ps = e.premises.map((p) => pos[p]).filter(Boolean);
-    if (ps.length !== e.premises.length) return;
-    // Stop arrows outside the node circle so arrowheads remain visible.
-    const trim = (from, to) => { const d = Math.hypot(to[0]-from[0], to[1]-from[1]) || 1;
-      return [to[0] - 15*(to[0]-from[0])/d, to[1] - 15*(to[1]-from[1])/d]; };
-    const nonEvidence = e.review_status !== "passed" || e.invalidated;
-    const edgeClass = `${e.tier} ${nonEvidence ? "nonEvidence" : ""}`;
-    let junction = trim(ps[0], end);
-    if (ps.length > 1) {
-      junction = [
-        (ps.reduce((s, p) => s + p[0], 0) / ps.length + end[0]) / 2,
-        (ps.reduce((s, p) => s + p[1], 0) / ps.length + end[1]) / 2,
-      ];
-      svg += `<circle class="graphNode" data-detail="${esc(e.id)}" data-kind="edge" cx="${junction[0]}" cy="${junction[1]}" r="5" fill="#577c77"/><path class="graphEdge ${esc(edgeClass)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${junction} L ${trim(junction, end)}" marker-end="url(#arrow)"/>`;
-    }
-    ps.forEach((p) => {
-      svg += `<path class="graphEdge ${esc(edgeClass)}" data-detail="${esc(e.id)}" data-kind="edge" d="M ${p} L ${junction}" ${ps.length === 1 && e.directed ? 'marker-end="url(#arrow)"' : ""}/>`;
-    });
-  });
-  g.concepts.forEach((n) => {
-    const p = pos[n.id];
-    if (!p) return;
-    const color = ["#397c70", "#647ba5", "#ac8552", "#9865a5"][islands.indexOf(n.island)];
-    svg += `<g class="graphNode ${n.integrated ? "" : "unintegrated"} ${n.status === "Proposed" ? "proposed" : ""}" data-detail="${esc(n.id)}" data-kind="concept" tabindex="0" role="button" aria-label="${esc(n.name)}">${n.layer.startsWith("journey:") ? `<rect x="${p[0]-11}" y="${p[1]-11}" width="22" height="22" fill="${color}"/>` : `<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="${color}"/>`}<text x="${p[0]}" y="${p[1] + 27}" text-anchor="middle">${esc(n.name.length > 19 ? n.name.slice(0, 17) + "…" : n.name)}</text></g>`;
-  });
-  $("graphSvg").innerHTML = svg;
   const inv = g.inventory || {};
   $("graphEmpty").textContent =
-    `Inventory: ${inv.base_nodes ?? "?"} base nodes / ${inv.base_edges ?? "?"} base relations; ${inv.journey_nodes ?? "?"} journey nodes / ${inv.journey_edges ?? "?"} journey relations. ${inv.accepted === 0 ? "No accepted relations: pinned modules may contain no edges and generated candidates may have failed review. Inspect rejected relations for reasons. " : (!g.edges.length ? "No relations match the current filters. " : "")}Visible: ${g.concepts.length} concepts · ${g.edges.length} relations. Circles: base nodes. Squares: journey nodes. Red dotted edges are NON-EVIDENCE; arrows show relation direction, junctions require all premises. Only implies/equivalent relations are proof steps. Base endpoints remain visible as context when filtering journey edges. Dotted outlines indicate unintegrated nodes. Click nodes or edges to inspect.`;
+    `Inventory: ${inv.base_nodes ?? "?"} base nodes / ${inv.base_edges ?? "?"} base relations; ${inv.journey_nodes ?? "?"} journey nodes / ${inv.journey_edges ?? "?"} journey relations. ${inv.accepted === 0 ? "No accepted relations: pinned modules may contain no edges and generated candidates may have failed review. Inspect rejected relations for reasons. " : (!g.edges.length ? "No relations match the current filters. " : "")}Visible: ${g.concepts.length} concepts · ${g.edges.length} relations. Node colour = status (teal Established, amber Accepted, green Proven, white Proposed); circles are base nodes, squares journey nodes; dashed outlines are unintegrated. Red dotted edges are NON-EVIDENCE; arrows show relation direction; junction dots require all premises together. Only implies/equivalent relations are proof steps. Drag to pan, wheel to zoom; click a node, arrow or junction to inspect, or use the list below.`;
+  $("graphList").innerHTML =
+    g.concepts.map((n) => `<li><button data-detail="${esc(n.id)}" data-kind="concept">${esc(n.name)} — ${esc(n.status)}${n.integrated ? "" : " · unintegrated"} · ${esc(n.island)}</button></li>`).join("") +
+    g.edges.map((e) => `<li><button data-detail="${esc(e.id)}" data-kind="edge">${esc(e.type)} · ${esc(e.tier)} · ${esc(e.existing)} · ${e.premises.length} premise(s) → ${esc((g.concepts.find((n) => n.id === e.conclusion) || {}).name || e.conclusion)}</button></li>`).join("");
+  if (typeof cytoscape !== "function") {
+    $("graphEmpty").textContent += " Graph library unavailable; use the list.";
+    return;
+  }
+  const pos = clusterLayout(g, islands);
+  const visible = new Set(g.concepts.map((n) => n.id));
+  const elements = [];
+  islands
+    .filter((i) => g.concepts.some((n) => n.island === i))
+    .forEach((i) => elements.push({ data: { id: "island:" + i, label: i.toUpperCase(), kind: "island" }, classes: "island", selectable: false, grabbable: false }));
+  g.concepts.forEach((n) =>
+    elements.push({
+      data: { id: n.id, label: n.name, kind: "concept", parent: "island:" + n.island, color: STATUS_COLOR[n.status] || STATUS_COLOR.Established, status: n.status },
+      position: pos[n.id],
+      classes: [n.layer.startsWith("journey:") ? "journey" : "base", n.integrated ? "" : "unintegrated", n.status === "Proposed" ? "proposed" : ""].join(" ").trim(),
+    }),
+  );
+  g.edges.forEach((e) => {
+    if (!visible.has(e.conclusion) || !e.premises.every((p) => visible.has(p))) return;
+    const nonEvidence = e.review_status !== "passed" || e.invalidated;
+    const cls = `${e.tier} ${nonEvidence ? "nonEvidence" : ""}`.trim();
+    if (e.premises.length > 1) {
+      const end = pos[e.conclusion];
+      const mean = e.premises.reduce((s, p) => ({ x: s.x + pos[p].x / e.premises.length, y: s.y + pos[p].y / e.premises.length }), { x: 0, y: 0 });
+      const jid = "junction:" + e.id;
+      elements.push({ data: { id: jid, kind: "edge", edge: e.id }, position: { x: (mean.x + end.x) / 2, y: (mean.y + end.y) / 2 }, classes: "junction", grabbable: false });
+      e.premises.forEach((p, k) => elements.push({ data: { id: `${e.id}:p${k}`, source: p, target: jid, kind: "edge", edge: e.id }, classes: cls }));
+      elements.push({ data: { id: `${e.id}:c`, source: jid, target: e.conclusion, kind: "edge", edge: e.id }, classes: cls + " arrow" });
+    } else {
+      elements.push({ data: { id: `${e.id}:e`, source: e.premises[0], target: e.conclusion, kind: "edge", edge: e.id }, classes: cls + (e.directed ? " arrow" : "") });
+    }
+  });
+  if (cy) cy.destroy();
+  const large = g.concepts.length > 1500;
+  cy = cytoscape({
+    container: $("graphCanvas"),
+    elements,
+    layout: { name: "preset" },
+    style: GRAPH_STYLE,
+    minZoom: 0.05,
+    maxZoom: 5,
+    boxSelectionEnabled: false,
+    textureOnViewport: large,
+    hideEdgesOnViewport: large,
+  });
+  cy.on("tap", "node[kind = 'concept'], node.junction, edge", (evt) => {
+    const d = evt.target.data();
+    showDetail(d.kind === "concept" ? "concept" : "edge", d.kind === "concept" ? d.id : d.edge).catch(error);
+  });
+  cy.fit(undefined, 30);
 }
+window.addEventListener("resize", () => { if (cy && state.tab === "graph") cy.resize(); });
 async function showDetail(kind, id) {
   const result = await api(
     `/journeys/${state.journey.id}/details/${kind}/${encodeURIComponent(id)}`,
@@ -692,6 +741,13 @@ async function init() {
   }
 }
 init();
+// Fragment navigation (browser back/forward, pasted #journey links) switches journeys in place.
+window.addEventListener("hashchange", () => {
+  const hash = location.hash.slice(1);
+  if (!hash || hash === "home") {
+    if (state.journey) goHome();
+  } else if (!state.journey || state.journey.id !== hash) openJourney(hash).catch(error);
+});
 document.addEventListener("keydown", (e) => {
   if (
     (e.key === "Enter" || e.key === " ") &&

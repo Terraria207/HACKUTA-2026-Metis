@@ -1,10 +1,18 @@
 {
+  "_comment": "Provider families follow the overview's roster (Role -> Model). Replace every SET_ACTUAL_AVAILABLE_MODEL_ID with a model ID your account can actually call; the roster names (gods: Claude Fable 5.2, decomposer/Tiresias: Gemini 3.5 Flash, Penelope: GPT-6.1 Sol, Hephaestus: Leanstral 1.5, Odysseus: Claude Opus 5.5, crew: Claude Haiku 5.5 / Gemini 3.5 Flash-Lite / Grok 4.3 / NVIDIA Nemotron 3 Ultra, embeddings: voyage-4) are the plan's intent, not verified availability. Keys stay in server environment variables. max_cost_usd 0 blocks calls until you set conservative prices.",
+  "gods": {
+    "provider": "anthropic",
+    "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
+    "key_env": "ANTHROPIC_API_KEY",
+    "max_cost_usd": 0,
+    "max_output_tokens": 8192
+  },
   "decomposer": {
     "provider": "gemini",
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
     "key_env": "GEMINI_API_KEY",
     "max_cost_usd": 0,
-    "max_output_tokens": 4096
+    "max_output_tokens": 8192
   },
   "crew0": {
     "provider": "anthropic",
@@ -21,16 +29,16 @@
     "max_output_tokens": 4096
   },
   "crew2": {
-    "provider": "openai",
+    "provider": "xai",
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
-    "key_env": "OPENAI_API_KEY",
+    "key_env": "XAI_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
   "crew3": {
-    "provider": "openai",
+    "provider": "nvidia",
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
-    "key_env": "OPENAI_API_KEY",
+    "key_env": "NVIDIA_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
@@ -49,9 +57,9 @@
     "max_output_tokens": 4096
   },
   "hephaestus": {
-    "provider": "openai",
+    "provider": "mistral",
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
-    "key_env": "OPENAI_API_KEY",
+    "key_env": "MISTRAL_API_KEY",
     "max_cost_usd": 0,
     "max_output_tokens": 4096
   },
@@ -74,7 +82,7 @@
     "model": "SET_ACTUAL_AVAILABLE_MODEL_ID",
     "key_env": "ANTHROPIC_API_KEY",
     "max_cost_usd": 0,
-    "max_output_tokens": 4096
+    "max_output_tokens": 8192
   },
   "embeddings": {
     "provider": "voyage",
