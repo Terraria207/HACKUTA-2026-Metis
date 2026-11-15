@@ -16,7 +16,7 @@ from metis.store import Store
     reason="METIS_TEST_MONGODB_URI not configured",
 )
 def test_real_mongo_atomicity_indexes_and_restart():
-    db = "metis_test_" + uuid.uuid4().hex
+    db = "mt_" + uuid.uuid4().hex  # Atlas free-tier names must fit 38 bytes.
     config = Config(
         mode="live", mongo_uri=os.environ["METIS_TEST_MONGODB_URI"], mongo_db=db
     )
