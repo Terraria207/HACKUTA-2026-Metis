@@ -107,6 +107,80 @@ def _describe(e: dict) -> str:
     return f"{SOURCE_LABEL.get(e['source'], e['source'])} {what}, <{e['url']}>, retrieved {e['date_retrieved'][:10]}"
 
 
+# --- evidence extractors shared by the brief and the build prompt -------------------
+
+EXPORT_FORMATS = ("CSV", "JSON", "XML", "OPML", "SQL", "ZIP", "HTML")
+
+
+def export_mentions(v: EntityView) -> tuple[dict[str, list[int]], list[dict]]:
+    """(format -> evidence ids, records that talk about import/export/migration)."""
+    rows = [e for e in v.evidence if e["text"] and e["type"] != "search_suggestion" and mentions_export(e["text"])]
+    formats: dict[str, list[int]] = {}
+    for e in rows:
+        for f in EXPORT_FORMATS:
+            if re.search(rf"\b{f}\b", e["text"], re.I):
+                formats.setdefault(f, []).append(e["id"])
+    return formats, rows
+
+
+def replacement_searches(v: EntityView) -> list[tuple[str, int]]:
+    """(suggested search, evidence id) for every non-empty autocomplete record."""
+    out = []
+    for e in v.of_type("search_suggestion"):
+        if e["metric_value"]:
+            out += [(s_, e["id"]) for s_ in (e["extra"].get("suggestions") or [])]
+    return out
+
+
+def alternative_threads(v: EntityView) -> list[dict]:
+    return [e for e in v.evidence if "intent" in e["tag_list"] and e["type"] in ("discussion", "question", "review", "support_thread", "issue")]
+
+
+def paying_mentions(v: EntityView) -> list[dict]:
+    return [e for e in v.evidence if "paying" in e["tag_list"] and e["type"] not in ("search_suggestion", "metric")]
+
+
+def top_quotes(rows: list[dict], n: int = 3) -> list[dict]:
+    """Most-reacted issues first, then the most recent; short texts win ties so quotes stay readable."""
+    return sorted(rows, key=lambda e: ((e["score"] or 0) if e["type"] == "issue" else 0, len(e["text"] or "") < 400, e["date_posted"] or ""), reverse=True)[:n]
+
+
+def safe_title(text: str) -> str:
+    """A thread title usable as link text: brackets neutralised, digits inside quotes so the audit treats them as verbatim."""
+    t = snippet(text, 90).replace("[", "(").replace("]", ")")
+    return f"\u201c{t}\u201d" if any(ch.isdigit() for ch in t) else t
+
+
+def load_context(conn: sqlite3.Connection, entity_id: int, config) -> tuple[EntityView, dict, list[Cluster], dict]:
+    """Everything a document needs, loaded once: view, signals, clusters, latest score."""
+    th = config.section("thresholds")
+    v = EntityView.load(conn, entity_id, int(th.get("recent_window_days", 365)))
+    if not v.products:
+        raise ValueError(f"no such opportunity: {entity_id}")
+    signals = detect(v, float(th.get("stale_months", 18)), float(th.get("event_fresh_days", 180)))
+    clusters = load_clusters(conn, entity_id)
+    row = conn.execute("SELECT total, components_json FROM scores WHERE entity_id=? ORDER BY id DESC LIMIT 1", (entity_id,)).fetchone()
+    return v, signals, clusters, (loads(row["components_json"], {}) if row else {})
+
+
+def write_documents(conn: sqlite3.Connection, config, generators, only: list[int] | None = None) -> tuple[list[int], dict[int, str]]:
+    """Run each generator (brief, build prompt) on the given ids, or on every ranked entity above the threshold.
+    Each entity's context is loaded once and shared by the generators."""
+    from .pipeline import latest_scores
+    threshold = float(config.threshold("brief_min_score", 45))
+    ids = only if only is not None else [r["id"] for r in latest_scores(conn) if r["total"] >= threshold]
+    done, failed = [], {}
+    for eid in ids:
+        try:
+            ctx = load_context(conn, eid, config)
+            for gen in generators:
+                gen(conn, eid, config, ctx=ctx)
+            done.append(eid)
+        except Exception as exc:  # noqa: BLE001 - report and continue with the others
+            failed[eid] = str(exc)
+    return done, failed
+
+
 # ---------------------------------------------------------------------------
 
 FACT_PHRASES = {
@@ -159,8 +233,7 @@ def _complaints_section(w: Writer, v: EntityView, clusters: list[Cluster]) -> li
     out = []
     for c in specific[:5]:
         out.append(f"**{c.label}** ({w.cite(c.size, c.evidence_ids)} complaints)" + (f": {c.summary}" if c.summary else ""))
-        rows = sorted((ev[i] for i in c.evidence_ids if i in ev), key=lambda e: (-(e["score"] or 0) if e["type"] == "issue" else 0, -(len(e["text"] or "") < 400), e["date_posted"] or ""), reverse=False)
-        for e in rows[:3]:
+        for e in top_quotes([ev[i] for i in c.evidence_ids if i in ev]):
             out.append(f"> {w.quote(e)}")
             out.append(">")
         if out[-1] == ">":
@@ -173,12 +246,7 @@ def _complaints_section(w: Writer, v: EntityView, clusters: list[Cluster]) -> li
 
 
 def _export_section(w: Writer, v: EntityView) -> list[str]:
-    rows = [e for e in v.evidence if e["text"] and e["type"] != "search_suggestion" and mentions_export(e["text"])]
-    formats = {}
-    for e in rows:
-        for fmt_name in ("CSV", "JSON", "XML", "OPML", "SQL", "ZIP", "HTML"):
-            if re.search(rf"\b{fmt_name}\b", e["text"], re.I):
-                formats.setdefault(fmt_name, []).append(e["id"])
+    formats, rows = export_mentions(v)
     out = []
     if formats:
         out.append("Formats named in the evidence: " + ", ".join(f"{k}{w.ref(ids)}" for k, ids in formats.items()) + ".")
@@ -200,29 +268,22 @@ def _channel_section(w: Writer, v: EntityView) -> list[str]:
     out = []
     for p in v.products:
         if p["source"] in MARKETPLACES:
-            ids = [e["id"] for e in v.metric_rows("description") + v.metric_rows("user_count") + v.metric_rows("github_stars") + v.metric_rows("downloads")
-                   if e["product_id"] == p["id"]][:1]
-            ref = w.ref(ids) if ids else ""
-            out.append(f"- List it on **{MARKETPLACES[p['source']]}**, where the incumbent is: <{p['url']}>{ref}")
-    sugg = [e for e in v.of_type("search_suggestion") if e["metric_value"]]
+            lf = v.listing_fact(p["id"])
+            out.append(f"- List it on **{MARKETPLACES[p['source']]}**, where the incumbent is: <{p['url']}>{w.ref(lf.evidence_ids) if lf else ''}")
+    sugg = replacement_searches(v)
     if sugg:
         out.append("- Replacement searches to target (Google autocomplete):")
-        for e in sugg:
-            for s in (e["extra"].get("suggestions") or [])[:5]:
-                s_txt = f"“{s}”" if any(ch.isdigit() for ch in s) else s
-                out.append(f"  - `{s_txt}`{w.ref([e['id']])}")
+        for s_, eid in sugg[:12]:
+            s_txt = f"\u201c{s_}\u201d" if any(ch.isdigit() for ch in s_) else s_
+            out.append(f"  - `{s_txt}`{w.ref([eid])}")
     else:
         checked = v.of_type("search_suggestion")
         out.append("- Replacement searches: " + ("none found for the alternative / not working / pricing queries" + w.ref([e['id'] for e in checked]) if checked else "not checked (unknown)") + ".")
-    asks = [e for e in v.evidence if "intent" in e["tag_list"] and e["type"] in ("discussion", "question", "review", "support_thread", "issue")]
+    asks = alternative_threads(v)
     if asks:
         out.append("- Public threads where people asked for an alternative (links only):")
         for e in asks[:6]:
-            title = snippet(e["extra"].get("title") or e["text"], 90)
-            title = title.replace("[", "(").replace("]", ")")
-            if any(ch.isdigit() for ch in title):
-                title = f"“{title}”"
-            out.append(f"  - [{title}]({e['url']}){w.ref([e['id']])}")
+            out.append(f"  - [{safe_title(e['extra'].get('title') or e['text'])}]({e['url']}){w.ref([e['id']])}")
     else:
         out.append("- Public threads asking for an alternative: none found.")
     return out
@@ -238,7 +299,7 @@ def _price_section(w: Writer, v: EntityView) -> list[str]:
         out.append(f"- Incumbent: the listing says some features require payment{w.ref(rp.evidence_ids)}. Exact prices: unknown.")
     else:
         out.append("- Incumbent price: unknown. No evidence record states a price.")
-    paying = [e for e in v.evidence if "paying" in e["tag_list"] and e["type"] not in ("search_suggestion", "metric")]
+    paying = paying_mentions(v)
     if paying:
         out.append("- What users say about paying:")
         for e in paying[:4]:
@@ -381,13 +442,8 @@ Constraints:
 
 # ---------------------------------------------------------------------------
 
-def generate_brief(conn: sqlite3.Connection, entity_id: int, config, use_llm: bool | None = None) -> str:
-    th = config.section("thresholds")
-    v = EntityView.load(conn, entity_id, int(th.get("recent_window_days", 365)))
-    signals = detect(v, float(th.get("stale_months", 18)), float(th.get("event_fresh_days", 180)))
-    clusters = load_clusters(conn, entity_id)
-    row = conn.execute("SELECT total, components_json FROM scores WHERE entity_id=? ORDER BY id DESC LIMIT 1", (entity_id,)).fetchone()
-    score = loads(row["components_json"], {}) if row else {}
+def generate_brief(conn: sqlite3.Connection, entity_id: int, config, use_llm: bool | None = None, ctx=None) -> str:
+    v, signals, clusters, score = ctx or load_context(conn, entity_id, config)
     evidence = {e["id"]: e for e in v.evidence}
     w = Writer(evidence)
     p = v.primary or {}
@@ -428,7 +484,10 @@ def generate_brief(conn: sqlite3.Connection, entity_id: int, config, use_llm: bo
     lines += ["## 9. License and naming", ""] + _license_section(w, v) + [""]
     lines += ["## 10. Risks and reasons to skip", ""] + _risks(w, v, signals, clusters, score) + [""]
     lines += ["## 11. Confidence", ""] + _confidence(w, v, signals, clusters) + [""]
-    lines += ["## 12. Build prompt", "", "```text", build_prompt(v, features, clusters, w).rstrip(), "```", ""]
+    lines += ["## 12. Build prompt", "",
+              "A short prompt follows. For the full system-build specification (requirements with acceptance criteria, architecture, "
+              "import path, milestones and unknowns), run `orphan-radar buildprompt <id>` with this opportunity's id, or use the dashboard button.", "",
+              "```text", build_prompt(v, features, clusters, w).rstrip(), "```", ""]
     lines += ["## Score breakdown", ""] + _score_table(w, score) + [""]
     md = "\n".join(lines) + "\n" + w.footnotes() + "\n"
 
@@ -511,14 +570,4 @@ def audit_brief(conn: sqlite3.Connection, md: str, extra_names: list[str] | None
 
 def write_briefs(conn: sqlite3.Connection, config, only: list[int] | None = None) -> tuple[list[int], dict[int, str]]:
     """Generate briefs for every non-excluded entity at or above brief_min_score (or the given ids)."""
-    from .pipeline import latest_scores
-    threshold = float(config.threshold("brief_min_score", 45))
-    ids = only if only else [r["id"] for r in latest_scores(conn) if r["total"] >= threshold]
-    done, failed = [], {}
-    for eid in ids:
-        try:
-            generate_brief(conn, eid, config)
-            done.append(eid)
-        except Exception as exc:  # noqa: BLE001 - report and continue with the others
-            failed[eid] = str(exc)
-    return done, failed
+    return write_documents(conn, config, [generate_brief], only)

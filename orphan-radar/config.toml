@@ -2,12 +2,33 @@
 # Every value here is read at runtime; nothing is hard-coded in the scorer.
 
 [weights]
-demand = 25
-supply_failure = 25
-pain_specificity = 15
-channel = 15
-willingness_to_pay = 10
-timing = 10
+demand = 20
+supply_failure = 20
+pain_specificity = 12
+channel = 10
+potential_profit = 15      # revenue ceiling x willingness to pay x business buyers (absorbs the old willingness_to_pay)
+ease_of_development = 15   # how small and routine the replacement is to build
+timing = 8
+
+[ease]
+platform_easy_cutoff = 0.7     # platform ease at or above this reads "small, well-documented build"
+hard_word_penalty = 0.75       # points subtracted per hard word in the listing (see hard_words)
+hard_word_max = 4              # at most this many hard words count
+# Platform ease, 0-1: how small and well-documented a replacement on this platform usually is.
+platform = { firefox = 1.0, wordpress = 0.9, openvsx = 0.7, atlassian = 0.45, github = 0.3 }
+# Words in the listing that mean a server, account, payment or third-party dependency: each lowers ease.
+hard_words = ["sync", "cloud", "account", "login", "oauth", "api key", "server", "real-time", "realtime", "ai", "machine learning",
+              "video", "streaming", "payment", "checkout", "crm", "erp", "multisite", "migration", "backup", "firewall", "malware"]
+# Complaint clusters whose fixes are routine engineering (compatibility, crashes, speed) versus open-ended ones.
+routine_clusters = ["compat", "not_working", "crash", "performance", "ui_regression", "support", "ads_privacy", "import_export"]
+
+[profit]
+users_log_floor = 3            # 10^3 users -> no revenue-ceiling points
+users_log_ceiling = 6          # 10^6 users -> full revenue-ceiling points
+proxy_discount = 0.6           # stars/downloads count this much of a user count
+business_words = ["woocommerce", "ecommerce", "e-commerce", "shop", "store", "checkout", "invoice", "booking", "appointment", "crm", "lead",
+                  "agency", "client", "seo", "analytics", "forms", "newsletter", "membership", "jira", "confluence", "bitbucket",
+                  "team", "project management", "time tracking", "reports", "developer", "api"]
 
 [thresholds]
 brief_min_score = 45          # briefs are generated for products at or above this score
@@ -59,4 +80,6 @@ children = ["kids", "children", "coppa", "parental control", "parental controls"
 licensed = ["hipaa", "pci", "fda", "regulator", "license key required", "hardware", "firmware", "device driver", "printer", "official partner",
             "coupon codes", "cashback", "cash back", "exclusive rewards", "affiliate partners"]   # coupon/cashback tools need affiliate partnerships
 trademark_or_proprietary = ["unofficial", "for youtube", "for netflix", "for spotify", "for amazon", "for facebook", "for instagram", "for twitter", "for tiktok", "for whatsapp", "video downloader", "youtube downloader",
-            "meta pixel", "facebook pixel", "meta ads", "conversions api", "google ads", "tiktok pixel"]   # integrations whose core is a proprietary ad platform
+            "meta pixel", "facebook pixel", "meta ads", "conversions api", "google ads", "tiktok pixel",
+            "google translate", "to google", "for google", "google analytics", "google maps", "google tag manager", "google fonts",
+            "for gmail", "for chatgpt", "chatgpt", "for discord", "for slack", "for twitch", "for reddit", "for linkedin", "for pinterest"]   # integrations whose core is a proprietary ad platform

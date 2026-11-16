@@ -130,9 +130,8 @@ def analyze(config: Config, conn: sqlite3.Connection, scan_id: int | None = None
         prev = conn.execute("SELECT total, components_json FROM scores WHERE entity_id=? ORDER BY id DESC LIMIT 1", (eid,)).fetchone()
         comp_json = dumps(result)
         if scan_id is not None or prev is None or prev["components_json"] != comp_json:
-            if True:
-                conn.execute("INSERT INTO scores (entity_id, scan_id, total, components_json, computed_at) VALUES (?,?,?,?,?)",
-                             (eid, scan_id, result["total"], comp_json, ts))
+            conn.execute("INSERT INTO scores (entity_id, scan_id, total, components_json, computed_at) VALUES (?,?,?,?,?)",
+                         (eid, scan_id, result["total"], comp_json, ts))
         conn.execute("DELETE FROM exclusions WHERE entity_id=? AND rule != 'manual'", (eid,))
         for rule, reason, ev_id in hard_filters(v, config):
             conn.execute("INSERT OR REPLACE INTO exclusions (entity_id, rule, reason, evidence_id, computed_at) VALUES (?,?,?,?,?)",

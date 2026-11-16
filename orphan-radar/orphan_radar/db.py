@@ -142,6 +142,13 @@ CREATE TABLE IF NOT EXISTS briefs (
     facts_json TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS build_prompts (
+    entity_id INTEGER PRIMARY KEY REFERENCES entities(id),
+    generated_at TEXT NOT NULL,
+    markdown TEXT NOT NULL,
+    facts_json TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS ledger (
     id INTEGER PRIMARY KEY,
     entity_id INTEGER REFERENCES entities(id),

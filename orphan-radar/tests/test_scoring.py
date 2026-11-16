@@ -59,7 +59,7 @@ class ScoreTests(unittest.TestCase):
         import tempfile
         from pathlib import Path
         from orphan_radar.config import ROOT, load_config
-        text = (ROOT / "config.toml").read_text().replace("demand = 25", "demand = 30", 1)
+        text = (ROOT / "config.toml").read_text().replace("demand = 20", "demand = 30", 1)
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "c.toml"
             p.write_text(text)

@@ -9,7 +9,8 @@ from pathlib import Path
 
 from . import llm
 from .adapters import ADAPTERS, SKIPPED_SOURCES
-from .brief import audit_brief, generate_brief, write_briefs
+from .brief import audit_brief, generate_brief, write_briefs, write_documents
+from .buildprompt import generate_build_prompt, write_build_prompts
 from .config import ROOT, load_config
 from .db import connect, loads, now_iso
 from .pipeline import analyze, latest_scores, scan
@@ -30,8 +31,8 @@ def _top(conn, n: int) -> str:
         comp = {c["name"]: c["points"] for c in loads(r["components_json"], {}).get("components", [])}
         sig = [k[0].upper() for k, s in loads(r["components_json"], {}).get("signals", {}).items() if s["present"]]
         rows.append([i, r["id"], r["name"][:38], r["total"], comp.get("demand"), comp.get("supply_failure"), comp.get("pain_specificity"),
-                     comp.get("channel"), comp.get("willingness_to_pay"), comp.get("timing"), "".join(sig) or "-", r["sources"], r["state"]])
-    return _table(rows, ["#", "id", "product", "score", "dem", "sup", "pain", "chan", "wtp", "time", "sig", "sources", "state"]) + \
+                     comp.get("channel"), comp.get("potential_profit"), comp.get("ease_of_development"), comp.get("timing"), "".join(sig) or "-", r["sources"], r["state"]])
+    return _table(rows, ["#", "id", "product", "score", "dem", "sup", "pain", "chan", "profit", "ease", "time", "sig", "sources", "state"]) + \
         "\n(sig: A=abandonment D=displacement P=pain)"
 
 
@@ -71,8 +72,8 @@ def cmd_scan(args, config):
     print(f"  entities scored={stats['entities_scored']} excluded={stats['entities_excluded']} "
           f"http requests={stats['http_requests']} cache hits={stats['cache_hits']} llm={'on' if stats['llm'] else 'off'}")
     if not args.no_briefs:
-        done, failed = write_briefs(conn, config)
-        print(f"  briefs written: {len(done)}" + (f", failed: {failed}" if failed else ""))
+        done, failed = write_documents(conn, config, [generate_brief, generate_build_prompt])
+        print(f"  briefs and build prompts written: {len(done)}" + (f", failed: {failed}" if failed else ""))
         out = config.data_dir / "digests" / f"digest-{now_iso()[:10]}.md"
         out.parent.mkdir(exist_ok=True)
         out.write_text(digest(conn, float(config.threshold("brief_min_score", 45))), encoding="utf-8")
@@ -117,13 +118,34 @@ def cmd_show(args, config):
         print(f"\n  EXCLUDED ({x['rule']}): {x['reason']}")
 
 
+def _need_id(args):
+    if args.id is None and not args.all:
+        raise SystemExit("give an opportunity id, or --all")
+
+
 def cmd_brief(args, config):
+    _need_id(args)
     conn = connect(config.db_path)
     if args.all:
         done, failed = write_briefs(conn, config)
         print(f"briefs written: {len(done)}; failed: {failed or 'none'}")
         return 1 if failed else 0
     md = generate_brief(conn, args.id, config)
+    if args.out:
+        Path(args.out).write_text(md, encoding="utf-8")
+        print(f"written {args.out}")
+    else:
+        print(md)
+
+
+def cmd_buildprompt(args, config):
+    _need_id(args)
+    conn = connect(config.db_path)
+    if args.all:
+        done, failed = write_build_prompts(conn, config)
+        print(f"build prompts written: {len(done)}; failed: {failed or 'none'}")
+        return 1 if failed else 0
+    md = generate_build_prompt(conn, args.id, config)
     if args.out:
         Path(args.out).write_text(md, encoding="utf-8")
         print(f"written {args.out}")
@@ -140,7 +162,13 @@ def cmd_verify(args, config):
         if problems:
             bad += 1
             print(f"#{b['entity_id']} {b['name']}: {problems[:3]}")
-    print("all briefs trace every figure to evidence" if not bad else f"{bad} brief(s) failed")
+    for b in conn.execute("SELECT b.entity_id, b.markdown, e.name FROM build_prompts b JOIN entities e ON e.id=b.entity_id"):
+        names = [r["name"] for r in conn.execute("SELECT name FROM products WHERE entity_id=?", (b["entity_id"],))] + [b["name"]]
+        problems = audit_brief(conn, b["markdown"], names)
+        if problems:
+            bad += 1
+            print(f"build prompt #{b['entity_id']} {b['name']}: {problems[:3]}")
+    print("all briefs and build prompts trace every figure to evidence" if not bad else f"{bad} document(s) failed")
     return 1 if bad else 0
 
 
@@ -225,7 +253,10 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("brief", help="generate a brief")
     s.add_argument("id", type=int, nargs="?"); s.add_argument("--all", action="store_true"); s.add_argument("--out")
     s.set_defaults(fn=cmd_brief)
-    sub.add_parser("verify", help="audit every stored brief: each figure must cite evidence").set_defaults(fn=cmd_verify)
+    s = sub.add_parser("buildprompt", help="generate the full system-build specification for an AI builder")
+    s.add_argument("id", type=int, nargs="?"); s.add_argument("--all", action="store_true"); s.add_argument("--out")
+    s.set_defaults(fn=cmd_buildprompt)
+    sub.add_parser("verify", help="audit every stored brief and build prompt: each figure must cite evidence").set_defaults(fn=cmd_verify)
     s = sub.add_parser("export", help="export markdown and/or CSV")
     s.add_argument("--format", choices=["md", "csv", "both"], default="both"); s.add_argument("--out"); s.set_defaults(fn=cmd_export)
     s = sub.add_parser("digest", help="weekly digest of new opportunities and score changes")

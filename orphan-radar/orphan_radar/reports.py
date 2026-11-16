@@ -10,7 +10,7 @@ from pathlib import Path
 from .db import dumps, loads, now_iso
 from .pipeline import latest_scores
 
-COMPONENTS = ["demand", "supply_failure", "pain_specificity", "channel", "willingness_to_pay", "timing"]
+COMPONENTS = ["demand", "supply_failure", "pain_specificity", "channel", "potential_profit", "ease_of_development", "timing"]
 
 
 def _components(row) -> dict[str, float]:
@@ -44,7 +44,8 @@ def export_markdown(conn: sqlite3.Connection, out_dir: Path, top: int = 25) -> l
              "| # | Product | Score | Signals | Sources | Brief |", "|---|---|---|---|---|---|"]
     for n, r in enumerate(rows[:top], 1):
         has_brief = conn.execute("SELECT 1 FROM briefs WHERE entity_id=?", (r["id"],)).fetchone()
-        brief_link = f"[brief](briefs/{r['id']}.md)" if has_brief else ""
+        has_prompt = conn.execute("SELECT 1 FROM build_prompts WHERE entity_id=?", (r["id"],)).fetchone()
+        brief_link = (f"[brief](briefs/{r['id']}.md)" if has_brief else "") + (f" · [build prompt](build-prompts/{r['id']}.md)" if has_prompt else "")
         lines.append(f"| {n} | [{r['name']}]({r['url']}) | {r['total']} | {', '.join(_signals(r))} | {r['sources']} | {brief_link} |")
     excl = conn.execute("""SELECT e.id, e.name, group_concat(x.reason, ' / ') AS reasons FROM exclusions x JOIN entities e ON e.id=x.entity_id
                            WHERE x.rule != 'too_small' GROUP BY e.id ORDER BY e.name""").fetchall()
@@ -61,6 +62,12 @@ def export_markdown(conn: sqlite3.Connection, out_dir: Path, top: int = 25) -> l
         bp = bdir / f"{b['entity_id']}.md"
         bp.write_text(b["markdown"], encoding="utf-8")
         written.append(bp)
+    pdir = out_dir / "build-prompts"
+    pdir.mkdir(exist_ok=True)
+    for b in conn.execute("SELECT entity_id, markdown FROM build_prompts WHERE entity_id NOT IN (SELECT entity_id FROM exclusions)"):
+        pp = pdir / f"{b['entity_id']}.md"
+        pp.write_text(b["markdown"], encoding="utf-8")
+        written.append(pp)
     return written
 
 

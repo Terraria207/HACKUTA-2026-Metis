@@ -35,7 +35,10 @@ class EntityView:
 
     @classmethod
     def load(cls, conn: sqlite3.Connection, entity_id: int, window_days: int = 365) -> "EntityView":
-        ent = dict(conn.execute("SELECT * FROM entities WHERE id=?", (entity_id,)).fetchone())
+        row = conn.execute("SELECT * FROM entities WHERE id=?", (entity_id,)).fetchone()
+        if row is None:
+            raise ValueError(f"no such opportunity: {entity_id}")
+        ent = dict(row)
         prods = [dict(r) for r in conn.execute("SELECT * FROM products WHERE entity_id=? ORDER BY id", (entity_id,))]
         for p in prods:
             p["extra"] = loads(p["extra_json"], {})
@@ -99,6 +102,22 @@ class EntityView:
         if isinstance(value, float) and value.is_integer() and key not in ("rating", "rating_recent"):
             value = int(value)
         return Fact(key, value, [row["id"]], row["text"] or key)
+
+    def listing_text(self) -> str:
+        """Name, description, category and tags of every listing, lower-cased, for keyword rules."""
+        parts = []
+        for p in self.products:
+            parts += [p.get("name") or "", p.get("description") or "", p.get("category") or "", " ".join(p.get("tags_list") or [])]
+        return " ".join(parts).lower()
+
+    def listing_fact(self, product_id: int | None = None) -> Fact | None:
+        """A Fact standing for one listing itself: its description row, else any metric read from it."""
+        pid = product_id if product_id is not None else (self.primary or {}).get("id")
+        for key in ("description", "user_count", "github_stars", "downloads", "last_updated"):
+            f = self.metric_for_product(key, pid) if pid is not None else None
+            if f:
+                return Fact("listing", (self.product_by_id(pid) or {}).get("url"), f.evidence_ids, "listing")
+        return None
 
     # -- audience -------------------------------------------------------------
     def audience(self) -> tuple[Fact | None, bool]:

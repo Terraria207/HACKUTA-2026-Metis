@@ -10,6 +10,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from ..adapters import ADAPTERS, SKIPPED_SOURCES
 from ..brief import generate_brief
+from ..buildprompt import generate_build_prompt
 from ..cluster import load_clusters
 from ..db import connect, loads, now_iso
 from ..pipeline import latest_scores
@@ -122,6 +123,7 @@ class App:
         evidence = {r["id"]: r for r in conn.execute("SELECT * FROM evidence WHERE entity_id=? ORDER BY date_posted DESC", (eid,))}
         excl = conn.execute("SELECT rule, reason FROM exclusions WHERE entity_id=?", (eid,)).fetchall()
         has_brief = conn.execute("SELECT generated_at FROM briefs WHERE entity_id=?", (eid,)).fetchone()
+        has_prompt = conn.execute("SELECT generated_at FROM build_prompts WHERE entity_id=?", (eid,)).fetchone()
 
         buttons = "".join(f'<form method="post" action="/o/{eid}/state"><input type="hidden" name="state" value="{s}">'
                           f'<button{" class=primary" if s == cur_state else ""}>{s}</button></form> ' for s in ("watching", "building", "dismissed", "new"))
@@ -129,7 +131,9 @@ class App:
                f'<div class="states">State: <b>{E(cur_state)}</b> &nbsp; {buttons}</div>'
                + "".join(f'<p><span class="pill">excluded</span> {E(x["rule"])}: {E(x["reason"])}</p>' for x in excl)
                + f'<p>{"<a href=/o/%d/brief>Read the brief</a> (%s)" % (eid, E(has_brief["generated_at"][:16])) if has_brief else "No brief yet."} '
-               f'</p><form method="post" action="/o/{eid}/brief"><button>{"Regenerate" if has_brief else "Generate"} brief</button></form>')
+               f'</p><form method="post" action="/o/{eid}/brief" style="display:inline"><button>{"Regenerate" if has_brief else "Generate"} brief</button></form> '
+               f'<form method="post" action="/o/{eid}/buildprompt" style="display:inline"><button>{"Regenerate" if has_prompt else "Generate"} build prompt</button></form>'
+               + (f' <a href="/o/{eid}/buildprompt">Open the build prompt</a> ({E(has_prompt["generated_at"][:16])})' if has_prompt else ""))
         plist = "".join(f'<tr><td>{E(p["source"])}</td><td><a href="{E(p["url"])}" target=_blank rel=noopener>{E(p["name"])}</a></td><td class=num>{E(p["user_count"])}</td>'
                         f'<td>{E((p["last_updated"] or "")[:10])}</td><td class=num>{E(p["rating"])}</td><td class=num>{E(p["rating_count"])}</td><td>{E(p["license"])}</td></tr>' for p in prods)
         products = f'<div class=card><h3>Listings</h3><table><tr><th>Source</th><th>Listing</th><th class=num>Users</th><th>Updated</th><th class=num>Rating</th><th class=num>Ratings</th><th>License</th></tr>{plist}</table></div>'
@@ -167,6 +171,16 @@ class App:
         if not b:
             return page("Brief", f'<p>No brief yet. <a href="/o/{eid}">Back</a></p>')
         return page("Brief", f'<p><a href="/o/{eid}">← evidence and score</a></p><div class="brief">{render(b["markdown"])}</div>')
+
+    def buildprompt(self, eid: int) -> bytes:
+        conn = self.conn()
+        b = conn.execute("SELECT markdown FROM build_prompts WHERE entity_id=?", (eid,)).fetchone()
+        if not b:
+            return page("Build prompt", f'<p>No build prompt yet. <a href="/o/{eid}">Back</a></p>')
+        return page("Build prompt", f'<p><a href="/o/{eid}">← evidence and score</a> · <a href="/o/{eid}/brief">brief</a></p>'
+                    f'<p class=muted>Copy the raw text below into an AI system builder. The rendered version follows.</p>'
+                    f'<textarea readonly rows="12" style="width:100%;max-width:900px;font-family:ui-monospace,monospace;font-size:12px">{E(b["markdown"])}</textarea>'
+                    f'<div class="brief">{render(b["markdown"])}</div>')
 
     def excluded(self) -> bytes:
         conn = self.conn()
@@ -229,6 +243,8 @@ class App:
             conn.commit(); return f"/o/{int(parts[1])}"
         if len(parts) == 3 and parts[0] == "o" and parts[2] == "brief":
             generate_brief(conn, int(parts[1]), self.config); return f"/o/{int(parts[1])}/brief"
+        if len(parts) == 3 and parts[0] == "o" and parts[2] == "buildprompt":
+            generate_build_prompt(conn, int(parts[1]), self.config); return f"/o/{int(parts[1])}/buildprompt"
         if parts == ["ledger"] and f("name"):
             ledger_add(conn, int(f("entity")) if f("entity").isdigit() else None, f("name"), f("url") or None, f("launched") or None, f("notes") or None)
             return "/ledger"
@@ -262,7 +278,8 @@ def make_handler(app: App):
                 if u.path == "/":
                     body = app.index(q)
                 elif parts[0] == "o" and len(parts) >= 2 and parts[1].isdigit():
-                    body = app.brief(int(parts[1])) if len(parts) == 3 and parts[2] == "brief" else app.detail(int(parts[1]))
+                    sub = parts[2] if len(parts) == 3 else ""
+                    body = app.brief(int(parts[1])) if sub == "brief" else app.buildprompt(int(parts[1])) if sub == "buildprompt" else app.detail(int(parts[1]))
                 elif u.path == "/excluded":
                     body = app.excluded()
                 elif u.path == "/leads":

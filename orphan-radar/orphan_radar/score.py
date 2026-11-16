@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from .cluster import Cluster
 from .detect import Reason, Signal, months_since
 from .facts import EntityView, Fact
-from .textutil import days_between
+from .textutil import days_between, word_hits
 
 LISTING_MARKETPLACES = {"wordpress", "firefox", "openvsx", "atlassian"}
 
@@ -148,8 +148,8 @@ def channel(v: EntityView, w: float) -> Component:
     c = Component("channel", w)
     listed = [p for p in v.products if p["source"] in LISTING_MARKETPLACES]
     if listed:
-        c.add("a replacement can be listed in the same marketplace", 8, 8,
-              [Fact("listing", p["url"], [e["id"] for e in v.metric_rows("user_count") + v.metric_rows("downloads") if e["product_id"] == p["id"]][:1] or [], derived=False) for p in listed[:1]])
+        lf = v.listing_fact(listed[0]["id"])
+        c.add("a replacement can be listed in the same marketplace", 8, 8, [lf] if lf else [])
     elif any(p["source"] == "github" for p in v.products):
         c.add("users gather on GitHub (issues, stars) but there is no marketplace", 4, 8)
     else:
@@ -162,15 +162,65 @@ def channel(v: EntityView, w: float) -> Component:
     return c.finish()
 
 
-def willingness_to_pay(v: EntityView, w: float) -> Component:
-    c = Component("willingness_to_pay", w)
+def potential_profit(v: EntityView, w: float, cfg: dict, listing: str) -> Component:
+    """Revenue ceiling (audience) x proof that money changes hands x business buyers."""
+    c = Component("potential_profit", w)
+    aud, proxy = v.audience()
+    lo, hi = float(cfg.get("users_log_floor", 3)), float(cfg.get("users_log_ceiling", 6))
+    if aud and isinstance(aud.value, (int, float)) and aud.value > 0:
+        frac = _clamp((math.log10(aud.value) - lo) / (hi - lo))
+        if proxy:
+            frac *= float(cfg.get("proxy_discount", 0.6))
+        c.add("revenue ceiling: audience on a log scale" + (" (proxy, discounted)" if proxy else ""), frac * 5, 5, [aud])
+    else:
+        c.add("revenue ceiling unknown", 0, 5)
     charges = [f for f in (v.metric("business_model"), v.metric("requires_payment")) if f and str(f.value) in ("commercial", "yes")]
-    c.add("incumbent charges money (paid upgrades or required payment)", 5 if charges else 0, 5, charges)
-    paying = [e for e in v.evidence if "paying" in e["tag_list"] and e["type"] != "search_suggestion"]
-    c.add("users mention paying or pricing", (2 if paying else 0) + (1 if len(paying) >= 3 else 0), 3,
+    c.add("incumbent charges money (paid upgrades or required payment)", 4 if charges else 0, 4, charges)
+    paying = [e for e in v.evidence if "paying" in e["tag_list"] and e["type"] not in ("search_suggestion", "metric")]
+    c.add("users mention paying, refunds or subscriptions", (2 if paying else 0) + (1 if len(paying) >= 3 else 0), 3,
           [Fact("paying_mentions", len(paying), [e["id"] for e in paying], derived=True)] if paying else [])
+    biz = word_hits(cfg.get("business_words", []), listing)
+    lf = v.listing_fact()
+    c.add("business buyers (listing names business use: " + ", ".join(biz[:4]) + ")" if biz else "no business-buyer words in the listing",
+          2 if biz and lf else 0, 2, [lf] if biz and lf else [])
     pricing = v.metric("suggestions_pricing")
-    c.add("people search for its pricing", 2 if pricing and pricing.value else 0, 2, [pricing] if pricing else [])
+    c.add("people search for its pricing", 1 if pricing and pricing.value else 0, 1, [pricing] if pricing else [])
+    return c.finish()
+
+
+def ease_of_development(v: EntityView, w: float, clusters: list[Cluster], cfg: dict, listing: str) -> Component:
+    """How small and routine the replacement is to build, read from the listing, license and complaint clusters."""
+    c = Component("ease_of_development", w)
+    primary = v.primary or {}
+    plat = cfg.get("platform", {})
+    src = primary.get("source")
+    lf = v.listing_fact()
+    if src in plat and lf:
+        easy = float(plat[src]) >= float(cfg.get("platform_easy_cutoff", 0.7))
+        c.add(f"platform: a {src} replacement is a small, well-documented build" if easy else f"platform: {src} builds need hosting, auth or a large codebase",
+              float(plat[src]) * 5, 5, [lf])
+    else:
+        c.add("platform unknown", 0, 5)
+    lic = v.metric("license", prefer="primary")
+    open_src = bool(lic and re.search(r"gpl|mit|apache|bsd|mpl|mozilla|epl|eclipse|isc|unlicense|cc0|public domain", str(lic.value), re.I))
+    c.add("incumbent is open source: its code and data formats can be studied" if open_src else ("license not open: build from scratch" if lic else "license unknown"),
+          3 if open_src else 0, 3, [lic] if lic else [])
+    specific = [cl for cl in clusters if cl.key != "other" and cl.size >= 1]
+    routine = [cl for cl in specific if cl.key in set(cfg.get("routine_clusters", []))]
+    if specific:
+        share = len(routine) / len(specific)
+        narrow = 1.0 if len(specific) <= 3 else max(0.0, 1 - (len(specific) - 3) / 4)
+        ids = [i for cl in specific for i in cl.evidence_ids]
+        c.add("fixes are routine engineering (share of complaint clusters)",
+              share * 3, 3, [Fact("routine_clusters", len(routine), [i for cl in routine for i in cl.evidence_ids], derived=True)] if routine else [Fact("clusters", len(specific), ids, derived=True)])
+        c.add("narrow scope: few distinct problems to fix", narrow * 2, 2, [Fact("specific_clusters", len(specific), ids, derived=True)])
+    else:
+        c.add("no complaint clusters: scope is only parity with the incumbent", 2, 3)
+        c.add("narrow scope: few distinct problems to fix", 2, 2)
+    hard = word_hits(cfg.get("hard_words", []), listing)
+    if hard and lf:
+        c.add("listing implies servers, accounts, payments or third-party dependencies (" + ", ".join(hard[:4]) + ")",
+              -min(len(hard), int(cfg.get("hard_word_max", 4))) * float(cfg.get("hard_word_penalty", 0.75)), 0, [lf])
     return c.finish()
 
 
@@ -206,12 +256,14 @@ _SWITCHED = re.compile(r"\b(switched|moved|migrated) (over )?to\b|\bnow (i )?use
 def score_entity(v: EntityView, signals: dict[str, Signal], clusters: list[Cluster], config) -> dict:
     wts = config.weights
     th = config.section("thresholds")
+    listing = v.listing_text()
     comps = [
         demand(v, wts["demand"], config.section("demand")),
         supply_failure(v, wts["supply_failure"], signals, float(th.get("stale_months", 18))),
         pain_specificity(v, wts["pain_specificity"], clusters, int(th.get("max_clusters_for_specificity", 5))),
         channel(v, wts["channel"]),
-        willingness_to_pay(v, wts["willingness_to_pay"]),
+        potential_profit(v, wts["potential_profit"], config.section("profit"), listing),
+        ease_of_development(v, wts["ease_of_development"], clusters, config.section("ease"), listing),
         timing(v, wts["timing"], signals, float(th.get("event_fresh_days", 180))),
     ]
     total = round(sum(c.points for c in comps), 1)

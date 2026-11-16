@@ -138,3 +138,8 @@ def version_tuple(v: str | None) -> tuple[int, ...]:
     if not v:
         return ()
     return tuple(int(x) for x in re.findall(r"\d+", str(v))[:3])
+
+
+def word_hits(words: list[str], text: str) -> list[str]:
+    """Which of `words` occur in `text` as whole words (hyphen-aware), case-insensitive, in list order."""
+    return [w for w in words if re.search(rf"(?<![\w-]){re.escape(w)}(?![\w-])", text or "", re.I)]

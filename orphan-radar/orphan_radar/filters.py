@@ -4,6 +4,7 @@ from __future__ import annotations
 import re
 
 from .facts import EntityView
+from .textutil import word_hits
 
 _SUCCESSOR = re.compile(r"\b(use|try|switch to|migrate to|moved to|replaced by|superseded by|successor[: ]|deprecated in favou?r of|continued (at|as|in)|has moved to|is now part of)\b", re.I)
 _NATIVE = re.compile(r"\b(now (built[- ]in|native|part of (wordpress|firefox|core|vs ?code))|merged into (core|wordpress|firefox)|"
@@ -22,10 +23,8 @@ def native_claims(v) -> list[dict]:
 
 
 def _word_hit(words: list[str], text: str) -> str | None:
-    for w in words:
-        if re.search(rf"(?<![\w-]){re.escape(w)}(?![\w-])", text, re.I):
-            return w
-    return None
+    hits = word_hits(words, text)
+    return hits[0] if hits else None
 
 
 def hard_filters(v: EntityView, config) -> list[tuple[str, str, int | None]]:
@@ -33,7 +32,7 @@ def hard_filters(v: EntityView, config) -> list[tuple[str, str, int | None]]:
     hf = config.section("hard_filters")
     out: list[tuple[str, str, int | None]] = []
     p = v.primary or {}
-    listing = " ".join(filter(None, [p.get("name"), p.get("description"), p.get("category"), " ".join(p.get("tags_list") or [])]))
+    listing = v.listing_text()
     url = p.get("url", "")
 
     def first_metric_id():

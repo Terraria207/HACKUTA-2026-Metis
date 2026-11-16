@@ -44,6 +44,10 @@ class DashboardTests(unittest.TestCase):
         self.assertNotIn(b"<img src=x", detail)          # review text is escaped
         self.assertIn(b"&lt;img src=x", detail)
         self.assertIn(b"Smallest replacement", self.app.brief(1))
+        self.assertIn(b"No build prompt yet", self.app.buildprompt(1))
+        self.assertEqual(self.app.post("/o/1/buildprompt", {}), "/o/1/buildprompt")
+        self.assertIn(b"Build specification", self.app.buildprompt(1))
+        self.assertIn(b"Open the build prompt", self.app.detail(1))
         self.assertIn(b"Acme Notes is shutting down", self.app.leads())
         for page in (self.app.excluded(), self.app.sources(), self.app.ledger(), self.app.digest_page()):
             self.assertIn(b"Orphan Radar", page)

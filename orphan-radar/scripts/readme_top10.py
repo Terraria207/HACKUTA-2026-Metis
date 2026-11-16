@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from orphan_radar.brief import audit_brief, write_briefs  # noqa: E402
+from orphan_radar.brief import audit_brief, generate_brief, write_documents  # noqa: E402
+from orphan_radar.buildprompt import generate_build_prompt  # noqa: E402
 from orphan_radar.config import load_config  # noqa: E402
 from orphan_radar.db import connect, loads  # noqa: E402
 from orphan_radar.pipeline import latest_scores  # noqa: E402
@@ -22,9 +23,9 @@ def main() -> int:
     config = load_config()
     conn = connect(config.db_path)
     top = latest_scores(conn)[:10]
-    done, failed = write_briefs(conn, config, only=[r["id"] for r in top])
+    done, failed = write_documents(conn, config, [generate_brief, generate_build_prompt], only=[r["id"] for r in top])
     if failed:
-        print("brief failures:", failed)
+        print("document failures:", failed)
         return 1
     scans = conn.execute("SELECT * FROM scans WHERE status='done' ORDER BY id").fetchall()
     scan_lines = []
@@ -46,13 +47,13 @@ def main() -> int:
            f"The database holds {n_products:,} product listings, merged into {n_entities:,} products, and {n_evidence:,} evidence records. "
            f"{n_excluded:,} products were excluded by hard filters; the full list is in `report/opportunities.md` and on the dashboard's Excluded page.", "",
            "Every brief below passed the traceability audit (`orphan-radar verify`). Footnote numbers are prefixed per brief so they stay unique on this page. "
-           "The same briefs are in `report/briefs/`.", "",
-           "| # | Product | Score | Signals | Sources | Top complaint cluster |", "|---|---|---|---|---|---|"]
+           "The same briefs are in `report/briefs/`, and the full system-build specification for each is in `report/build-prompts/`.", "",
+           "| # | Product | Score | Signals | Sources | Top complaint cluster | Build prompt |", "|---|---|---|---|---|---|---|"]
     for n, r in enumerate(top, 1):
         sig = [k for k, s in loads(r["components_json"], {}).get("signals", {}).items() if s.get("present")]
         cl = conn.execute("SELECT label, size FROM clusters WHERE entity_id=? AND key!='other' ORDER BY size DESC LIMIT 1", (r["id"],)).fetchone()
         out.append(f"| {n} | [{r['name']}]({r['url']}) | {r['total']} | {', '.join(sig) or '-'} | {r['sources']} | "
-                   f"{(cl['label'] + ' (' + str(cl['size']) + ')') if cl else '-'} |")
+                   f"{(cl['label'] + ' (' + str(cl['size']) + ')') if cl else '-'} | [spec](report/build-prompts/{r['id']}.md) |")
     out.append("")
     for n, r in enumerate(top, 1):
         md = conn.execute("SELECT markdown FROM briefs WHERE entity_id=?", (r["id"],)).fetchone()["markdown"]
