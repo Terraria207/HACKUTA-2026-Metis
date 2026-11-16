@@ -1,0 +1,316 @@
+{
+  "total_count": 961,
+  "incomplete_results": false,
+  "items": [
+    {
+      "url": "https://api.github.com/repos/atom/atom/issues/5168",
+      "repository_url": "https://api.github.com/repos/atom/atom",
+      "labels_url": "https://api.github.com/repos/atom/atom/issues/5168/labels{/name}",
+      "comments_url": "https://api.github.com/repos/atom/atom/issues/5168/comments",
+      "events_url": "https://api.github.com/repos/atom/atom/issues/5168/events",
+      "html_url": "https://github.com/atom/atom/issues/5168",
+      "id": 54935078,
+      "node_id": "MDU6SXNzdWU1NDkzNTA3OA==",
+      "number": 5168,
+      "title": "Per-project config settings",
+      "user": {
+        "login": "benogle",
+        "id": 69169,
+        "node_id": "MDQ6VXNlcjY5MTY5",
+        "avatar_url": "https://avatars.githubusercontent.com/u/69169?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/benogle",
+        "html_url": "https://github.com/benogle",
+        "followers_url": "https://api.github.com/users/benogle/followers",
+        "following_url": "https://api.github.com/users/benogle/following{/other_user}",
+        "gists_url": "https://api.github.com/users/benogle/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/benogle/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/benogle/subscriptions",
+        "organizations_url": "https://api.github.com/users/benogle/orgs",
+        "repos_url": "https://api.github.com/users/benogle/repos",
+        "events_url": "https://api.github.com/users/benogle/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/benogle/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "labels": [
+        {
+          "id": 7856440,
+          "node_id": "MDU6TGFiZWw3ODU2NDQw",
+          "url": "https://api.github.com/repos/atom/atom/labels/enhancement",
+          "name": "enhancement",
+          "color": "bfd4f2",
+          "default": true,
+          "description": null,
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 163641905,
+          "node_id": "MDU6TGFiZWwxNjM2NDE5MDU=",
+          "url": "https://api.github.com/repos/atom/atom/labels/atom",
+          "name": "atom",
+          "color": "f7c6c7",
+          "default": false,
+          "description": null,
+          "archived_at": null,
+          "archived_by": null
+        }
+      ],
+      "state": "open",
+      "locked": true,
+      "assignees": [
+
+      ],
+      "milestone": null,
+      "comments": 71,
+      "created_at": "2015-01-20T20:28:59Z",
+      "updated_at": "2022-05-16T19:28:57Z",
+      "closed_at": null,
+      "assignee": null,
+      "author_association": "CONTRIBUTOR",
+      "issue_field_values": [
+
+      ],
+      "type": null,
+      "active_lock_reason": null,
+      "sub_issues_summary": {
+        "total": 0,
+        "completed": 0,
+        "percent_completed": 0
+      },
+      "issue_dependencies_summary": {
+        "blocked_by": 0,
+        "total_blocked_by": 0,
+        "blocking": 0,
+        "total_blocking": 0
+      },
+      "body": "",
+      "reactions": {
+        "url": "https://api.github.com/repos/atom/atom/issues/5168/reactions",
+        "total_count": 319,
+        "+1": 311,
+        "-1": 0,
+        "laugh": 0,
+        "hooray": 0,
+        "confused": 0,
+        "heart": 8,
+        "rocket": 0,
+        "eyes": 0
+      },
+      "timeline_url": "https://api.github.com/repos/atom/atom/issues/5168/timeline",
+      "performed_via_github_app": null,
+      "state_reason": null,
+      "pinned_comment": null,
+      "score": 1.0
+    },
+    {
+      "url": "https://api.github.com/repos/atom/atom/issues/6669",
+      "repository_url": "https://api.github.com/repos/atom/atom",
+      "labels_url": "https://api.github.com/repos/atom/atom/issues/6669/labels{/name}",
+      "comments_url": "https://api.github.com/repos/atom/atom/issues/6669/comments",
+      "events_url": "https://api.github.com/repos/atom/atom/issues/6669/events",
+      "html_url": "https://github.com/atom/atom/issues/6669",
+      "id": 73573791,
+      "node_id": "MDU6SXNzdWU3MzU3Mzc5MQ==",
+      "number": 6669,
+      "title": "Show invisibles only when selecting text",
+      "user": {
+        "login": "alexrussell",
+        "id": 412784,
+        "node_id": "MDQ6VXNlcjQxMjc4NA==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/412784?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/alexrussell",
+        "html_url": "https://github.com/alexrussell",
+        "followers_url": "https://api.github.com/users/alexrussell/followers",
+        "following_url": "https://api.github.com/users/alexrussell/following{/other_user}",
+        "gists_url": "https://api.github.com/users/alexrussell/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/alexrussell/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/alexrussell/subscriptions",
+        "organizations_url": "https://api.github.com/users/alexrussell/orgs",
+        "repos_url": "https://api.github.com/users/alexrussell/repos",
+        "events_url": "https://api.github.com/users/alexrussell/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/alexrussell/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "labels": [
+        {
+          "id": 7856440,
+          "node_id": "MDU6TGFiZWw3ODU2NDQw",
+          "url": "https://api.github.com/repos/atom/atom/labels/enhancement",
+          "name": "enhancement",
+          "color": "bfd4f2",
+          "default": true,
+          "description": null,
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 97310502,
+          "node_id": "MDU6TGFiZWw5NzMxMDUwMg==",
+          "url": "https://api.github.com/repos/atom/atom/labels/help-wanted",
+          "name": "help-wanted",
+          "color": "159818",
+          "default": false,
+          "description": null,
+          "archived_at": null,
+          "archived_by": null
+        }
+      ],
+      "state": "open",
+      "locked": true,
+      "assignees": [
+
+      ],
+      "milestone": null,
+      "comments": 59,
+      "created_at": "2015-05-06T09:42:51Z",
+      "updated_at": "2021-01-23T04:25:57Z",
+      "closed_at": null,
+      "assignee": null,
+      "author_association": "NONE",
+      "issue_field_values": [
+
+      ],
+      "type": null,
+      "active_lock_reason": null,
+      "sub_issues_summary": {
+        "total": 0,
+        "completed": 0,
+        "percent_completed": 0
+      },
+      "issue_dependencies_summary": {
+        "blocked_by": 0,
+        "total_blocked_by": 0,
+        "blocking": 0,
+        "total_blocking": 0
+      },
+      "body": "I tried searching for a similar issue here and I didn't find anything that directly addresses what I want, though #3249 (which I have subscribed to) is what I want, just asked for in a very roundabout way.\n\nIn short: we should have an option to only display invisibles within a selection. Showing them all the time is too noisy, not showing them at all loses their power, and turning them off and on when I want to see them is annoying. I'm aware that with CSS we cannot achieve what is required (hence unresolved #3249, and accompanying [forum post](https://discuss.atom.io/t/atom-is-so-powerful-that-it-blows-my-mind/294/17?)) due to the underlayer controlling the background highlight. So this will presumably be something that atom must provide from within the core.\n\nIf this request appeals more as something that's more generic (and allow us to achieve what we want with CSS) you could actually just attach a `.selected` class to all elements (scopes) that are within the selection (obviously a selection part-way through an element will require an inner span injected with just the `.selected` class). This way, we can do what we want in regards to the invisibles, but package developers may find interesting ways to use this selection class/scope for other purposes.\n",
+      "reactions": {
+        "url": "https://api.github.com/repos/atom/atom/issues/6669/reactions",
+        "total_count": 141,
+        "+1": 139,
+        "-1": 0,
+        "laugh": 0,
+        "hooray": 0,
+        "confused": 1,
+        "heart": 1,
+        "rocket": 0,
+        "eyes": 0
+      },
+      "timeline_url": "https://api.github.com/repos/atom/atom/issues/6669/timeline",
+      "performed_via_github_app": null,
+      "state_reason": null,
+      "pinned_comment": null,
+      "score": 1.0
+    },
+    {
+      "url": "https://api.github.com/repos/atom/atom/issues/14490",
+      "repository_url": "https://api.github.com/repos/atom/atom",
+      "labels_url": "https://api.github.com/repos/atom/atom/issues/14490/labels{/name}",
+      "comments_url": "https://api.github.com/repos/atom/atom/issues/14490/comments",
+      "events_url": "https://api.github.com/repos/atom/atom/issues/14490/events",
+      "html_url": "https://github.com/atom/atom/issues/14490",
+      "id": 229804938,
+      "node_id": "MDU6SXNzdWUyMjk4MDQ5Mzg=",
+      "number": 14490,
+      "title": "Feature Request: Integrated Shell/Terminal Access",
+      "user": {
+        "login": "Peteous",
+        "id": 24916702,
+        "node_id": "MDQ6VXNlcjI0OTE2NzAy",
+        "avatar_url": "https://avatars.githubusercontent.com/u/24916702?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/Peteous",
+        "html_url": "https://github.com/Peteous",
+        "followers_url": "https://api.github.com/users/Peteous/followers",
+        "following_url": "https://api.github.com/users/Peteous/following{/other_user}",
+        "gists_url": "https://api.github.com/users/Peteous/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/Peteous/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/Peteous/subscriptions",
+        "organizations_url": "https://api.github.com/users/Peteous/orgs",
+        "repos_url": "https://api.github.com/users/Peteous/repos",
+        "events_url": "https://api.github.com/users/Peteous/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/Peteous/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "labels": [
+        {
+          "id": 505038679,
+          "node_id": "MDU6TGFiZWw1MDUwMzg2Nzk=",
+          "url": "https://api.github.com/repos/atom/atom/labels/triaged",
+          "name": "triaged",
+          "color": "00bb00",
+          "default": false,
+          "description": null,
+          "archived_at": null,
+          "archived_by": null
+        },
+        {
+          "id": 2266067450,
+          "node_id": "MDU6TGFiZWwyMjY2MDY3NDUw",
+          "url": "https://api.github.com/repos/atom/atom/labels/feature",
+          "name": "feature",
+          "color": "a821c6",
+          "default": false,
+          "description": "",
+          "archived_at": null,
+          "archived_by": null
+        }
+      ],
+      "state": "open",
+      "locked": true,
+      "assignees": [
+
+      ],
+      "milestone": null,
+      "comments": 70,
+      "created_at": "2017-05-18T21:06:39Z",
+      "updated_at": "2021-10-16T21:09:09Z",
+      "closed_at": null,
+      "assignee": null,
+      "author_association": "NONE",
+      "issue_field_values": [
+
+      ],
+      "type": null,
+      "active_lock_reason": null,
+      "sub_issues_summary": {
+        "total": 0,
+        "completed": 0,
+        "percent_completed": 0
+      },
+      "issue_dependencies_summary": {
+        "blocked_by": 0,
+        "total_blocked_by": 0,
+        "blocking": 0,
+        "total_blocking": 0
+      },
+      "body": "<!--\r\n\r\nHave you read Atom's Code of Conduct? By filing an Issue, you are expected to comply with it, including treating everyone with respect: https://github.com/atom/atom/blob/master/CODE_OF_CONDUCT.md\r\n\r\nDo you want to ask a question? Are you looking for support? The Atom message board is the best place for getting support: https://discuss.atom.io\r\n\r\n-->\r\n\r\n### Prerequisites\r\n\r\n* [X] Put an X between the brackets on this line if you have done all of the following:\r\n    * Reproduced the problem in Safe Mode: http://flight-manual.atom.io/hacking-atom/sections/debugging/#using-safe-mode\r\n    * Followed all applicable steps in the debugging guide: http://flight-manual.atom.io/hacking-atom/sections/debugging/\r\n    * Checked the FAQs on the message board for common solutions: https://discuss.atom.io/c/faq\r\n    * Checked that your issue isn't already filed: https://github.com/issues?utf8=✓&q=is%3Aissue+user%3Aatom\r\n    * Checked that there is not already an Atom package that provides the described functionality: https://atom.io/packages\r\n\r\n### Description\r\nWindows 10 now has a bash terminal running on an Ubuntu underpinning. I want to access this terminal using Atom. There are some packages which report to do this on Mac and/or Linux, but nothing that I've found for Windows. I think Atom should have shell functionality built in like Sublime Text or Microsoft Visual Studio Code. The later even allows you to choose which shell to use based on which shells are installed, including windows power shell, CMD, or bash.\r\n\r\n### Steps to Reproduce\r\n1. Open Atom\r\n2. Write Code\r\n3. Go to commit\r\n4. Nowhere to commit\r\n5. Have to open separate terminal window\r\n6. Be sad\r\n\r\n**Expected behavior:** [What you expect to happen]\r\n1. Press some sort of key combo (whether ctrl+` or ctrl+Shift+P and type Terminal)\r\n2. get access to terminal in window or pane\r\n3. Terminal automatically changes directory to current directory of file that you're working on\r\n\r\n**Actual behavior:** [What actually happens]\r\n1. Nothing (currently)\r\n2. Have to open terminal app seperately an change directory manually\r\n\r\n**Reproduces how often:** [What percentage of the time does it reproduce?]\r\n100%\r\n\r\n### Versions\r\n1.17\r\n\r\n### Additional Information\r\nPlease consult Microsoft's Visual Studio Code editor for how to implement an integrated terminal well\r\n",
+      "reactions": {
+        "url": "https://api.github.com/repos/atom/atom/issues/14490/reactions",
+        "total_count": 122,
+        "+1": 122,
+        "-1": 0,
+        "laugh": 0,
+        "hooray": 0,
+        "confused": 0,
+        "heart": 0,
+        "rocket": 0,
+        "eyes": 0
+      },
+      "timeline_url": "https://api.github.com/repos/atom/atom/issues/14490/timeline",
+      "performed_via_github_app": null,
+      "state_reason": null,
+      "pinned_comment": null,
+      "score": 1.0
+    }
+  ],
+  "search_type": "lexical"
+}

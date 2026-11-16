@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orphan-radar"
+version = "0.1.0"
+description = "Find software whose users are stranded and already looking for a replacement."
+requires-python = ">=3.11"
+dependencies = []          # standard library only
+
+[project.optional-dependencies]
+claude = ["anthropic>=0.40"]
+
+[project.scripts]
+orphan-radar = "orphan_radar.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["orphan_radar*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

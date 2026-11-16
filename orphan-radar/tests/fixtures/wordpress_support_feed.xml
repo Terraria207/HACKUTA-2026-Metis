@@ -1,0 +1,1335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<rss version="2.0"
+		xmlns:content="http://purl.org/rss/1.0/modules/content/"
+		xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+		xmlns:dc="http://purl.org/dc/elements/1.1/"
+		xmlns:atom="http://www.w3.org/2005/Atom"
+
+			>
+
+	<channel>
+
+		<title>WordPress.org Forums &#187; [WP Super Cache] Support</title>
+		<atom:link href="https://wordpress.org/support/plugin/wp-super-cache/feed/" rel="self" type="application/rss+xml" />
+		<link>https://wordpress.org/support/plugin/wp-super-cache/feed/</link>
+		<description></description>		<lastBuildDate>Mon, 16 Nov 2026 22:34:28 +0000</lastBuildDate>
+		<generator>https://bbpress.org/?v=2.7.0-alpha-4</generator>
+		<language>en-US</language>
+
+		
+		
+			
+				<item>
+					<guid>https://wordpress.org/support/topic/subject-preload-appears-to-repeatedly-delete-cache-files-woocommerce-site/</guid>
+					<title>Subject: Preload appears to repeatedly delete cache files – WooCommerce site</title>
+					<link>https://wordpress.org/support/topic/subject-preload-appears-to-repeatedly-delete-cache-files-woocommerce-site/</link>
+					<pubDate>Mon, 26 Oct 2026 17:47:45 +0000</pubDate>
+					<dc:creator>potatodesign</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph"><strong>Subject: Preload appears to repeatedly delete cache files – WooCommerce site</strong></p>
+
+
+
+<p class="wp-block-paragraph">Hi,</p>
+
+
+
+<p class="wp-block-paragraph">I&#8217;m using WP Super Cache on my WooCommerce website, <a href="https://jadaneida.no/" rel="ugc">https://jadaneida.no/</a>, hosted by Domeneshop in Norway.</p>
+
+
+
+<p class="wp-block-paragraph">I&#8217;m trying to improve loading times, particularly on mobile devices. The site uses WordPress, Divi 5 and WooCommerce, with approximately 106 published products.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Current configuration:</strong></p>
+
+
+
+<ul>
+<li>Cache enabled</li>
+
+
+
+<li>Expert delivery method</li>
+
+
+
+<li>Compression enabled</li>
+
+
+
+<li>Cache Rebuild enabled</li>
+
+
+
+<li>Caching disabled for logged-in users</li>
+
+
+
+<li>Preload refresh interval: 0 minutes (currently disabled)</li>
+
+
+
+<li>Preload all posts enabled</li>
+
+
+
+<li>Preload mode enabled (garbage collection disabled)</li>
+
+
+
+<li>Preload categories and taxonomies enabled</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph"><strong>The problem</strong></p>
+
+
+
+<p class="wp-block-paragraph">When I previously ran Preload, it appeared to build cache files, but the number of cached pages subsequently decreased.</p>
+
+
+
+<p class="wp-block-paragraph">The debug log also showed repeated deletion of cache files during the preload process.</p>
+
+
+
+<p class="wp-block-paragraph">For example:</p>
+
+
+
+<pre class="wp-block-code"><code>wp_cron_preload_cache: scheduling the next preload in 3 seconds
+
+wpsc_delete_files: deleting .../wp-content/cache/supercache/jadaneida.no/
+
+wpsc_delete_files: deleting index-https.html.gz
+wpsc_delete_files: deleting index-https.html</code></pre>
+
+
+
+<p class="wp-block-paragraph">Similar entries appeared repeatedly during the preload process.</p>
+
+
+
+<p class="wp-block-paragraph">I understand that these particular log entries concern the homepage cache directory, so they do not necessarily mean that all product caches were deleted.</p>
+
+
+
+<p class="wp-block-paragraph">Some product pages were cached successfully, while others showed messages such as:</p>
+
+
+
+<pre class="wp-block-code"><code>DONOTCACHEPAGE defined. Caching disabled.</code></pre>
+
+
+
+<p class="wp-block-paragraph"><strong>What I&#8217;ve checked</strong></p>
+
+
+
+<ul>
+<li>The WP Super Cache cache test passes successfully, with matching timestamps.</li>
+
+
+
+<li>Expert caching appears to work normally.</li>
+
+
+
+<li>WP Crontrol currently shows no scheduled preload events.</li>
+
+
+
+<li>The cache statistics currently show 64 cached pages.</li>
+
+
+
+<li>Preload is currently disabled, with the refresh interval set to 0.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph"><strong>My questions</strong></p>
+
+
+
+<ol start="1">
+<li>Is it normal for the preload process to repeatedly delete the homepage cache files?</li>
+
+
+
+<li>Could this behaviour explain why the number of cached pages decreases after preloading?</li>
+
+
+
+<li>Is there a recommended preload configuration for a WooCommerce website with around 100 products?</li>
+
+
+
+<li>What could cause <code>DONOTCACHEPAGE</code> to be defined on some product pages during preloading?</li>
+
+
+
+<li>Would you recommend scheduled preloading or a different approach to ensure that product pages are cached before customers visit them?</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">My main concern is that visitors should not have to wait for WordPress, WooCommerce and Divi to generate a page on their first visit.</p>
+
+
+
+<p class="wp-block-paragraph">I&#8217;d appreciate any advice on configuring WP Super Cache reliably for this type of website.</p>
+
+
+
+<p class="wp-block-paragraph">Thanks in advance!</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/wp-super-cache-3-1-4-caches-unexpectedly-cleared/</guid>
+					<title>WP Super Cache 3.1.4 – Caches unexpectedly cleared</title>
+					<link>https://wordpress.org/support/topic/wp-super-cache-3-1-4-caches-unexpectedly-cleared/</link>
+					<pubDate>Thu, 22 Oct 2026 12:04:04 +0000</pubDate>
+					<dc:creator>Sacha</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 7						</p>
+						<p class="wp-block-paragraph">Hello,<br />I&#8217;m experiencing a recurring issue with WP Super Cache 3.1.4 on my WordPress website.</p>
+
+
+
+<p class="wp-block-paragraph">My website contains approximately 2,200 pages, and I use the preload feature to keep the site cached and improve performance.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>The problem is that both WP-Cache and SuperCache occasionally get completely cleared, with their respective counters suddenly dropping to zero.</strong></p>
+
+
+
+<p class="wp-block-paragraph">This is particularly frustrating because rebuilding the cache takes considerable time and appears to negatively affect website performance during the process.</p>
+
+
+
+<p class="wp-block-paragraph">I&#8217;ve noticed that <strong>activating a WordPress plugin can trigger this behavior</strong>, even when the plugin itself has no obvious connection to caching.</p>
+
+
+
+<p class="wp-block-paragraph">For example, the most recent incident occurred immediately after activating Query Monitor. Both cache counters dropped to zero, and the cache had to be rebuilt.</p>
+
+
+
+<p class="wp-block-paragraph">However, I don&#8217;t believe this issue is necessarily specific to Query Monitor. I&#8217;m more concerned about the possibility that activating or updating plugins, or certain WordPress events, might trigger an unexpected full-cache purge.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>My current configuration:</strong></p>
+
+
+
+<ul>
+<li>WP Super Cache 3.1.4</li>
+
+
+
+<li>Preloading enabled</li>
+
+
+
+<li>Cache timeout: 86,400 seconds</li>
+
+
+
+<li>Garbage collection interval: 3,600 seconds</li>
+
+
+
+<li>The option to clear all cached files when a post is published or updated is disabled</li>
+
+
+
+<li>WordPress hosted by Infomaniak</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">I&#8217;ve also enabled WP Super Cache debugging. During the latest incident, the log recorded the plugin activation and a <code>prune_super_cache</code> operation involving a <code>view_*.php</code> file, but I couldn&#8217;t find an explicit entry indicating that the entire cache had been cleared.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>My questions are:</strong></p>
+
+
+
+<ol>
+<li>Is it normal for WP Super Cache to clear its entire cache when another WordPress plugin is activated, deactivated or updated?</li>
+
+
+
+<li>Are there any known WordPress hooks or WP Super Cache mechanisms that could trigger such a purge?</li>
+
+
+
+<li>Could another plugin indirectly trigger a full-cache deletion?</li>
+
+
+
+<li>Is there a way to prevent these unexpected purges while keeping the preload feature enabled?</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">I would really appreciate any guidance on identifying the exact cause and preventing this behavior.<br />I can provide the complete debugging log if needed.<br />Thank you for your help!</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/questions-regarding-logged-in-user-caching-in-wp-super-cache/</guid>
+					<title>Questions regarding logged-in user caching in WP Super Cache</title>
+					<link>https://wordpress.org/support/topic/questions-regarding-logged-in-user-caching-in-wp-super-cache/</link>
+					<pubDate>Tue, 06 Oct 2026 06:23:55 +0000</pubDate>
+					<dc:creator>davidffff0101</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 6						</p>
+						<p class="wp-block-paragraph">Hi,</p>
+
+
+
+<p class="wp-block-paragraph">I have a few questions regarding the option to cache logged-in users and I was hoping you could clarify them for me:</p>
+
+
+
+<p class="wp-block-paragraph"><strong>1.</strong> My understanding is that if I enable caching for logged-in users and, for example, I have 20 users, then each user will have their own cached version of a page. From what I have seen in the documentation, this seems to depend on the user&#8217;s session cookie. Is that correct? I would like to know whether the cache key depends only on the session cookie or on any other factors as well.</p>
+
+
+
+<p class="wp-block-paragraph">Following that logic, I assume that if four different people are logged in using the same account (let&#8217;s call it <strong>userX</strong>), four separate cached versions could still be generated because each browser session would have a different session cookie. Is that correct?</p>
+
+
+
+<p class="wp-block-paragraph"><strong>2.</strong> Is there any way to configure the cache so that the cached content for logged-in users is keyed only by the username (or user ID) rather than by the session cookie?</p>
+
+
+
+<p class="wp-block-paragraph"><strong>3.</strong> In your experience, is caching logged-in users generally considered inefficient? I am interested in using this feature, but I am concerned about the number of cache files that could be generated and the amount of disk space they might consume.</p>
+
+
+
+<p class="wp-block-paragraph">I ask because the current frontend response times on my website for authenticated users range from approximately <strong>0.2 to 0.7 seconds</strong>, and I am exploring whether caching logged-in users could help improve performance further.</p>
+
+
+
+<p class="wp-block-paragraph">Thank you for your help.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/add-custom-csp-policy-to-headers/</guid>
+					<title>Add custom CSP policy to headers</title>
+					<link>https://wordpress.org/support/topic/add-custom-csp-policy-to-headers/</link>
+					<pubDate>Thu, 01 Oct 2026 12:19:09 +0000</pubDate>
+					<dc:creator>davidffff0101</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">Hello,</p>
+
+
+
+<p class="wp-block-paragraph">We are using your <strong>WP Super Cache</strong> plugin and we would like to ask about an issue we are experiencing.</p>
+
+
+
+<p class="wp-block-paragraph">We believe that cached pages and posts are not returning a header related to our <strong>Content Security Policy (CSP)</strong>. We add this CSP through a custom <strong>mu-plugin</strong> using the <code>send_headers</code> hook.</p>
+
+
+
+<p class="wp-block-paragraph">Is it possible that when a page is served from cache, the <code>send_headers</code> hook is not executed?</p>
+
+
+
+<p class="wp-block-paragraph">We only use caching for anonymous users. Logged-in users do not receive cached pages, and for those users everything works correctly.</p>
+
+
+
+<p class="wp-block-paragraph">Does WP Super Cache provide any plugin-specific hook that allows custom headers to be added to cached pages or posts?</p>
+
+
+
+<p class="wp-block-paragraph">Alternatively, is there any way from within WordPress to define this CSP header that would also work when WP Super Cache is active, without relying on the <code>send_headers</code> hook?</p>
+
+
+
+<p class="wp-block-paragraph">Thank you very much for your help.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/minor-ui-issue-in-rtl/</guid>
+					<title>Minor ui issue in RTL</title>
+					<link>https://wordpress.org/support/topic/minor-ui-issue-in-rtl/</link>
+					<pubDate>Sun, 27 Sep 2026 23:02:08 +0000</pubDate>
+					<dc:creator>HOSEIN</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">Hi,</p>
+
+
+
+<p class="wp-block-paragraph">Horizontal scrolling in the plugin settings affects the content of the WordPress page and menu. This issue only occurs in RTL. <a href="https://prnt.sc/j64EcjwWrK-4" rel="ugc">https://prnt.sc/j64EcjwWrK-4</a></p>
+
+
+
+<p class="wp-block-paragraph">Thanks</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/wp-super-cache-needs-clearer-warnings-when-caching-isnt-working/</guid>
+					<title>WP Super Cache needs clearer warnings when caching isn’t working</title>
+					<link>https://wordpress.org/support/topic/wp-super-cache-needs-clearer-warnings-when-caching-isnt-working/</link>
+					<pubDate>Tue, 15 Sep 2026 02:25:55 +0000</pubDate>
+					<dc:creator>THRIVE - Web Design Gold Coast</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">Hi team,</p>
+
+
+
+<p class="wp-block-paragraph">We manage a large number of WordPress sites and regularly come across sites where WP Super Cache is installed and active, but caching is either disabled or not working due to configuration errors.</p>
+
+
+
+<p class="wp-block-paragraph">The main issue is that this is far too easy for users to miss.</p>
+
+
+
+<p class="wp-block-paragraph">A few things that would make a big difference:</p>
+
+
+
+<ul>
+<li>Show a clear dashboard/admin warning when caching is disabled or there is a configuration error.</li>
+
+
+
+<li>Add a quick link to the WP Super Cache settings from the Plugins page/admin bar.</li>
+
+
+
+<li>If caching is off, the admin bar should not continue to show <strong>“Delete Cache”</strong> as though caching is active.</li>
+
+
+
+<li>Make the current cache status much more obvious throughout the WordPress admin.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">We check whether caching is actually working using other methods, and we come across a surprising number of WP Super Cache sites where caching is broken without the site owner realising it.</p>
+
+
+
+<p class="wp-block-paragraph">It would be great if the plugin made this much harder to overlook.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/random-domains-folders-showing-up-in-supercace-folder/</guid>
+					<title>random domains folders showing up in supercace folder</title>
+					<link>https://wordpress.org/support/topic/random-domains-folders-showing-up-in-supercace-folder/</link>
+					<pubDate>Sat, 25 Jul 2026 17:57:09 +0000</pubDate>
+					<dc:creator>cireclay</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">I happened to look in the supercache directory today on my site, and there was probably 20 folders listed there from domains I have no idea what or who they are.  This isn&#8217;t a shared server and my domain is the only one running on this server. It&#8217;s fully updated, patched, running latest wordpress, wordfence etc.  Why would I see folders for other domains here..  They where from all over the world,  probably 20+ . </p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph">Thanks,</p>
+
+
+
+<p class="wp-block-paragraph">Eric</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/no-wpsupercache-block-in-htaccess-advanced-mode/</guid>
+					<title>No WPSuperCache block in .htaccess (advanced mode)</title>
+					<link>https://wordpress.org/support/topic/no-wpsupercache-block-in-htaccess-advanced-mode/</link>
+					<pubDate>Thu, 23 Jul 2026 19:28:46 +0000</pubDate>
+					<dc:creator>harun2024</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 7						</p>
+						<p class="wp-block-paragraph">I&#8217;ve set WP Super Cache to run in advanced mode. Checking the .htaccess, I don&#8217;t see any entries for BEGIN WPSuperCache </p>
+
+
+
+<p class="wp-block-paragraph">Apache <code>mod_rewrite</code> is enabled .</p>
+
+
+
+<p class="wp-block-paragraph">permissions are correct on .htaccess.</p>
+
+
+
+<p class="wp-block-paragraph">Cache files are in being created in the correct places. The cache folders are readable.</p>
+
+
+
+<p class="wp-block-paragraph">No super cache html comments are visible in page source.</p>
+
+
+
+<p class="wp-block-paragraph">No obvious messages or errors appear in the WP Super Cache plugin UI.</p>
+
+
+
+<p class="wp-block-paragraph">What are some other possible troubleshooting steps. I know the advanced mode will not work unless the .htaccess is updated.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/any-changes-always-delete-cache/</guid>
+					<title>Any Changes Always Delete Cache</title>
+					<link>https://wordpress.org/support/topic/any-changes-always-delete-cache/</link>
+					<pubDate>Wed, 22 Jul 2026 15:39:18 +0000</pubDate>
+					<dc:creator>shshshea</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 6						</p>
+						<p class="wp-block-paragraph">Hello, </p>
+
+
+
+<p class="wp-block-paragraph">I have Garbage Collection set to 0. <br />Clear all cache files when a post or page is published or updated, Unchecked.</p>
+
+
+
+<p class="wp-block-paragraph">If I make a change to a page, update a page or update a plugin, it clears my cache of 3000+ pages and posts. What else can I do to have it not delete the cache?</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/plugin-possibly-exploited/</guid>
+					<title>Plugin possibly exploited</title>
+					<link>https://wordpress.org/support/topic/plugin-possibly-exploited/</link>
+					<pubDate>Mon, 01 Jun 2026 22:10:23 +0000</pubDate>
+					<dc:creator>boardboss</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 9						</p>
+						<p class="wp-block-paragraph">A malware scanner reported multiple exploits in multiple subfolders of the Cache-&gt;supercache path. This was preventing me from logging into the admin area due to a 522 error. The frontend loaded fine. Once I deleted the Cache folder, I was able to log into the admin area once again. Your plugin had auto updates enabled, and it was not showing any outstanding updates. In any case, I disabled and deleted the plugin as a precaution. This site has a lot of traffic, so if there is an exploit still present outside of your plugin, it will likely show up again soon.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/file-appears-to-be-malicious-or-unsafe-wp-content-cache-supercache/</guid>
+					<title>File appears to be malicious or unsafe: wp-content/cache/supercache/</title>
+					<link>https://wordpress.org/support/topic/file-appears-to-be-malicious-or-unsafe-wp-content-cache-supercache/</link>
+					<pubDate>Tue, 05 May 2026 20:15:40 +0000</pubDate>
+					<dc:creator>fred1</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph">Hi,</p>
+
+
+
+<p class="wp-block-paragraph">Since few weeks, I regularly got the following alert from Wordfence : File appears to be malicious or unsafe: wp-content/cache/supercache/&#8230;</p>
+
+
+
+<p class="wp-block-paragraph">I open some of the files given by wordfence and I found a malicious script at the end with unwanted links. I deleted them but they keep coming back.</p>
+
+
+
+<p class="wp-block-paragraph">What should I do ?</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/persistent-notification-3/</guid>
+					<title>Persistent notification</title>
+					<link>https://wordpress.org/support/topic/persistent-notification-3/</link>
+					<pubDate>Sat, 02 May 2026 03:04:57 +0000</pubDate>
+					<dc:creator>alathea9</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 5						</p>
+						<p class="wp-block-paragraph">hi</p>
+
+
+
+<p class="wp-block-paragraph">After I re-cloned my production site to staging on the same URL, I got a warning in Admin dashboard that my WP Super Cache was broken <strong>and fixed</strong> (by renaming the file in wp-config.php)<br />It then says &#8211; <strong>reload to hide this message</strong>.</p>
+
+
+
+<p class="wp-block-paragraph">I have reloaded several times, singed out and in &#8211; yet this message is still there.</p>
+
+
+
+<p class="wp-block-paragraph">How can I get rid of it?</p>
+
+
+
+<p class="wp-block-paragraph">thanks</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/files-created-inside-a-cache-folder-what-are-they/</guid>
+					<title>Files created inside a cache folder &#8211; what are they?</title>
+					<link>https://wordpress.org/support/topic/files-created-inside-a-cache-folder-what-are-they/</link>
+					<pubDate>Mon, 20 Apr 2026 14:40:44 +0000</pubDate>
+					<dc:creator>Gerard Blanco</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">Hi team,</p>
+
+
+
+<p class="wp-block-paragraph">When I browse the file system and go to <code>/wp-content/cache/supercache/mydomain.com/product/myproduct-slug</code>, I see the following: <a href="https://i.imgur.com/4WIebac.png" rel="ugc">https://i.imgur.com/4WIebac.png</a></p>
+
+
+
+<p class="wp-block-paragraph">Other products have more or less <code>meta-wp-cache*</code> and/or <code>wp-cache-*</code>. My question is: what are these? I understand what the index-https are, but not the other two types.</p>
+
+
+
+<p class="wp-block-paragraph">Thank you,</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/cdn-url-rewriting-setup-with-infinite-uploads-and-perfmatters/</guid>
+					<title>CDN URL rewriting setup with Infinite Uploads and Perfmatters</title>
+					<link>https://wordpress.org/support/topic/cdn-url-rewriting-setup-with-infinite-uploads-and-perfmatters/</link>
+					<pubDate>Sat, 18 Apr 2026 14:27:34 +0000</pubDate>
+					<dc:creator>Serena Zehlius</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">I just installed WP Super Cache and I’m setting it up now. As far as the CDN tab, here’s my setup. I use Infinite Uploads and my wp-content/uploads is offloaded to the cloud and delivered via Infinite Uploads CDN. It’s currently set up to use media.resisth8.com instead of their generic CDN URL. If I add that to the CDN settings, remove wp-includes, and change wp-content to wp-content/uploads, will it ONLY target files in the uploads folder? Currently, I have my CDN added to Perfmatters settings, but it makes more sense or works better to have it set in Super Cache, I have no problem with removing it from Perfmatters. </p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph">Also, Infinite Uploads is supposed to take care of my image file URL rewriting for images uploaded BEFORE I started using the plugin. Every image uploaded after that is automatically added to the database with the CDN URL and is offloaded to the cloud automatically.</p>
+
+
+
+<p class="wp-block-paragraph">Hopefully that&#8217;s enough information for someone to tell me whether I should use the CDN settings in the caching plug-in or not.</p>
+
+
+
+<p class="wp-block-paragraph">I run a news site/blog that I publish posts on frequently throughout the day. The note in settings suggested I set cache timeout to 60 secs. I was using WP Cloudflare Super Page Cache Pro before it caused critical errors on my site and the cache was set to never expire since the relevant pages would automatically purge and preload when I published or modified a post or page. The description of how the plugin works sounds similar to WPCSPC plugin. Is there a reason I need to have the cache expire so frequently?</p>
+
+
+
+<p class="wp-block-paragraph">Thank you!</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/file-appears-to-be-malicious-or-unsafe-8/</guid>
+					<title>File appears to be malicious or unsafe:</title>
+					<link>https://wordpress.org/support/topic/file-appears-to-be-malicious-or-unsafe-8/</link>
+					<pubDate>Wed, 15 Apr 2026 23:22:13 +0000</pubDate>
+					<dc:creator>sjyounis</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 6						</p>
+						<p class="wp-block-paragraph">Wordfence has suddenly started alerting me of dozens of Super Cache files being malicious or unsafe:<br /><br />/wp-content/cache/supercache/[&#8230;]/index-https.html</p>
+
+
+
+<p class="wp-block-paragraph">Should I be concerned?</p>
+
+
+
+<p class="wp-block-paragraph">Super Cache Version 6.9.4</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/enable-dynamic-caching-question/</guid>
+					<title>Enable Dynamic Caching Question</title>
+					<link>https://wordpress.org/support/topic/enable-dynamic-caching-question/</link>
+					<pubDate>Mon, 06 Apr 2026 18:39:32 +0000</pubDate>
+					<dc:creator>wyclef</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">Hi, after I enable dynamic caching how do I designate the part of my codebase I would like to remain dynamic?</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/cache-test-question/</guid>
+					<title>Cache test question</title>
+					<link>https://wordpress.org/support/topic/cache-test-question/</link>
+					<pubDate>Sun, 15 Mar 2026 06:13:12 +0000</pubDate>
+					<dc:creator>jaysonhodges</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph">The plugin works well on my site so far. Just had a small question. When I run the cache test, sometimes the timestamps don’t match even though caching is on. Is that normal, or did I miss some setting? tnx!</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/new-post-creation-slow-with-cache-on/</guid>
+					<title>new post creation slow with cache on</title>
+					<link>https://wordpress.org/support/topic/new-post-creation-slow-with-cache-on/</link>
+					<pubDate>Thu, 12 Mar 2026 10:46:55 +0000</pubDate>
+					<dc:creator>eferpar</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 7						</p>
+						<p class="wp-block-paragraph">Hi, after updating to WordPress 6.9.3, the Add Post action has become very slow—around 6 seconds or more to open Gutenberg. If I clear the cache it drops to about 2 seconds, but then it slows down again. If I disable the cache, everything works normally.</p>
+
+
+
+<p class="wp-block-paragraph">My editors don’t have caching enabled. Does anyone know if there might be any incompatibility between the latest version of WP Super Cache (3.0.3) and the latest version of WordPress?</p>
+
+
+
+<p class="wp-block-paragraph">Currently I have everything updated to the latest versions, including WordPress, which is now on 6.9.4.</p>
+
+
+
+<p class="wp-block-paragraph">Thanks a lot! 🙂</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/php-error-undefined-array-key-author/</guid>
+					<title>PHP Error: Undefined array key &#8220;author&#8221;</title>
+					<link>https://wordpress.org/support/topic/php-error-undefined-array-key-author/</link>
+					<pubDate>Sat, 07 Mar 2026 08:08:25 +0000</pubDate>
+					<dc:creator>ispreview</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph">As per the subject, on the latest release of WP-Super-Cache v3.0.3 (also using PHP 8.4, WP6.9.1 and MySQL 8) my WP-Query-Monitor plugin keeps detecting the following PHP error from wp-super-cache when I load the plugin&#8217;s &#8220;Advanced&#8221; tab / page:</p>
+
+
+
+<p class="wp-block-paragraph">Undefined array key &#8220;author&#8221;</p>
+
+
+
+<p class="wp-block-paragraph">The location trace for this is given as follows:</p>
+
+
+
+<pre class="wp-block-code"><code>    wp-content/plugins/wp-super-cache/partials/advanced.php:371<br />    wpsc_render_partial()<br />    wp-content/plugins/wp-super-cache/wp-cache.php:1258<br />    wp_cache_manager()<br />    wp-includes/class-wp-hook.php:341<br />    do_action('settings_page_wpsupercache')<br />    wp-admin/admin.php:264</code></pre>
+
+
+
+<p class="wp-block-paragraph">Any ideas?</p>
+
+
+<ul id="bbp-topic-revision-log-18843763" class="bbp-topic-revision-log">
+
+	<li id="bbp-topic-revision-log-18843763-item-18843764" class="bbp-topic-revision-log-item">
+		This topic was modified 8 months, 2 weeks ago by <a href="https://wordpress.org/support/users/ispreview/" title="View ispreview&#039;s profile" class="bbp-author-link"><span class="bbp-author-name">ispreview</span></a>.
+	</li>
+
+</ul>
+
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/leftover-file-after-deactivation/</guid>
+					<title>Leftover File after Deactivation</title>
+					<link>https://wordpress.org/support/topic/leftover-file-after-deactivation/</link>
+					<pubDate>Mon, 02 Mar 2026 22:33:49 +0000</pubDate>
+					<dc:creator>tkrose24</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">I downloaded the WP Super Cache Plugin, but when I did, I received an error message that the Jetpack Plugin I already have installed was already providing the same cache settings enhancement. So, I chose to stick with Jetpack and deactivate the WP Super Cache Plugin. However, I received an e-mail stating, &#8220;WP Super Cache was removed from your blog or deactivated but some files could not be deleted.&#8221; The file is advanced-cache.php I found the file in my File Manager but I am wondering if it is safe to remove this file since the WP Super Cache Plugin has been deactivated from my website. And yet, will not cause any problems with my website or my hosting server by removing it. </p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/cdn-setup-help/</guid>
+					<title>CDN Setup Help</title>
+					<link>https://wordpress.org/support/topic/cdn-setup-help/</link>
+					<pubDate>Fri, 20 Feb 2026 04:44:18 +0000</pubDate>
+					<dc:creator>thomas452</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph">I’m trying to configure CDN with WP Super Cache. Basic setup is done but not sure if static files are fully served from CDN. Any quick way to confirm? Appreciate the help.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/symlink-for-advanced-cache-php-not-working-across-multi-server-setup/</guid>
+					<title>Symlink for advanced-cache.php Not Working Across Multi‑Server Setup</title>
+					<link>https://wordpress.org/support/topic/symlink-for-advanced-cache-php-not-working-across-multi-server-setup/</link>
+					<pubDate>Thu, 19 Feb 2026 17:03:24 +0000</pubDate>
+					<dc:creator>kodasam</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 5						</p>
+						<p class="wp-block-paragraph">I have a WordPress site running on three servers behind a load balancer, and I’m sharing the cache directory and the wp-cache-config.php file across all instances using symlinks, which are working correctly. However, when I create a symlink for the <code>advanced-cache.php</code> file so it can also be shared across the three servers, I receive the following error from WP Super Cache: “The file /var/www/html/dev.planadviser.com/public_html/wp-content/advanced-cache.php was created by another plugin or by your system administrator. Please examine the file carefully by FTP or SSH and consult your hosting documentation.” I’m trying to avoid moving the entire <code>wp-content</code> directory to EFS and would like to know whether there is a supported way to share only the <code>advanced-cache.php</code> file via symlink or network storage across multiple instances.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/still-unresolved-solid-security-removing-wp_cache-and-breaking-wp-super-cache/</guid>
+					<title>Still unresolved. Solid Security removing WP_CACHE and breaking WP Super Cache</title>
+					<link>https://wordpress.org/support/topic/still-unresolved-solid-security-removing-wp_cache-and-breaking-wp-super-cache/</link>
+					<pubDate>Tue, 03 Feb 2026 23:40:00 +0000</pubDate>
+					<dc:creator>THRIVE - Web Design Gold Coast</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">Bumping this as the issue is still occurring.</p>
+
+
+
+<p class="wp-block-paragraph">We have just had to manually fix this across hundreds of sites.</p>
+
+
+
+<p class="wp-block-paragraph">Solid Security (formerly iThemes Security) rewrites wp-config.php and removes or relocates the WP_CACHE constant. This causes WP Super Cache to repeatedly report broken caching and recreate advanced-cache.php.</p>
+
+
+
+<p class="wp-block-paragraph">The only reliable fix has been to move WP_CACHE and WPCACHEHOME outside any plugin managed block and place them just above wp-settings.php.</p>
+
+
+
+<p class="wp-block-paragraph">Related threads:<br /><a href="https://wordpress.org/support/topic/conflict-with-wp-super-cache-22/" rel="ugc">https://wordpress.org/support/topic/conflict-with-wp-super-cache-22/</a><br /><a href="https://wordpress.org/support/topic/issues-with-solid-security-formerly-ithemes-security-pro/" rel="ugc">https://wordpress.org/support/topic/issues-with-solid-security-formerly-ithemes-security-pro/</a><br /><a href="https://github.com/Automattic/jetpack/issues/25461" rel="nofollow ugc">https://github.com/Automattic/jetpack/issues/25461</a></p>
+
+
+
+<p class="wp-block-paragraph">Still affecting live production sites.</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/some-functionalities-breaks-when-active/</guid>
+					<title>Some functionalities breaks when active</title>
+					<link>https://wordpress.org/support/topic/some-functionalities-breaks-when-active/</link>
+					<pubDate>Sun, 18 Jan 2026 22:12:11 +0000</pubDate>
+					<dc:creator>willpardo</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">I’ve spent many hours over multiple days using WP Super Cache and trying to resolve a persistent issue on my WordPress + WooCommerce site where the front-end becomes unstable specifically when <strong>any page caching is enabled for anonymous/incognito visitors</strong>, and I’m at the point where I need a developer-level diagnosis of the root cause. Without caching, everything behaves normally. With caching enabled, the site intermittently renders UI in an incorrect state and various elements break or duplicate, and the behavior is hard to stabilize even after repeated cache purges.</p>
+
+
+
+<p class="wp-block-paragraph">The most visible symptom is that the <strong>theme’s off-canvas/mobile panel</strong> (the drawer that is normally only used for mobile navigation) sometimes appears <strong>open/visible on desktop</strong> for logged-out/incognito visitors. When this happens, the panel shows the same mobile navigation content that should only appear after tapping the hamburger icon on mobile. This “panel-open” state can persist while navigating between pages, and sometimes it gradually “self-corrects” after multiple reloads, but it’s not consistent. Importantly, this problem happens primarily for <strong>anonymous/incognito visitors</strong>; when I’m logged into wp-admin, the issue often does not appear, which strongly suggests a caching-related difference in script execution order, asset delivery, or initial state.</p>
+
+
+
+<p class="wp-block-paragraph">At the same time, other front-end components become unreliable when caching is enabled: <strong>category grids shift/corrupt</strong>, category pages sometimes lose their <strong>filter UI entirely</strong>, and in other cases the filter or grid UI appears to be <strong>duplicated</strong> or re-initialized multiple times while navigating. It feels like JavaScript-based components are being initialized twice (or being initialized on partially styled markup), leading to layout drift, missing elements, or duplicated UI. These issues tend to appear more frequently after moving across multiple category pages and then back/forward, again primarily in incognito/anonymous mode.</p>
+
+
+
+<p class="wp-block-paragraph">I have tested multiple caching approaches and the same pattern persists whenever anonymous page caching is active. I tried the host’s built-in caching controls, then <strong>Cache Enabler</strong>, then <strong>W3 Total Cache</strong>, and then <strong>WP Super Cache</strong>. With W3 Total Cache, enabling Minify/Combine (JS/CSS) made the UI corruption worse, so I disabled Minify and any lazy/delay/defer features and kept only basic page cache + browser cache. With WP Super Cache, I enabled caching for anonymous visitors, disabled caching for logged-in users, set rejected URLs for WooCommerce-sensitive pages (cart/checkout/account), and configured it to avoid caching URLs with GET parameters. Even with conservative settings, the “off-canvas visible on desktop” and “filter/grid corruption” symptoms still occur as soon as caching is enabled.</p>
+
+
+
+<p class="wp-block-paragraph">I also previously changed WooCommerce settings that seemed to affect caching behavior (notably disabling WooCommerce’s order attribution/source tracking feature that sets attribution cookies), and I repeatedly purged caches and flushed permalinks. Additionally, some of the functionality that often misbehaves (especially parts of the header/menu behavior and some UI behavior) is implemented using <strong>Code Snippets</strong> (custom snippets injected into the site rather than coming directly from the theme or a single plugin), which may be contributing to inconsistent initialization depending on whether the request is cached or not.</p>
+
+
+
+<p class="wp-block-paragraph">I want to be clear that I’m looking for a <strong>complete and technically correct solution</strong> to make the site compatible with page caching. Suggestions like “just don’t cache the homepage” or “don’t cache category pages” are not acceptable as a real fix, because those are some of the most important pages for performance and SEO; disabling caching there would defeat the purpose and significantly impact site speed. I need to understand <strong>why</strong> the site behaves differently under cached anonymous responses.</p>
+
+
+
+<p class="wp-block-paragraph">Right now, the current failure mode is primarily on <strong>mobile</strong>: the intended mobile navigation (provided by <strong>Superfly Menu</strong>) does <strong>not load/activate</strong>, and instead the site falls back to the <strong>theme’s mobile menu</strong>, and additionally the <strong>category filter</strong> (coming from a separate plugin) <strong>does not appear</strong> on mobile. If I change configuration to try to force the “correct” Superfly Menu behavior to appear on mobile, the issue flips to the other side: the <strong>desktop</strong> experience becomes unstable again, with Superfly Menu content appearing on the left as if it were in mobile mode and sometimes looking like it is <strong>always open</strong>. This “trade-off” strongly suggests a state/initialization problem (possibly related to cached HTML vs. deferred assets, conditional loading of scripts by device detection, or JS executing twice or out of order).</p>
+
+
+<ul id="bbp-topic-revision-log-18790159" class="bbp-topic-revision-log">
+
+	<li id="bbp-topic-revision-log-18790159-item-18790164" class="bbp-topic-revision-log-item">
+		This topic was modified 10 months ago by <a href="https://wordpress.org/support/users/willpardo/" title="View willpardo&#039;s profile" class="bbp-author-link"><span class="bbp-author-name">willpardo</span></a>.
+	</li>
+
+</ul>
+
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/how-to-delete-12/</guid>
+					<title>how to delete</title>
+					<link>https://wordpress.org/support/topic/how-to-delete-12/</link>
+					<pubDate>Tue, 06 Jan 2026 17:47:32 +0000</pubDate>
+					<dc:creator>luluacza</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 9						</p>
+						<p class="wp-block-paragraph">i cannot delete the plug in why?</p>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" src="https://i0.wp.com/snipboard.io/dXOjkw.jpg?ssl=1" alt="" /></figure>
+
+
+
+<p class="wp-block-paragraph"></p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/woocommerce-product-pages-setup/</guid>
+					<title>Woocommerce product pages setup</title>
+					<link>https://wordpress.org/support/topic/woocommerce-product-pages-setup/</link>
+					<pubDate>Mon, 05 Jan 2026 18:46:34 +0000</pubDate>
+					<dc:creator>peterlarsen7470</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">Hi there,<br /><br />I’m setting up WP Super Cache on a WooCommerce shop and I’m a bit confused about the cache timeout settings. On some websites, it says the timeout should be 3,600 seconds, while others recommend 7,200 or even 86,400.<br />From my own tests, I have the impression that WP Super Cache doesn’t cache product text, stock, or price. But is it only stock and price?<br /><br />So what’s correct? Does WP Super Cache cache WooCommerce product details? And why not use 86,400? I’d like all pages cached for as long as possible.<br />Hope you can shed some light on this.<br /><br />Cheers,<br />Peter</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/can-cache-be-blocking-my-mailpoet-popup/</guid>
+					<title>Can cache be blocking my Mailpoet Popup?</title>
+					<link>https://wordpress.org/support/topic/can-cache-be-blocking-my-mailpoet-popup/</link>
+					<pubDate>Tue, 16 Dec 2025 15:11:20 +0000</pubDate>
+					<dc:creator>Starhorsepax2</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 5						</p>
+						<p class="wp-block-paragraph">I hope you are more helpful than Mailpoet, as they are ignoring the question.  WP Super Cache is the only plugin I think might lead to this.  I can set that popup to show on any page but the home page. I don&#8217;t know why that doesn&#8217;t work. OR why it only works on the other pages when logged in.<br /><br />I have tried purging cache. I have tried turning off the plugin itself. I have tested multiple browsers &amp; cleared THEIR cache &amp; cookies.  But I don&#8217;t believe wp super cache is totally clearing.  Especially that home page.  I am not too familiar w/ super cache, but it originally even cached logged-in users, I just reset it.<br /><br />I am especially suspicious of this setting:</p>
+
+
+
+<p class="wp-block-paragraph">Expert<br />Expert caching requires changes to important server files and may require manual intervention if enabled.<br /><br />Can anyone advise me where to look or completely obliterate that cache and how to prevent it blocking popups?</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/wp-super-cache-stops-homepage-from-displaying-properrly/</guid>
+					<title>WP Super Cache stops homepage from displaying properly</title>
+					<link>https://wordpress.org/support/topic/wp-super-cache-stops-homepage-from-displaying-properrly/</link>
+					<pubDate>Tue, 16 Dec 2025 01:01:22 +0000</pubDate>
+					<dc:creator>alexcpaige</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 3						</p>
+						<p class="wp-block-paragraph">Hi, I am having a caching issue with my website when I activate WP Super Cache.</p>
+
+
+
+<p class="wp-block-paragraph">This is a WordPress site with Woocommerce online store component. It is hosted by Crazy Domains who I fear may be giving me unhelpful advice regarding caching!</p>
+
+
+
+<p class="wp-block-paragraph">WP Site Health recommends installing a persistent object cache such as Redis but this is not supported by Crazy Domains server. Crazy Domains tell me the site hosting environment is &#8220;already&nbsp;<strong>optimized with server-level caching mechanisms</strong>&#8221; and suggests, as an alternative to a persistent object cache, installing a page caching plugin such as WP Super Cache.</p>
+
+
+
+<p class="wp-block-paragraph">When I install and activate WP Super Cache, it stops the homepage from loading properly. Specifically, the images on top half of homepage do not display and the layout corrupts (lower section, which is pulled from Woocommerce, works OK). This occurs on Chrome, Firefox and Safari when I test the site. When I disable WP Super Cache, site homepage then loads properly.</p>
+
+
+
+<p class="wp-block-paragraph">The issue only seems to affect the homepage, not the other pages of the site, for some unknown reason.</p>
+
+
+
+<p class="wp-block-paragraph">I am confused about the whole caching issue and would like some advice as to the following:</p>
+
+
+
+<ul>
+<li>Why does WP Super Cache stop site homepage from loading properly and is there anything I can do in the Super Cache settings to alleviate this?</li>
+
+
+
+<li>If, as Crazy Domains says, the hosting environment is &#8220;already optimized with server level caching mechanisms&#8221;, do I actually need to install a page caching plugin?</li>
+
+
+
+<li>Is not having a persistent object cache an issue for the site going forward? I have read conflicting information on this online, with some stating that for a site with &#8220;dynamic content&#8221; (which I assume is the case for a Woocommerce store) a persistent object cache isn&#8217;t necessarily helpful</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Many thanks</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<p class="wp-block-paragraph"></p>
+
+
+
+<ul>
+<li></li>
+</ul>
+
+
+<ul id="bbp-topic-revision-log-18757328" class="bbp-topic-revision-log">
+
+	<li id="bbp-topic-revision-log-18757328-item-18757329" class="bbp-topic-revision-log-item">
+		This topic was modified 11 months ago by <a href="https://wordpress.org/support/users/alexcpaige/" title="View alexcpaige&#039;s profile" class="bbp-author-link"><span class="bbp-author-name">alexcpaige</span></a>.
+	</li>
+	<li id="bbp-topic-revision-log-18757328-item-18757331" class="bbp-topic-revision-log-item">
+		This topic was modified 11 months ago by <a href="https://wordpress.org/support/users/alexcpaige/" title="View alexcpaige&#039;s profile" class="bbp-author-link"><span class="bbp-author-name">alexcpaige</span></a>.
+	</li>
+
+</ul>
+
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/how-to-enable-cache-for-logged-in-customers/</guid>
+					<title>How to enable cache for logged in customers</title>
+					<link>https://wordpress.org/support/topic/how-to-enable-cache-for-logged-in-customers/</link>
+					<pubDate>Sun, 14 Dec 2025 13:48:57 +0000</pubDate>
+					<dc:creator>elettrb3l</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 1						</p>
+						<p class="wp-block-paragraph">Hello, I&#8217;m having issue to enable cache for logged in users (customers).</p>
+
+
+
+<p class="wp-block-paragraph">I have a big website with other 50k products, website is fine if user is not logged in and cache hit correctly (using cloudflare connected); but whenever customer do the login, website is very slow and pages are not being cached using this plugin. I tried to check if there&#8217;s some settings to enable or disable  related to enabling cache also to customer logged in, but nothing I found; looking at header this is what i get:</p>
+
+
+
+<pre class="wp-block-code"><code><br />cf-cache-status: DYNAMIC<br /><br />cf-edge-cache: no-cache<br /><br />pragma: no-cache<br /><br />priority: server-timing:<br /><br />cfCacheStatus;desc="DYNAMIC"<br /><br />server-timing: cfEdge;dur=9,cfOrigin;dur=5340<br /><br />server-timing: cfExtPri<br /><br />PHP/8.4.15<br /><br />x-wp-cf-super-cache: no-cache<br /><br />x-wp-cf-super-cache-cache-control: no-store, no-cache, must-revalidate, max-age=0<br /><br />x-wp-cf-super-cache-disabled-reason: Logged In<br /><br />x-wp-spc-disk-cache: BYPASS<br /></code></pre>
+
+
+
+<p class="wp-block-paragraph">What can I do in order to enable cache also to logged in users?</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+				
+				<item>
+					<guid>https://wordpress.org/support/topic/cant-activate-jetpack-on-my-website/</guid>
+					<title>Can&#8217;t Activate JetPack on my website</title>
+					<link>https://wordpress.org/support/topic/cant-activate-jetpack-on-my-website/</link>
+					<pubDate>Wed, 10 Dec 2025 05:18:57 +0000</pubDate>
+					<dc:creator>iflirtprince</dc:creator>
+
+					
+					<description>
+						<![CDATA[
+						<p>
+							Replies: 2						</p>
+						<p class="wp-block-paragraph">Why do I get &#8220;Error Notice: The Jetpack server was unable to communicate with infinityfree.com, [IXR -32300: transport error: http_request_failed cURL error 52: Empty reply from server] (Status 500)&#8221; When I click on Supercharge my site to install JetPack? I&#8217;m hosting with infinityfree.com, let&#8217;s resolve this</p>
+						]]>
+					</description>
+
+					
+					
+					
+				</item>
+
+							
+		
+	</channel>
+	</rss>
+

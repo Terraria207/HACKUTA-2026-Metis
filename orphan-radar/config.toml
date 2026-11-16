@@ -1,0 +1,62 @@
+# Orphan Radar configuration. Edit weights by hand; they must sum to 100.
+# Every value here is read at runtime; nothing is hard-coded in the scorer.
+
+[weights]
+demand = 25
+supply_failure = 25
+pain_specificity = 15
+channel = 15
+willingness_to_pay = 10
+timing = 10
+
+[thresholds]
+brief_min_score = 45          # briefs are generated for products at or above this score
+min_users = 1000              # hard filter: fewer users than this are excluded
+stale_months = 18             # months without an update counted as fully stale
+max_clusters_for_specificity = 5
+recent_window_days = 365      # "recent" complaints / last-12-month rating
+event_fresh_days = 180        # a displacement event this recent gets full timing credit
+
+[demand]
+users_log_floor = 3           # 10^3 users -> 0 of the user sub-score
+users_log_ceiling = 7         # 10^7 users -> full user sub-score
+rating_count_ceiling = 2000
+
+[scan]
+# Per-source limits keep scans polite and fast. Raise them for wider sweeps.
+wordpress_pages = 4           # x 100 plugins per page, from the "popular" browse list
+wordpress_extra_queries = ["abandoned", "deprecated", "classic editor", "social share", "slider", "gallery", "backup"]
+wordpress_feed_limit = 40     # plugins whose support + review feeds are fetched (most suspicious first)
+firefox_pages = 3             # x 50 add-ons, sorted by users
+firefox_reviews_limit = 40    # add-ons whose 1-2 star reviews are fetched
+atlassian_pages = 3          # x 50 apps, by popularity, for paid and for all apps
+atlassian_reviews_limit = 25
+github_min_stars = 3000
+github_stale_before = "2024-06-01"
+github_issue_repos = 12       # stale repos whose top-reacted open issues are fetched
+hn_queries = ["shutting down", "sunsetting", "end of life", "price increase", "removing free tier", "acquired by", "alternative to", "is there a tool that", "no longer maintained"]
+hn_days = 365
+hn_min_points = 40
+stackexchange_sites = { stackoverflow = ["wordpress-plugin", "firefox-addon", "google-chrome-extension", "visual-studio-code"], superuser = ["firefox", "google-chrome"], wordpress = ["plugins"] }
+stackexchange_min_views = 5000
+autocomplete_top_products = 40   # replacement-search checks run for the top N candidates
+vscode_pages = 2
+vscode_min_installs = 100000
+
+[http]
+user_agent = "OrphanRadar/0.1 (+local research tool; respects robots.txt)"
+cache_ttl_hours = 20
+min_interval_seconds = 1.0     # per-host politeness delay
+timeout_seconds = 30
+
+[hard_filters]
+# Keyword lists are matched against product name, description, tags and categories, except
+# trademark_or_proprietary, which is matched against the product name only (descriptions and tags
+# name third-party services as examples and search keywords far too often).
+health = ["medical", "patient", "patients", "hipaa", "health records", "health data", "fitness tracker", "symptom", "symptoms", "prescription", "clinic", "telehealth", "ehr"]
+financial = ["bank account", "banking", "credit card", "plaid", "brokerage", "crypto wallet", "wallet", "tax return", "payroll"]
+children = ["kids", "children", "coppa", "parental control", "parental controls", "student records", "for students", "classroom"]
+licensed = ["hipaa", "pci", "fda", "regulator", "license key required", "hardware", "firmware", "device driver", "printer", "official partner",
+            "coupon codes", "cashback", "cash back", "exclusive rewards", "affiliate partners"]   # coupon/cashback tools need affiliate partnerships
+trademark_or_proprietary = ["unofficial", "for youtube", "for netflix", "for spotify", "for amazon", "for facebook", "for instagram", "for twitter", "for tiktok", "for whatsapp", "video downloader", "youtube downloader",
+            "meta pixel", "facebook pixel", "meta ads", "conversions api", "google ads", "tiktok pixel"]   # integrations whose core is a proprietary ad platform
